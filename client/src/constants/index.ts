@@ -29,7 +29,7 @@ export const DEFAULT_NETWORK = SUPPORTED_NETWORKS.POLYGON_MUMBAI;
 
 // Contract addresses
 export const CONTRACT_ADDRESSES = {
-  HEALTH_RECORD: process.env.HEALTH_RECORD_CONTRACT_ADDRESS || '0x123456789abcdef123456789abcdef123456789a' // This will be replaced with the deployed contract address
+  HEALTH_RECORD: import.meta.env.VITE_HEALTH_RECORD_CONTRACT_ADDRESS || '0x123456789abcdef123456789abcdef123456789a' // This will be replaced with the deployed contract address
 };
 
 // Navigation items
