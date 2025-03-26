@@ -87,6 +87,21 @@ export const ACTIVITY_TYPES = {
 
 // API endpoints
 export const API_ENDPOINTS = {
+  // IPFS endpoints
   UPLOAD_TO_IPFS: '/api/ipfs/upload',
-  GET_FROM_IPFS: '/api/ipfs/get'
+  GET_FROM_IPFS: '/api/ipfs/get',
+  
+  // Health record endpoints
+  HEALTH_RECORDS: '/api/health-records',
+  HEALTH_RECORDS_BY_USER: (userId: number) => `/api/health-records/user/${userId}`,
+  HEALTH_RECORD_BY_ID: (id: number) => `/api/health-records/${id}`,
+  
+  // Access grant endpoints
+  ACCESS_GRANTS: '/api/access-grants',
+  ACCESS_GRANTS_BY_PATIENT: (patientId: number) => `/api/access-grants/patient/${patientId}`,
+  ACCESS_GRANTS_BY_PROVIDER: (providerAddress: string) => `/api/access-grants/provider/${providerAddress}`,
+  REVOKE_ACCESS: (id: number) => `/api/access-grants/${id}/revoke`,
+  
+  // User endpoints
+  REGISTER_USER: '/api/users/register'
 };

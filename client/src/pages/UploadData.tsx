@@ -109,8 +109,27 @@ const UploadData: React.FC = () => {
 
       // 3. Store the IPFS hash on the blockchain
       const receipt = await addRecord(recordType, documentTitle, data.hash);
+      
+      // 4. Save the record in our backend database
+      if (receipt) {
+        const recordData = {
+          userId: 1, // This should be the actual user ID from authentication
+          recordType,
+          title: documentTitle,
+          ipfsHash: data.hash,
+          blockchainTxHash: receipt.transactionHash || null,
+        };
+        
+        await fetch(API_ENDPOINTS.HEALTH_RECORDS, {
+          method: 'POST',
+          body: JSON.stringify(recordData),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+      }
 
-      // 4. Hide modal and show success
+      // 5. Hide modal and show success
       setShowConfirmModal(false);
       setIsProcessing(false);
       setTransactionSuccess(true);

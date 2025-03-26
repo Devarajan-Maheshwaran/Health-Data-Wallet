@@ -20,36 +20,70 @@ const ViewRecords: React.FC = () => {
   const [showRecordDialog, setShowRecordDialog] = useState<boolean>(false);
   const [selectedRecord, setSelectedRecord] = useState<HealthRecord | null>(null);
   
-  // Load records from blockchain
+  // Load records from both backend and blockchain
   useEffect(() => {
     const fetchRecords = async () => {
-      if (!isConnected || !account) {
-        setIsLoading(false);
-        return;
-      }
+      setIsLoading(true);
       
       try {
-        // Get total record count
-        const count = await getRecordCount(account);
+        // For a real implementation, we would use authentication to get the current user's ID
+        // For this prototype, we'll use a static user ID of 1
+        const userId = 1;
         
-        // Fetch all records
-        const recordPromises = [];
-        for (let i = 0; i < count; i++) {
-          recordPromises.push(getRecord(account, i));
+        // Fetch records from our backend database
+        const response = await fetch(`/api/health-records/user/${userId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          const formattedRecords = data.records.map((record: any) => ({
+            id: record.id,
+            recordType: record.recordType,
+            title: record.title,
+            ipfsHash: record.ipfsHash,
+            timestamp: new Date(record.uploadedAt).getTime() / 1000,
+            blockchainTxHash: record.blockchainTxHash
+          }));
+          
+          setRecords(formattedRecords);
         }
         
-        const recordResults = await Promise.all(recordPromises);
-        
-        // Format records
-        const formattedRecords: HealthRecord[] = recordResults.map((record, index) => ({
-          id: index,
-          recordType: record.recordType,
-          title: record.title,
-          ipfsHash: record.ipfsHash,
-          timestamp: record.timestamp
-        }));
-        
-        setRecords(formattedRecords);
+        // If we're connected to blockchain, also fetch records from there
+        if (isConnected && account) {
+          try {
+            // Get total record count
+            const count = await getRecordCount(account);
+            
+            // Fetch all records
+            const recordPromises = [];
+            for (let i = 0; i < count; i++) {
+              recordPromises.push(getRecord(account, i));
+            }
+            
+            const recordResults = await Promise.all(recordPromises);
+            
+            // Format records
+            const blockchainRecords: HealthRecord[] = recordResults.map((record, index) => ({
+              id: 1000 + index, // Using a large offset to avoid ID conflicts with DB records
+              recordType: record.recordType,
+              title: record.title,
+              ipfsHash: record.ipfsHash,
+              timestamp: record.timestamp
+            }));
+            
+            // Merge records from both sources, avoiding duplicates by IPFS hash
+            const existingHashes = new Set(records.map((r: HealthRecord) => r.ipfsHash));
+            const uniqueBlockchainRecords = blockchainRecords.filter(
+              record => !existingHashes.has(record.ipfsHash)
+            );
+            
+            if (uniqueBlockchainRecords.length > 0) {
+              setRecords(prevRecords => [...prevRecords, ...uniqueBlockchainRecords]);
+            }
+          } catch (error) {
+            console.error('Error fetching blockchain records:', error);
+            // Continue with database records even if blockchain fetch fails
+          }
+        }
       } catch (error) {
         console.error('Error fetching records:', error);
         toast({
