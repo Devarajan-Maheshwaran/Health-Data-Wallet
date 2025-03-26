@@ -169,23 +169,26 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="hidden sm:block">
             <nav className="flex space-x-4" aria-label="Tabs">
-              <Link href="/upload">
-                <a className={`${activeTab === 'upload' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
-                   onClick={() => setActiveTab('upload')}>
-                  Upload Health Data
-                </a>
+              <Link 
+                href="/upload"
+                className={`${activeTab === 'upload' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
+                onClick={() => setActiveTab('upload')}
+              >
+                Upload Health Data
               </Link>
-              <Link href="/access">
-                <a className={`${activeTab === 'access' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
-                   onClick={() => setActiveTab('access')}>
-                  Manage Access
-                </a>
+              <Link 
+                href="/access"
+                className={`${activeTab === 'access' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
+                onClick={() => setActiveTab('access')}
+              >
+                Manage Access
               </Link>
-              <Link href="/records">
-                <a className={`${activeTab === 'records' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
-                   onClick={() => setActiveTab('records')}>
-                  View My Records
-                </a>
+              <Link 
+                href="/records"
+                className={`${activeTab === 'records' ? 'bg-primary-100 text-primary-700' : 'text-neutral-500 hover:text-neutral-700'} px-3 py-2 font-medium text-sm rounded-md`}
+                onClick={() => setActiveTab('records')}
+              >
+                View My Records
               </Link>
             </nav>
           </div>
@@ -199,10 +202,11 @@ const Dashboard: React.FC = () => {
               <p className="mt-1 max-w-2xl text-sm text-neutral-500">Complete your registration to start managing your health records.</p>
             </div>
             <div className="px-4 py-5 sm:p-6">
-              <Link href="/register">
-                <a className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                  Register as Patient
-                </a>
+              <Link 
+                href="/register"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Register as Patient
               </Link>
             </div>
           </div>
