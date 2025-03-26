@@ -21,15 +21,15 @@ const Sidebar: React.FC = () => {
           <div className="mt-5 flex-1 flex flex-col">
             <nav className="flex-1 px-2 space-y-1">
               {NAV_ITEMS.map((item) => (
-                <Link 
-                  key={item.path} 
-                  href={item.path}
-                >
-                  <a className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                    location === item.path 
-                      ? 'text-white bg-primary-700' 
-                      : 'text-primary-100 hover:bg-primary-700'
-                  }`}>
+                <div key={item.path}>
+                  <Link 
+                    href={item.path}
+                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                      location === item.path 
+                        ? 'text-white bg-primary-700' 
+                        : 'text-primary-100 hover:bg-primary-700'
+                    }`}
+                  >
                     <span className={`material-icons mr-3 ${
                       location === item.path 
                         ? 'text-white' 
@@ -38,8 +38,8 @@ const Sidebar: React.FC = () => {
                       {item.icon}
                     </span>
                     {item.name}
-                  </a>
-                </Link>
+                  </Link>
+                </div>
               ))}
             </nav>
           </div>

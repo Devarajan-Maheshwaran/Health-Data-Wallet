@@ -86,7 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create new user
       const newUser = await storage.createUser({
         username,
-        password
+        password,
+        walletAddress
       });
       
       res.status(201).json({

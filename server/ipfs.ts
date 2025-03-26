@@ -6,6 +6,10 @@ const projectId = process.env.INFURA_IPFS_PROJECT_ID || '';
 const projectSecret = process.env.INFURA_IPFS_PROJECT_SECRET || '';
 const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
 
+// Log IPFS configuration (without revealing sensitive values)
+console.log('IPFS configuration initialized with project ID:', projectId ? '[CONFIGURED]' : '[MISSING]');
+console.log('IPFS project secret:', projectSecret ? '[CONFIGURED]' : '[MISSING]');
+
 let ipfsClient: any;
 
 try {

@@ -4,9 +4,22 @@ import { users, type User, type InsertUser } from "@shared/schema";
 // you might need
 
 export interface IStorage {
+  // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Health record operations
+  getHealthRecord(id: number): Promise<HealthRecord | undefined>;
+  getHealthRecordsByUser(userId: number): Promise<HealthRecord[]>;
+  createHealthRecord(record: InsertHealthRecord): Promise<HealthRecord>;
+  
+  // Access grant operations
+  getAccessGrant(id: number): Promise<AccessGrant | undefined>;
+  getAccessGrantsByPatient(patientId: number): Promise<AccessGrant[]>;
+  getAccessGrantsByProvider(providerAddress: string): Promise<AccessGrant[]>;
+  createAccessGrant(grant: InsertAccessGrant): Promise<AccessGrant>;
+  revokeAccess(id: number): Promise<AccessGrant | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -30,11 +43,16 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
+    
+    // Create a compliant User object without spreading to avoid type issues
     const user: User = { 
-      ...insertUser, 
       id,
+      username: insertUser.username,
+      password: insertUser.password,
+      walletAddress: insertUser.walletAddress ?? null,
       createdAt: new Date()
     };
+    
     this.users.set(id, user);
     return user;
   }
