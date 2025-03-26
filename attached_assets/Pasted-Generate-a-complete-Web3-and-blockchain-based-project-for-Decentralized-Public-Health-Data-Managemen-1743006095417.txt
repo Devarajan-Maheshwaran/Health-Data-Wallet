@@ -1,0 +1,58 @@
+Generate a complete Web3 and blockchain-based project for Decentralized Public Health Data Management. The project should securely store and share public health data (e.g., vaccination records, disease outbreaks, and patient histories) using blockchain. Follow these requirements:
+
+1. Smart Contract (Solidity on Ethereum/Polygon)
+Create a Solidity smart contract that allows patients to register, store encrypted health data references, and manage access permissions for healthcare providers.
+
+Implement access control mechanisms so only authorized users (e.g., doctors) can view a patient’s data.
+
+Use IPFS for off-chain storage and store only the hash on-chain for security.
+
+Include functions:
+
+registerPatient(name, encryptedDataHash)
+
+grantAccess(doctorAddress)
+
+revokeAccess(doctorAddress)
+
+getPatientData(patientAddress)
+
+2. Web3 Integration (React.js & Ethers.js)
+Create a frontend using React.js/Next.js that allows users to:
+
+Connect their MetaMask wallet to authenticate.
+
+Upload encrypted medical data to IPFS and retrieve its hash.
+
+Grant/revoke access to doctors via blockchain transactions.
+
+View medical records securely via smart contract calls.
+
+Use Ethers.js or Web3.js to interact with the smart contract.
+
+3. Backend API (Node.js + Express)
+Build a Node.js backend with Express.js to:
+
+Handle IPFS file uploads and return the stored file hash.
+
+Integrate with The Graph/Chainlink oracles for real-time disease data.
+
+Implement Decentralized Identity (DID) using uPort or Polygon ID.
+
+4. Database & Security
+Use MongoDB or PostgreSQL to store non-sensitive metadata.
+
+Implement Zero-Knowledge Proofs (ZKP) for privacy-preserving authentication.
+
+Ensure GDPR/HIPAA compliance by encrypting patient data before storage.
+
+5. Deployment & Testing
+Deploy the smart contract on Ethereum Testnet (Goerli, Sepolia) or Polygon Mumbai.
+
+Use Hardhat or Foundry for testing smart contracts.
+
+Optimize gas fees using Layer 2 solutions (Arbitrum, Optimism).
+
+Provide detailed README.md documentation for setup and deployment.
+
+Generate all necessary code files (Solidity, React.js, Node.js, and Web3 integration) with best practices for security and scalability. Provide step-by-step deployment instructions.
