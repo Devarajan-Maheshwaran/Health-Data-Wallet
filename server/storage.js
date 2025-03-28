@@ -1,4 +1,8 @@
 // Since we're converting from TypeScript to JavaScript, we'll include simplified type comments
+// Import DB connection and schema
+import { db } from './db.js';
+import { users, healthRecords, accessGrants } from '../shared/schema.js';
+import { eq, and } from 'drizzle-orm';
 
 /**
  * @typedef {Object} User
@@ -136,116 +140,134 @@ export class IStorage {
   async revokeAccess(id) { throw new Error('Not implemented'); }
 }
 
-export class MemStorage {
-  constructor() {
-    this.users = new Map();
-    this.healthRecords = new Map();
-    this.accessGrants = new Map();
-    this.currentId = 1;
-    this.healthRecordId = 1;
-    this.accessGrantId = 1;
-  }
-
+/**
+ * DatabaseStorage class that uses the Postgres database
+ */
+export class DatabaseStorage extends IStorage {
+  /**
+   * Get a user by ID
+   * @param {number} id - User ID
+   * @returns {Promise<User|undefined>}
+   */
   async getUser(id) {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
+  /**
+   * Get a user by username
+   * @param {string} username - Username
+   * @returns {Promise<User|undefined>}
+   */
   async getUserByUsername(username) {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
+  /**
+   * Create a new user
+   * @param {InsertUser} insertUser - User data
+   * @returns {Promise<User>}
+   */
   async createUser(insertUser) {
-    const id = this.currentId++;
-    
-    const user = { 
-      id,
-      username: insertUser.username,
-      password: insertUser.password,
-      walletAddress: insertUser.walletAddress ?? null,
-      createdAt: new Date()
-    };
-    
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
-  
+
+  /**
+   * Get a health record by ID
+   * @param {number} id - Record ID
+   * @returns {Promise<HealthRecord|undefined>}
+   */
   async getHealthRecord(id) {
-    return this.healthRecords.get(id);
+    const [record] = await db.select().from(healthRecords).where(eq(healthRecords.id, id));
+    return record || undefined;
   }
 
+  /**
+   * Get all health records for a user
+   * @param {number} userId - User ID
+   * @returns {Promise<HealthRecord[]>}
+   */
   async getHealthRecordsByUser(userId) {
-    return Array.from(this.healthRecords.values()).filter(
-      (record) => record.userId === userId
-    );
+    return await db.select().from(healthRecords).where(eq(healthRecords.userId, userId));
   }
 
+  /**
+   * Create a new health record
+   * @param {InsertHealthRecord} record - Record data
+   * @returns {Promise<HealthRecord>}
+   */
   async createHealthRecord(record) {
-    const id = this.healthRecordId++;
-    
-    const healthRecord = {
-      id,
-      userId: record.userId,
-      recordType: record.recordType,
-      title: record.title,
-      ipfsHash: record.ipfsHash,
-      blockchainTxHash: record.blockchainTxHash ?? null,
-      uploadedAt: new Date()
-    };
-    
-    this.healthRecords.set(id, healthRecord);
-    return healthRecord;
+    const [newRecord] = await db
+      .insert(healthRecords)
+      .values(record)
+      .returning();
+    return newRecord;
   }
-  
+
+  /**
+   * Get an access grant by ID
+   * @param {number} id - Grant ID
+   * @returns {Promise<AccessGrant|undefined>}
+   */
   async getAccessGrant(id) {
-    return this.accessGrants.get(id);
+    const [grant] = await db.select().from(accessGrants).where(eq(accessGrants.id, id));
+    return grant || undefined;
   }
 
+  /**
+   * Get all access grants for a patient
+   * @param {number} patientId - Patient ID
+   * @returns {Promise<AccessGrant[]>}
+   */
   async getAccessGrantsByPatient(patientId) {
-    return Array.from(this.accessGrants.values()).filter(
-      (grant) => grant.patientId === patientId
-    );
+    return await db.select().from(accessGrants).where(eq(accessGrants.patientId, patientId));
   }
 
+  /**
+   * Get all access grants for a provider
+   * @param {string} providerAddress - Provider's wallet address
+   * @returns {Promise<AccessGrant[]>}
+   */
   async getAccessGrantsByProvider(providerAddress) {
-    return Array.from(this.accessGrants.values()).filter(
-      (grant) => grant.providerAddress === providerAddress && grant.isActive
-    );
+    return await db.select().from(accessGrants).where(eq(accessGrants.providerAddress, providerAddress));
   }
 
+  /**
+   * Create a new access grant
+   * @param {InsertAccessGrant} grant - Grant data
+   * @returns {Promise<AccessGrant>}
+   */
   async createAccessGrant(grant) {
-    const id = this.accessGrantId++;
-    
-    const accessGrant = {
-      id,
-      patientId: grant.patientId,
-      providerAddress: grant.providerAddress,
-      isActive: grant.isActive ?? true,
-      grantedAt: new Date(),
-      revokedAt: null
-    };
-    
-    this.accessGrants.set(id, accessGrant);
-    return accessGrant;
+    const [newGrant] = await db
+      .insert(accessGrants)
+      .values(grant)
+      .returning();
+    return newGrant;
   }
 
+  /**
+   * Revoke an access grant
+   * @param {number} id - Grant ID
+   * @returns {Promise<AccessGrant|undefined>}
+   */
   async revokeAccess(id) {
-    const accessGrant = this.accessGrants.get(id);
-    
-    if (accessGrant && accessGrant.isActive) {
-      const updatedGrant = {
-        ...accessGrant,
+    const [updatedGrant] = await db
+      .update(accessGrants)
+      .set({ 
         isActive: false,
         revokedAt: new Date()
-      };
-      
-      this.accessGrants.set(id, updatedGrant);
-      return updatedGrant;
-    }
+      })
+      .where(eq(accessGrants.id, id))
+      .returning();
     
-    return accessGrant;
+    return updatedGrant || undefined;
   }
 }
 
-export const storage = new MemStorage();
+// Use the DatabaseStorage implementation
+export const storage = new DatabaseStorage();

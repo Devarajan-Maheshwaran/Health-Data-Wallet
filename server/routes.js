@@ -1,7 +1,7 @@
 import { createServer } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import multer from 'multer';
-import { addToIPFS, getFromIPFS } from './ipfs';
+import { addToIPFS, getFromIPFS } from './ipfs.js';
 
 // Configure multer for file uploads
 const upload = multer({
