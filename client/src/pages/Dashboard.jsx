@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import StatusCard from '@/components/StatusCard';
 import ActivityList from '@/components/ActivityList';
+import EmergencyQRCode from '@/components/EmergencyQRCode';
 import { ACTIVITY_TYPES } from '@/constants';
 import { useWallet } from '@/hooks/useWallet';
 import { useContract } from '@/hooks/useContract';
@@ -15,6 +16,15 @@ const Dashboard = () => {
   const [accessCount, setAccessCount] = useState(2); // Mock data
   const [activities, setActivities] = useState([]);
   const [activeTab, setActiveTab] = useState('upload');
+  
+  // Mock patient data with emergency health information
+  const [patientData, setPatientData] = useState({
+    bloodType: 'O+',
+    allergies: ['Penicillin', 'Peanuts'],
+    emergencyContact: '+1-555-123-4567',
+    medicalConditions: ['Asthma', 'Hypertension'],
+    medications: ['Albuterol', 'Lisinopril']
+  });
   
   // Check if patient is registered and get record count
   useEffect(() => {
@@ -85,13 +95,23 @@ const Dashboard = () => {
       <div className="py-6 px-4 sm:px-6 lg:px-8 bg-white border-b border-neutral-200">
         <div className="flex items-center">
           <h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
-          <div className="ml-auto flex">
-            <span className="relative inline-flex shadow-sm rounded-md">
-              <button className="inline-flex items-center px-4 py-2 border border-neutral-300 bg-white text-sm font-medium rounded-md text-neutral-700 hover:bg-neutral-50">
-                <span className="material-icons mr-2 text-sm">swap_horiz</span>
-                Switch to Provider View
-              </button>
-            </span>
+          <div className="ml-auto flex items-center space-x-3">
+            <EmergencyQRCode 
+              patient={{
+                id: '1', 
+                address: account
+              }} 
+              patientData={patientData} 
+            />
+            <button 
+              className="inline-flex items-center px-4 py-2 border border-neutral-300 bg-white text-sm font-medium rounded-md text-neutral-700 hover:bg-neutral-50"
+              onClick={() => {
+                window.location.href = '/doctor';
+              }}
+            >
+              <span className="material-icons mr-2 text-sm">swap_horiz</span>
+              Switch to Provider View
+            </button>
           </div>
         </div>
       </div>
