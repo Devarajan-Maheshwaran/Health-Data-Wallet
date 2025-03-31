@@ -1,390 +1,341 @@
 import React, { useState, useEffect } from 'react';
-import { useRoute } from 'wouter';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from '@/components/ui/dialog';
-import { formatDate, shortenAddress } from '@/lib/utils';
+import { useRoute, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/useWallet';
+import { useContract } from '@/hooks/useContract';
+import { useIpfs } from '@/hooks/useIpfs';
+import { API_ENDPOINTS } from '@/constants';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const PatientDetailView = () => {
-  const [, params] = useRoute('/patient/:id');
-  const patientId = params?.id;
+  const [match, params] = useRoute('/patient/:id');
+  const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { account } = useWallet();
+  const { checkAccess } = useContract();
+  const { fetchFromIPFS } = useIpfs();
   
-  const [activeTab, setActiveTab] = useState('records');
-  const [showRecordDialog, setShowRecordDialog] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [activeRecord, setActiveRecord] = useState(null);
+  const [recordContent, setRecordContent] = useState(null);
   
-  // Mock patient data - in a real app, this would be fetched from API
-  const [patient, setPatient] = useState({
-    id: patientId,
-    name: 'John Doe',
-    address: '0x5F3c123456789abcdef123456789abcdef123456',
-    dateOfBirth: '1985-06-15',
-    gender: 'Male',
-    bloodType: 'O+',
-    allergies: ['Penicillin', 'Peanuts'],
-    emergencyContact: '+1-555-123-4567',
-    status: 'Active',
-    lastUpdated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+  // Get patient ID from URL params
+  const patientId = params?.id;
+  
+  // Fetch patient data
+  const { data: patientData, isLoading: patientLoading } = useQuery({
+    queryKey: [`/api/patients/${patientId}`],
+    enabled: !!patientId,
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to load patient information',
+        variant: 'destructive'
+      });
+    }
   });
   
-  const [records, setRecords] = useState([
-    {
-      id: 1,
-      recordType: 'Vaccination',
-      title: 'COVID-19 Vaccination Record',
-      ipfsHash: 'QmZ9gdj48hfio3j4iofj4oijf34oij',
-      timestamp: Date.now() - 30 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: 2,
-      recordType: 'Lab Results',
-      title: 'Blood Test Results',
-      ipfsHash: 'QmA1b2c3d4e5f6g7h8i9j0k1l2m3n4o5',
-      timestamp: Date.now() - 60 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: 3,
-      recordType: 'Prescription',
-      title: 'Antibiotic Prescription',
-      ipfsHash: 'QmV5w6x7y8z9a1b2c3d4e5f6g7h8i9j',
-      timestamp: Date.now() - 90 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: 4,
-      recordType: 'Medical Image',
-      title: 'Chest X-Ray',
-      ipfsHash: 'QmP1o2i3u4y5t6r7e8w9q0a1s2d3f4',
-      timestamp: Date.now() - 120 * 24 * 60 * 60 * 1000,
+  // Fetch patient records
+  const { data: recordsData, isLoading: recordsLoading } = useQuery({
+    queryKey: [`/api/patients/${patientId}/records`],
+    enabled: !!patientId && hasAccess,
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to load patient records',
+        variant: 'destructive'
+      });
     }
-  ]);
+  });
   
-  const handleViewRecord = (record) => {
-    setSelectedRecord(record);
-    setShowRecordDialog(true);
-  };
-  
-  const handleDownload = async () => {
-    if (!selectedRecord) return;
+  // Check if provider has access to this patient's records
+  useEffect(() => {
+    const verifyAccess = async () => {
+      try {
+        if (!patientId || !account) return;
+        
+        // In a real app, this would check the blockchain
+        // For demo, just simulate access verification
+        const access = true; // checkAccess(patientId, account);
+        setHasAccess(access);
+        
+        if (!access) {
+          toast({
+            title: 'Access Denied',
+            description: 'You do not have access to this patient\'s records',
+            variant: 'destructive'
+          });
+        }
+      } catch (error) {
+        console.error('Error verifying access:', error);
+        setHasAccess(false);
+      }
+    };
     
-    try {
-      // In a real app, this would trigger a download
-      toast({
-        title: "Download Started",
-        description: "The encrypted file will be downloaded shortly",
-      });
-    } catch (error) {
-      console.error('Error downloading record:', error);
-      toast({
-        title: "Download Failed",
-        description: error instanceof Error ? error.message : "Failed to download the record",
-        variant: "destructive",
-      });
-    }
+    verifyAccess();
+  }, [patientId, account]);
+  
+  // Load record content when a record is selected
+  useEffect(() => {
+    const loadRecordContent = async () => {
+      if (!activeRecord) {
+        setRecordContent(null);
+        return;
+      }
+      
+      try {
+        // In a real app, this would fetch from IPFS
+        // For demo, create mock data
+        const content = {
+          type: activeRecord.recordType,
+          title: activeRecord.title,
+          date: new Date(activeRecord.uploadedAt).toLocaleDateString(),
+          data: {
+            text: `Sample content for ${activeRecord.title}`,
+            values: {
+              bloodPressure: "120/80",
+              heartRate: "72 bpm",
+              temperature: "98.6°F"
+            }
+          }
+        };
+        
+        setRecordContent(content);
+      } catch (error) {
+        console.error('Error loading record content:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load record content',
+          variant: 'destructive'
+        });
+      }
+    };
+    
+    loadRecordContent();
+  }, [activeRecord]);
+  
+  // If URL doesn't match, show 404
+  if (!match) {
+    navigate('/not-found');
+    return null;
+  }
+  
+  const patient = patientData?.patient || {
+    id: patientId,
+    name: 'John Doe',
+    age: 45,
+    gender: 'Male',
+    walletAddress: '0x1234...5678'
   };
   
-  return (
-    <>
-      {/* Page header */}
-      <div className="py-6 px-4 sm:px-6 lg:px-8 bg-white border-b border-neutral-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <button 
-              className="mr-4 p-1 rounded-full hover:bg-neutral-100"
-              onClick={() => window.location.href = '/doctor'}
-            >
-              <span className="material-icons">arrow_back</span>
-            </button>
-            <h1 className="text-2xl font-semibold text-neutral-900">
-              Patient: {patient.name}
-            </h1>
+  const records = recordsData?.records || [];
+  
+  const renderRecordContent = () => {
+    if (!recordContent) return null;
+    
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-semibold">{recordContent.title}</h3>
+            <p className="text-sm text-muted-foreground">Recorded: {recordContent.date}</p>
           </div>
-          <Button
-            variant="outline"
-            className="flex items-center gap-1"
-          >
-            <span className="material-icons text-sm">print</span>
-            Print Summary
-          </Button>
-        </div>
-      </div>
-      
-      {/* Patient Information */}
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white shadow sm:rounded-lg mb-6">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg leading-6 font-medium text-neutral-900">Patient Information</h3>
-              <p className="mt-1 max-w-2xl text-sm text-neutral-500">Personal details and health summary</p>
-            </div>
-            <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-              patient.status === 'Active'
-                ? 'bg-secondary-100 text-secondary-800'
-                : 'bg-neutral-100 text-neutral-800'
-            }`}>
-              {patient.status}
-            </span>
-          </div>
-          <div className="border-t border-neutral-200 px-4 py-5 sm:px-6">
-            <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Full name</dt>
-                <dd className="mt-1 text-sm text-neutral-900">{patient.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Date of birth</dt>
-                <dd className="mt-1 text-sm text-neutral-900">{new Date(patient.dateOfBirth).toLocaleDateString()}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Gender</dt>
-                <dd className="mt-1 text-sm text-neutral-900">{patient.gender}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Blood type</dt>
-                <dd className="mt-1 text-sm text-neutral-900 font-semibold">{patient.bloodType}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Allergies</dt>
-                <dd className="mt-1 text-sm text-neutral-900">
-                  {patient.allergies.length > 0 ? (
-                    <ul className="list-disc pl-4 text-error-600">
-                      {patient.allergies.map((allergy, index) => (
-                        <li key={index}>{allergy}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    'None reported'
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Emergency contact</dt>
-                <dd className="mt-1 text-sm text-neutral-900">{patient.emergencyContact}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Wallet address</dt>
-                <dd className="mt-1 text-sm text-neutral-900 font-mono">{shortenAddress(patient.address)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-neutral-500">Last updated</dt>
-                <dd className="mt-1 text-sm text-neutral-900">{patient.lastUpdated.toLocaleDateString()}</dd>
-              </div>
-            </dl>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <span className="material-icons mr-2 text-sm">download</span>
+              Download
+            </Button>
+            <Button variant="outline" size="sm">
+              <span className="material-icons mr-2 text-sm">verified</span>
+              Verify
+            </Button>
           </div>
         </div>
         
-        {/* Tabs for different sections */}
-        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="mb-4">
-            <TabsTrigger value="records">Health Records</TabsTrigger>
-            <TabsTrigger value="visits">Visit History</TabsTrigger>
-            <TabsTrigger value="notes">Doctor Notes</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="records" className="mt-2">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {records.map((record) => (
-                <Card key={record.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="material-icons text-primary-500">description</span>
-                          <h3 className="text-lg font-medium text-neutral-900 truncate">{record.title}</h3>
-                        </div>
-                        <p className="mt-1 text-sm text-neutral-500">{record.recordType}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 text-sm">
-                      <div className="flex items-center gap-1 text-neutral-600">
-                        <span className="material-icons text-neutral-400 text-sm">calendar_today</span>
-                        <span>{formatDate(record.timestamp)}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 text-neutral-600 mt-1">
-                        <span className="material-icons text-neutral-400 text-sm">vpn_key</span>
-                        <span className="font-mono text-xs">{shortenAddress(record.ipfsHash)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 flex justify-end">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewRecord(record)}
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+        <div className="p-4 bg-muted rounded-md">
+          <h4 className="font-medium mb-2">Record Data</h4>
+          {Object.entries(recordContent.data.values).map(([key, value]) => (
+            <div key={key} className="flex py-1 border-b last:border-0">
+              <span className="w-1/3 font-medium">{key}</span>
+              <span>{value}</span>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="visits" className="mt-2">
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Visit Type
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Provider
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Diagnosis
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">2023-03-15</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Annual Checkup</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">Dr. Sarah Johnson</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Healthy</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-primary-600 hover:text-primary-900">View Details</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">2022-11-22</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Urgent Care</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">Dr. Michael Williams</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Bronchitis</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-primary-600 hover:text-primary-900">View Details</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">2022-08-05</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Follow-up</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">Dr. Sarah Johnson</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">Recovery - Monitoring</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-primary-600 hover:text-primary-900">View Details</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="notes" className="mt-2">
-            <div className="bg-white shadow sm:rounded-lg">
-              <div className="px-4 py-5 sm:px-6 border-b border-neutral-200">
-                <h3 className="text-lg leading-6 font-medium text-neutral-900">Doctor Notes</h3>
-                <p className="mt-1 max-w-2xl text-sm text-neutral-500">Private notes from healthcare providers</p>
-              </div>
-              <div className="px-4 py-5 sm:p-6 space-y-6">
-                <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">Annual Checkup Notes</p>
-                      <p className="text-xs text-neutral-500">2023-03-15 by Dr. Sarah Johnson</p>
-                    </div>
-                    <span className="bg-secondary-100 text-secondary-800 text-xs px-2 py-1 rounded-full font-medium">Recent</span>
-                  </div>
-                  <p className="text-sm text-neutral-700">
-                    Patient appears in good health. Blood pressure is normal at 120/80. Weight is stable. 
-                    Recommended continued exercise and balanced diet. No concerns at this time.
-                  </p>
-                </div>
-                
-                <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">Urgent Care Visit</p>
-                      <p className="text-xs text-neutral-500">2022-11-22 by Dr. Michael Williams</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-neutral-700">
-                    Patient presented with persistent cough, fever (101.2°F), and chest congestion for 5 days.
-                    Diagnosed with acute bronchitis. Prescribed antibiotics and recommended rest for 7 days.
-                    Follow-up in 2 weeks if symptoms persist.
-                  </p>
-                </div>
-                
-                <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <p className="text-sm font-medium text-neutral-900">Follow-up Appointment</p>
-                      <p className="text-xs text-neutral-500">2022-08-05 by Dr. Sarah Johnson</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-neutral-700">
-                    Patient recovering well from bronchitis. Lung sounds clear, no more coughing.
-                    Completed antibiotics course with no side effects. Cleared to return to normal activities.
-                  </p>
-                </div>
-                
-                <div className="mt-6">
-                  <Button>
-                    <span className="material-icons mr-1 text-sm">add</span>
-                    Add New Note
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+          ))}
+          <div className="mt-4 p-3 bg-background rounded border">
+            <p>{recordContent.data.text}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigate('/doctor')}
+        >
+          <span className="material-icons mr-2 text-sm">arrow_back</span>
+          Back
+        </Button>
+        <h1 className="text-2xl font-bold">Patient Details</h1>
       </div>
       
-      {/* Record Detail Dialog */}
-      <Dialog open={showRecordDialog} onOpenChange={setShowRecordDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedRecord?.title}</DialogTitle>
-          </DialogHeader>
-          
-          {selectedRecord && (
-            <div className="py-4">
-              <dl className="space-y-4">
-                <div>
-                  <dt className="text-sm font-medium text-neutral-500">Record Type</dt>
-                  <dd className="mt-1 text-sm text-neutral-900">{selectedRecord.recordType}</dd>
+      <Card>
+        <CardHeader>
+          <CardTitle>Patient Information</CardTitle>
+          <CardDescription>
+            Basic information and health records
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Patient Info Card */}
+            <div className="md:col-span-1">
+              <div className="p-4 border rounded-md">
+                <h3 className="font-semibold text-lg mb-3">Demographics</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between py-1 border-b">
+                    <span className="text-muted-foreground">Name</span>
+                    <span className="font-medium">{patient.name}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b">
+                    <span className="text-muted-foreground">Age</span>
+                    <span className="font-medium">{patient.age}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b">
+                    <span className="text-muted-foreground">Gender</span>
+                    <span className="font-medium">{patient.gender}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b">
+                    <span className="text-muted-foreground">Patient ID</span>
+                    <span className="font-medium">{patient.id}</span>
+                  </div>
                 </div>
                 
-                <div>
-                  <dt className="text-sm font-medium text-neutral-500">Date Added</dt>
-                  <dd className="mt-1 text-sm text-neutral-900">{formatDate(selectedRecord.timestamp)}</dd>
+                <h3 className="font-semibold text-lg mt-4 mb-3">Blockchain</h3>
+                <div className="space-y-2">
+                  <div className="py-1 border-b">
+                    <p className="text-muted-foreground mb-1">Wallet Address</p>
+                    <p className="font-mono text-xs break-all">{patient.walletAddress}</p>
+                  </div>
                 </div>
-                
-                <div>
-                  <dt className="text-sm font-medium text-neutral-500">IPFS Hash</dt>
-                  <dd className="mt-1 text-sm font-mono text-neutral-900 break-all">{selectedRecord.ipfsHash}</dd>
-                </div>
-                
-                <div className="pt-4">
-                  <p className="text-sm text-neutral-500">
-                    This record is encrypted and stored on IPFS. You can download the encrypted file for viewing.
-                  </p>
-                </div>
-              </dl>
+              </div>
             </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRecordDialog(false)}>
-              Close
-            </Button>
-            <Button onClick={handleDownload}>
-              Download Encrypted File
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            
+            {/* Patient Records */}
+            <div className="md:col-span-2">
+              <Tabs defaultValue="records" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="records">Health Records</TabsTrigger>
+                  <TabsTrigger value="emergency">Emergency Info</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="records" className="mt-4 space-y-4">
+                  {!hasAccess ? (
+                    <div className="p-8 border border-red-200 bg-red-50 rounded-md text-center">
+                      <span className="material-icons text-red-500 text-4xl mb-2">gpp_bad</span>
+                      <h3 className="font-semibold mb-2 text-red-800">Access Required</h3>
+                      <p className="text-red-700 mb-4">
+                        You do not have permission to view this patient's records.
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate('/doctor')}
+                      >
+                        Return to Dashboard
+                      </Button>
+                    </div>
+                  ) : records.length === 0 ? (
+                    <div className="border p-8 rounded-md text-center">
+                      <p className="text-muted-foreground">No health records available</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="col-span-1 border rounded-md overflow-hidden">
+                        <div className="p-3 bg-muted font-medium">
+                          Available Records
+                        </div>
+                        <div className="divide-y max-h-[400px] overflow-y-auto">
+                          {[
+                            { id: '1', title: 'Annual Physical', recordType: 'medical_history', uploadedAt: new Date() },
+                            { id: '2', title: 'Blood Test Results', recordType: 'lab_results', uploadedAt: new Date() },
+                            { id: '3', title: 'Vaccination Record', recordType: 'immunizations', uploadedAt: new Date() }
+                          ].map(record => (
+                            <div 
+                              key={record.id} 
+                              className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors ${activeRecord?.id === record.id ? 'bg-primary/10' : ''}`}
+                              onClick={() => setActiveRecord(record)}
+                            >
+                              <p className="font-medium">{record.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Type: {record.recordType}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="col-span-1 md:col-span-2 border rounded-md">
+                        <div className="p-3 bg-muted font-medium">
+                          Record Details
+                        </div>
+                        <div className="p-4 min-h-[200px]">
+                          {activeRecord ? renderRecordContent() : (
+                            <div className="h-full flex items-center justify-center text-muted-foreground">
+                              <p>Select a record to view details</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="emergency" className="mt-4">
+                  <div className="p-4 border rounded-md bg-red-50">
+                    <h3 className="font-semibold text-lg mb-3 text-red-800">
+                      <span className="material-icons mr-2 align-text-bottom">emergency</span>
+                      Emergency Information
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-white p-3 rounded-md border">
+                        <h4 className="font-medium mb-2">Allergies</h4>
+                        <ul className="list-disc pl-5">
+                          <li>Penicillin</li>
+                          <li>Shellfish</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded-md border">
+                        <h4 className="font-medium mb-2">Current Medications</h4>
+                        <ul className="list-disc pl-5">
+                          <li>Lisinopril 10mg - once daily</li>
+                          <li>Metformin 500mg - twice daily</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-white p-3 rounded-md border">
+                        <h4 className="font-medium mb-2">Emergency Contact</h4>
+                        <p><span className="font-medium">Name:</span> Jane Doe</p>
+                        <p><span className="font-medium">Relationship:</span> Spouse</p>
+                        <p><span className="font-medium">Phone:</span> (123) 456-7890</p>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

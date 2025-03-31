@@ -1,12 +1,8 @@
-// Since we're converting from TypeScript to JavaScript, we'll include simplified type comments
-// Import DB connection and schema
-import { db } from './db.js';
-import { users, healthRecords, accessGrants } from '../shared/schema.js';
-import { eq, and } from 'drizzle-orm';
+import { getDb, toObjectId, sanitizeDocument, sanitizeDocuments } from './mongodb.js';
 
 /**
  * @typedef {Object} User
- * @property {number} id
+ * @property {string} id
  * @property {string} username
  * @property {string} password
  * @property {string|null} walletAddress
@@ -22,8 +18,8 @@ import { eq, and } from 'drizzle-orm';
 
 /**
  * @typedef {Object} HealthRecord
- * @property {number} id
- * @property {number} userId
+ * @property {string} id
+ * @property {string} userId
  * @property {string} recordType
  * @property {string} title
  * @property {string} ipfsHash
@@ -33,7 +29,7 @@ import { eq, and } from 'drizzle-orm';
 
 /**
  * @typedef {Object} InsertHealthRecord
- * @property {number} userId
+ * @property {string} userId
  * @property {string} recordType
  * @property {string} title
  * @property {string} ipfsHash
@@ -42,8 +38,8 @@ import { eq, and } from 'drizzle-orm';
 
 /**
  * @typedef {Object} AccessGrant
- * @property {number} id
- * @property {number} patientId
+ * @property {string} id
+ * @property {string} patientId
  * @property {string} providerAddress
  * @property {boolean} isActive
  * @property {Date} grantedAt
@@ -52,7 +48,7 @@ import { eq, and } from 'drizzle-orm';
 
 /**
  * @typedef {Object} InsertAccessGrant
- * @property {number} patientId
+ * @property {string} patientId
  * @property {string} providerAddress
  * @property {boolean} [isActive]
  */
@@ -64,210 +60,391 @@ import { eq, and } from 'drizzle-orm';
 export class IStorage {
   /**
    * Get a user by ID
-   * @param {number} id - User ID
+   * @param {string} id - User ID
    * @returns {Promise<User|undefined>}
    */
   async getUser(id) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get a user by username
    * @param {string} username - Username
    * @returns {Promise<User|undefined>}
    */
   async getUserByUsername(username) { throw new Error('Not implemented'); }
-
+  
   /**
    * Create a new user
    * @param {InsertUser} user - User data
    * @returns {Promise<User>}
    */
   async createUser(user) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get a health record by ID
-   * @param {number} id - Record ID
+   * @param {string} id - Record ID
    * @returns {Promise<HealthRecord|undefined>}
    */
   async getHealthRecord(id) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get all health records for a user
-   * @param {number} userId - User ID
+   * @param {string} userId - User ID
    * @returns {Promise<HealthRecord[]>}
    */
   async getHealthRecordsByUser(userId) { throw new Error('Not implemented'); }
-
+  
   /**
    * Create a new health record
    * @param {InsertHealthRecord} record - Record data
    * @returns {Promise<HealthRecord>}
    */
   async createHealthRecord(record) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get an access grant by ID
-   * @param {number} id - Grant ID
+   * @param {string} id - Grant ID
    * @returns {Promise<AccessGrant|undefined>}
    */
   async getAccessGrant(id) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get all access grants for a patient
-   * @param {number} patientId - Patient ID
+   * @param {string} patientId - Patient ID
    * @returns {Promise<AccessGrant[]>}
    */
   async getAccessGrantsByPatient(patientId) { throw new Error('Not implemented'); }
-
+  
   /**
    * Get all access grants for a provider
    * @param {string} providerAddress - Provider's wallet address
    * @returns {Promise<AccessGrant[]>}
    */
   async getAccessGrantsByProvider(providerAddress) { throw new Error('Not implemented'); }
-
+  
   /**
    * Create a new access grant
    * @param {InsertAccessGrant} grant - Grant data
    * @returns {Promise<AccessGrant>}
    */
   async createAccessGrant(grant) { throw new Error('Not implemented'); }
-
+  
   /**
    * Revoke an access grant
-   * @param {number} id - Grant ID
+   * @param {string} id - Grant ID
    * @returns {Promise<AccessGrant|undefined>}
    */
   async revokeAccess(id) { throw new Error('Not implemented'); }
 }
 
 /**
- * DatabaseStorage class that uses the Postgres database
+ * MongoDBStorage class that uses MongoDB for persistence
  */
-export class DatabaseStorage extends IStorage {
+export class MongoDBStorage extends IStorage {
   /**
    * Get a user by ID
-   * @param {number} id - User ID
+   * @param {string} id - User ID
    * @returns {Promise<User|undefined>}
    */
   async getUser(id) {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const user = await db.collection('users').findOne({
+        _id: toObjectId(id)
+      });
+      
+      return sanitizeDocument(user);
+    } catch (error) {
+      console.error('Error getting user by ID:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get a user by username
    * @param {string} username - Username
    * @returns {Promise<User|undefined>}
    */
   async getUserByUsername(username) {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const user = await db.collection('users').findOne({
+        username: username
+      });
+      
+      return sanitizeDocument(user);
+    } catch (error) {
+      console.error('Error getting user by username:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Create a new user
    * @param {InsertUser} insertUser - User data
    * @returns {Promise<User>}
    */
   async createUser(insertUser) {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const now = new Date();
+      const newUser = {
+        ...insertUser,
+        createdAt: now
+      };
+      
+      const result = await db.collection('users').insertOne(newUser);
+      
+      return {
+        id: result.insertedId.toString(),
+        ...insertUser,
+        createdAt: now
+      };
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get a health record by ID
-   * @param {number} id - Record ID
+   * @param {string} id - Record ID
    * @returns {Promise<HealthRecord|undefined>}
    */
   async getHealthRecord(id) {
-    const [record] = await db.select().from(healthRecords).where(eq(healthRecords.id, id));
-    return record || undefined;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const record = await db.collection('health_records').findOne({
+        _id: toObjectId(id)
+      });
+      
+      return sanitizeDocument(record);
+    } catch (error) {
+      console.error('Error getting health record:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get all health records for a user
-   * @param {number} userId - User ID
+   * @param {string} userId - User ID
    * @returns {Promise<HealthRecord[]>}
    */
   async getHealthRecordsByUser(userId) {
-    return await db.select().from(healthRecords).where(eq(healthRecords.userId, userId));
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const records = await db.collection('health_records')
+        .find({ userId: userId })
+        .sort({ uploadedAt: -1 })
+        .toArray();
+      
+      return sanitizeDocuments(records);
+    } catch (error) {
+      console.error('Error getting health records for user:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Create a new health record
    * @param {InsertHealthRecord} record - Record data
    * @returns {Promise<HealthRecord>}
    */
   async createHealthRecord(record) {
-    const [newRecord] = await db
-      .insert(healthRecords)
-      .values(record)
-      .returning();
-    return newRecord;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const now = new Date();
+      const newRecord = {
+        ...record,
+        blockchainTxHash: record.blockchainTxHash || null,
+        uploadedAt: now
+      };
+      
+      const result = await db.collection('health_records').insertOne(newRecord);
+      
+      return {
+        id: result.insertedId.toString(),
+        ...newRecord
+      };
+    } catch (error) {
+      console.error('Error creating health record:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get an access grant by ID
-   * @param {number} id - Grant ID
+   * @param {string} id - Grant ID
    * @returns {Promise<AccessGrant|undefined>}
    */
   async getAccessGrant(id) {
-    const [grant] = await db.select().from(accessGrants).where(eq(accessGrants.id, id));
-    return grant || undefined;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const grant = await db.collection('access_grants').findOne({
+        _id: toObjectId(id)
+      });
+      
+      return sanitizeDocument(grant);
+    } catch (error) {
+      console.error('Error getting access grant:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get all access grants for a patient
-   * @param {number} patientId - Patient ID
+   * @param {string} patientId - Patient ID
    * @returns {Promise<AccessGrant[]>}
    */
   async getAccessGrantsByPatient(patientId) {
-    return await db.select().from(accessGrants).where(eq(accessGrants.patientId, patientId));
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const grants = await db.collection('access_grants')
+        .find({ patientId: patientId })
+        .sort({ grantedAt: -1 })
+        .toArray();
+      
+      return sanitizeDocuments(grants);
+    } catch (error) {
+      console.error('Error getting access grants for patient:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Get all access grants for a provider
    * @param {string} providerAddress - Provider's wallet address
    * @returns {Promise<AccessGrant[]>}
    */
   async getAccessGrantsByProvider(providerAddress) {
-    return await db.select().from(accessGrants).where(eq(accessGrants.providerAddress, providerAddress));
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const grants = await db.collection('access_grants')
+        .find({ 
+          providerAddress: providerAddress,
+          isActive: true
+        })
+        .sort({ grantedAt: -1 })
+        .toArray();
+      
+      return sanitizeDocuments(grants);
+    } catch (error) {
+      console.error('Error getting access grants for provider:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Create a new access grant
    * @param {InsertAccessGrant} grant - Grant data
    * @returns {Promise<AccessGrant>}
    */
   async createAccessGrant(grant) {
-    const [newGrant] = await db
-      .insert(accessGrants)
-      .values(grant)
-      .returning();
-    return newGrant;
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
+    
+    try {
+      const now = new Date();
+      const newGrant = {
+        ...grant,
+        isActive: grant.isActive !== undefined ? grant.isActive : true,
+        grantedAt: now,
+        revokedAt: null
+      };
+      
+      // Check if there's an existing grant with the same patient/provider
+      const existing = await db.collection('access_grants').findOne({
+        patientId: grant.patientId,
+        providerAddress: grant.providerAddress
+      });
+      
+      // If one exists but is revoked, update it instead of creating a new one
+      if (existing && !existing.isActive) {
+        const result = await db.collection('access_grants').updateOne(
+          { _id: existing._id },
+          { 
+            $set: { 
+              isActive: true,
+              grantedAt: now,
+              revokedAt: null
+            }
+          }
+        );
+        
+        return {
+          id: existing._id.toString(),
+          patientId: existing.patientId,
+          providerAddress: existing.providerAddress,
+          isActive: true,
+          grantedAt: now,
+          revokedAt: null
+        };
+      }
+      
+      // Otherwise create a new grant
+      const result = await db.collection('access_grants').insertOne(newGrant);
+      
+      return {
+        id: result.insertedId.toString(),
+        ...newGrant
+      };
+    } catch (error) {
+      console.error('Error creating access grant:', error);
+      throw error;
+    }
   }
-
+  
   /**
    * Revoke an access grant
-   * @param {number} id - Grant ID
+   * @param {string} id - Grant ID
    * @returns {Promise<AccessGrant|undefined>}
    */
   async revokeAccess(id) {
-    const [updatedGrant] = await db
-      .update(accessGrants)
-      .set({ 
-        isActive: false,
-        revokedAt: new Date()
-      })
-      .where(eq(accessGrants.id, id))
-      .returning();
+    const db = getDb();
+    if (!db) throw new Error('Database not connected');
     
-    return updatedGrant || undefined;
+    try {
+      const now = new Date();
+      
+      const result = await db.collection('access_grants').updateOne(
+        { _id: toObjectId(id) },
+        { 
+          $set: { 
+            isActive: false,
+            revokedAt: now
+          }
+        }
+      );
+      
+      if (result.modifiedCount === 0) {
+        return undefined;
+      }
+      
+      const updatedGrant = await this.getAccessGrant(id);
+      return updatedGrant;
+    } catch (error) {
+      console.error('Error revoking access grant:', error);
+      throw error;
+    }
   }
 }
 
-// Use the DatabaseStorage implementation
-export const storage = new DatabaseStorage();
+// Export a singleton instance of the storage class
+export const storage = new MongoDBStorage();

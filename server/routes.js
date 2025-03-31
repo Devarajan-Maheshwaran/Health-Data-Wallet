@@ -296,6 +296,97 @@ export async function registerRoutes(app) {
       });
     }
   });
+  
+  // Patient data endpoints for doctor view
+  app.get('/api/patients/:id', async (req, res) => {
+    try {
+      const patientId = req.params.id;
+      
+      if (!patientId) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Patient ID is required' 
+        });
+      }
+      
+      // For the demo we'll return mock data, but in a real app
+      // this would pull from the database
+      const patient = {
+        id: patientId,
+        name: 'John Doe',
+        age: 45,
+        gender: 'Male',
+        walletAddress: '0x1234567890abcdef1234567890abcdef12345678'
+      };
+      
+      res.status(200).json({
+        success: true,
+        patient
+      });
+    } catch (error) {
+      console.error('Error fetching patient:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch patient information',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+  
+  app.get('/api/patients/:id/records', async (req, res) => {
+    try {
+      const patientId = req.params.id;
+      
+      if (!patientId) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Patient ID is required' 
+        });
+      }
+      
+      // For the demo we'll return mock records, but in a real app
+      // this would pull from the database after access verification
+      const records = [
+        { 
+          id: '1', 
+          title: 'Annual Physical', 
+          recordType: 'medical_history',
+          ipfsHash: 'QmExample1',
+          blockchainTxHash: '0xexample1',
+          uploadedAt: new Date()
+        },
+        {
+          id: '2', 
+          title: 'Blood Test Results', 
+          recordType: 'lab_results',
+          ipfsHash: 'QmExample2',
+          blockchainTxHash: '0xexample2',
+          uploadedAt: new Date()
+        },
+        { 
+          id: '3', 
+          title: 'Vaccination Record', 
+          recordType: 'immunizations',
+          ipfsHash: 'QmExample3',
+          blockchainTxHash: '0xexample3',
+          uploadedAt: new Date()
+        }
+      ];
+      
+      res.status(200).json({
+        success: true,
+        count: records.length,
+        records
+      });
+    } catch (error) {
+      console.error('Error fetching patient records:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to fetch patient records',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   app.patch('/api/access-grants/:id/revoke', async (req, res) => {
     try {

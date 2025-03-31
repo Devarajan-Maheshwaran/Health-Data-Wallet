@@ -1,171 +1,215 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { useWallet } from './useWallet';
-import { CONTRACT_ADDRESSES } from '@/constants';
-import HealthRecordContractArtifact from '@/contracts/HealthRecordContract.json';
+import { useWeb3Context } from '@/context/Web3Context';
+import { CONTRACT_ADDRESSES, DEFAULT_NETWORK } from '@/constants';
+import { useToast } from '@/hooks/use-toast';
+import HealthRecordContract from '@/contracts/HealthRecordContract.json';
 
-export const useContract = () => {
-  const { signer, isConnected, isCorrectNetwork } = useWallet();
+/**
+ * Hook for interacting with the HealthRecord smart contract
+ */
+export function useContract() {
+  const { toast } = useToast();
+  const { provider, signer, account, chainId, isConnected } = useWeb3Context();
   const [contract, setContract] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Initialize contract
+  const [isLoading, setIsLoading] = useState(false);
+  
+  /**
+   * Initialize the contract instance
+   */
   useEffect(() => {
-    if (signer && isConnected && isCorrectNetwork) {
+    const initContract = async () => {
+      if (!provider || !signer || !account) return;
+      
       try {
-        const healthRecordContract = new ethers.Contract(
-          CONTRACT_ADDRESSES.HEALTH_RECORD,
-          HealthRecordContractArtifact.abi,
+        // Get the correct contract address based on the current network
+        const address = CONTRACT_ADDRESSES[chainId] || CONTRACT_ADDRESSES[DEFAULT_NETWORK];
+        
+        if (!address) {
+          console.error('No contract address found for the current network');
+          return;
+        }
+        
+        // Create contract instance
+        const contractInstance = new ethers.Contract(
+          address,
+          HealthRecordContract.abi,
           signer
         );
-        setContract(healthRecordContract);
-        setError(null);
-      } catch (err) {
-        console.error('Error initializing contract:', err);
-        setError('Failed to initialize contract');
-        setContract(null);
+        
+        setContract(contractInstance);
+      } catch (error) {
+        console.error('Error initializing contract:', error);
+        toast({
+          title: 'Contract Error',
+          description: 'Failed to initialize contract. Please try again.',
+          variant: 'destructive',
+        });
       }
-    } else {
-      setContract(null);
-    }
-  }, [signer, isConnected, isCorrectNetwork]);
-
-  // Register patient
-  const registerPatient = useCallback(async (name) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
+    };
+    
+    initContract();
+  }, [provider, signer, account, chainId, toast]);
+  
+  /**
+   * Add a new health record to the blockchain
+   * @param {string} ipfsHash - IPFS hash of the record
+   * @param {string} recordType - Type of the record
+   * @param {string} encryptionKey - Optional encryption key for the record
+   * @returns {Promise<string>} Transaction hash
+   */
+  const addRecord = useCallback(async (ipfsHash, recordType, encryptionKey = '') => {
+    if (!contract || !account) {
+      throw new Error('Contract not initialized or wallet not connected');
     }
     
-    setLoading(true);
+    setIsLoading(true);
+    
     try {
-      const tx = await contract.registerPatient(name);
+      // Call the addRecord function on the smart contract
+      const tx = await contract.addRecord(ipfsHash, recordType, encryptionKey);
+      
+      // Wait for the transaction to be mined
       const receipt = await tx.wait();
-      setLoading(false);
-      return receipt;
-    } catch (err) {
-      setLoading(false);
-      console.error('Error registering patient:', err);
-      throw err;
+      
+      setIsLoading(false);
+      return receipt.transactionHash;
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error adding record to blockchain:', error);
+      throw error;
     }
-  }, [contract]);
-
-  // Add health record
-  const addRecord = useCallback(async (recordType, title, ipfsHash) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
+  }, [contract, account]);
+  
+  /**
+   * Get all records for the current user
+   * @returns {Promise<Array>} Array of records
+   */
+  const getUserRecords = useCallback(async () => {
+    if (!contract || !account) {
+      throw new Error('Contract not initialized or wallet not connected');
     }
     
-    setLoading(true);
+    setIsLoading(true);
+    
     try {
-      const tx = await contract.addRecord(recordType, title, ipfsHash);
+      // Call the getUserRecords function on the smart contract
+      const records = await contract.getUserRecords();
+      
+      setIsLoading(false);
+      
+      // Format the records
+      return records.map(record => ({
+        id: record.id.toString(),
+        ipfsHash: record.ipfsHash,
+        recordType: record.recordType,
+        timestamp: new Date(record.timestamp.toNumber() * 1000),
+        owner: record.owner,
+        encryptionKey: record.encryptionKey
+      }));
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error getting user records:', error);
+      throw error;
+    }
+  }, [contract, account]);
+  
+  /**
+   * Grant access to a record
+   * @param {string} recordId - ID of the record
+   * @param {string} providerAddress - Address of the healthcare provider
+   * @returns {Promise<string>} Transaction hash
+   */
+  const grantAccess = useCallback(async (recordId, providerAddress) => {
+    if (!contract || !account) {
+      throw new Error('Contract not initialized or wallet not connected');
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Call the grantAccess function on the smart contract
+      const tx = await contract.grantAccess(recordId, providerAddress);
+      
+      // Wait for the transaction to be mined
       const receipt = await tx.wait();
-      setLoading(false);
-      return receipt;
-    } catch (err) {
-      setLoading(false);
-      console.error('Error adding record:', err);
-      throw err;
+      
+      setIsLoading(false);
+      return receipt.transactionHash;
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error granting access:', error);
+      throw error;
     }
-  }, [contract]);
-
-  // Grant access to provider
-  const grantAccess = useCallback(async (providerAddress) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
+  }, [contract, account]);
+  
+  /**
+   * Revoke access to a record
+   * @param {string} recordId - ID of the record
+   * @param {string} providerAddress - Address of the healthcare provider
+   * @returns {Promise<string>} Transaction hash
+   */
+  const revokeAccess = useCallback(async (recordId, providerAddress) => {
+    if (!contract || !account) {
+      throw new Error('Contract not initialized or wallet not connected');
     }
     
-    setLoading(true);
+    setIsLoading(true);
+    
     try {
-      const tx = await contract.grantAccess(providerAddress);
+      // Call the revokeAccess function on the smart contract
+      const tx = await contract.revokeAccess(recordId, providerAddress);
+      
+      // Wait for the transaction to be mined
       const receipt = await tx.wait();
-      setLoading(false);
-      return receipt;
-    } catch (err) {
-      setLoading(false);
-      console.error('Error granting access:', err);
-      throw err;
+      
+      setIsLoading(false);
+      return receipt.transactionHash;
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error revoking access:', error);
+      throw error;
     }
-  }, [contract]);
-
-  // Revoke access from provider
-  const revokeAccess = useCallback(async (providerAddress) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
-    }
-    
-    setLoading(true);
-    try {
-      const tx = await contract.revokeAccess(providerAddress);
-      const receipt = await tx.wait();
-      setLoading(false);
-      return receipt;
-    } catch (err) {
-      setLoading(false);
-      console.error('Error revoking access:', err);
-      throw err;
-    }
-  }, [contract]);
-
-  // Get record count
-  const getRecordCount = useCallback(async (patientAddress) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
+  }, [contract, account]);
+  
+  /**
+   * Submit a zero-knowledge proof to the blockchain
+   * @param {string} proofData - Serialized proof data
+   * @returns {Promise<string>} Transaction hash
+   */
+  const submitProofToBlockchain = useCallback(async (proofData) => {
+    if (!contract || !account) {
+      throw new Error('Contract not initialized or wallet not connected');
     }
     
-    try {
-      const count = await contract.getRecordCount(patientAddress);
-      return count.toNumber();
-    } catch (err) {
-      console.error('Error getting record count:', err);
-      throw err;
-    }
-  }, [contract]);
-
-  // Get record details
-  const getRecord = useCallback(async (patientAddress, recordId) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
-    }
+    setIsLoading(true);
     
     try {
-      const [recordType, title, ipfsHash, timestamp] = await contract.getRecord(patientAddress, recordId);
-      return {
-        recordType,
-        title,
-        ipfsHash,
-        timestamp: timestamp.toNumber()
-      };
-    } catch (err) {
-      console.error('Error getting record:', err);
-      throw err;
+      // This is a mock implementation
+      // In a real application, you would call a specific function on your contract
+      console.log('Submitting proof to blockchain:', proofData);
+      
+      // For demo purposes, simulate a transaction delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setIsLoading(false);
+      
+      // Return a mock transaction hash
+      return '0x' + Math.random().toString(16).substring(2);
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error submitting proof to blockchain:', error);
+      throw error;
     }
-  }, [contract]);
-
-  // Check if patient is registered
-  const isPatientRegistered = useCallback(async (patientAddress) => {
-    if (!contract) {
-      throw new Error('Contract not initialized');
-    }
-    
-    try {
-      return await contract.isPatientRegistered(patientAddress);
-    } catch (err) {
-      console.error('Error checking if patient is registered:', err);
-      throw err;
-    }
-  }, [contract]);
-
+  }, [contract, account]);
+  
   return {
     contract,
-    loading,
-    error,
-    registerPatient,
+    isLoading,
     addRecord,
+    getUserRecords,
     grantAccess,
     revokeAccess,
-    getRecordCount,
-    getRecord,
-    isPatientRegistered
+    submitProofToBlockchain
   };
-};
+}

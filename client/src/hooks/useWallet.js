@@ -1,7 +1,11 @@
 import { useContext } from 'react';
 import { Web3Context } from '@/context/Web3Context';
 
-export const useWallet = () => {
+/**
+ * Hook for accessing Web3 wallet functionality
+ * @returns {Object} Web3 context
+ */
+export function useWallet() {
   const context = useContext(Web3Context);
   
   if (context === undefined) {
@@ -9,4 +13,4 @@ export const useWallet = () => {
   }
   
   return context;
-};
+}

@@ -1,23 +1,19 @@
 import React from 'react';
+import { useLocation } from 'wouter';
 import Sidebar from './Sidebar';
 import TopNavbar from './TopNavbar';
-import { useLocation } from 'wouter';
-import { useWallet } from '@/hooks/useWallet';
 
 const Layout = ({ children }) => {
   const [location] = useLocation();
-  const { isConnected } = useWallet();
-
+  
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <TopNavbar />
       
-      {/* Main Content */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <TopNavbar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
         
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
       </div>

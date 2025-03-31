@@ -1,8 +1,8 @@
-// Network configurations
+// Blockchain networks configuration
 export const SUPPORTED_NETWORKS = {
   POLYGON_MUMBAI: {
     chainId: '0x13881',
-    chainName: 'Polygon Mumbai Testnet',
+    chainName: 'Polygon Mumbai',
     nativeCurrency: {
       name: 'MATIC',
       symbol: 'MATIC',
@@ -13,9 +13,9 @@ export const SUPPORTED_NETWORKS = {
   },
   SEPOLIA: {
     chainId: '0xaa36a7',
-    chainName: 'Sepolia Testnet',
+    chainName: 'Sepolia',
     nativeCurrency: {
-      name: 'ETH',
+      name: 'Sepolia ETH',
       symbol: 'ETH',
       decimals: 18
     },
@@ -24,84 +24,132 @@ export const SUPPORTED_NETWORKS = {
   }
 };
 
-// Default network - we're using Polygon Mumbai for lower gas fees
+// Default network for the application
 export const DEFAULT_NETWORK = SUPPORTED_NETWORKS.POLYGON_MUMBAI;
 
-// Contract addresses
+// Contract addresses by network
 export const CONTRACT_ADDRESSES = {
-  HEALTH_RECORD: import.meta.env.VITE_HEALTH_RECORD_CONTRACT_ADDRESS || '0x123456789abcdef123456789abcdef123456789a' // This will be replaced with the deployed contract address
+  HEALTH_RECORD: '0x123456789abcdef123456789abcdef123456789a' // Replace with actual deployed contract address
 };
 
-// Navigation items
+// Navigation items for the sidebar
 export const NAV_ITEMS = [
-  { 
-    name: 'Dashboard', 
-    path: '/', 
-    icon: 'dashboard' 
+  {
+    title: 'Dashboard',
+    href: '/',
+    icon: 'dashboard'
   },
-  { 
-    name: 'My Health Records', 
-    path: '/records', 
-    icon: 'medical_information' 
+  {
+    title: 'Health Records',
+    href: '/records',
+    icon: 'folder_shared'
   },
-  { 
-    name: 'Manage Access', 
-    path: '/access', 
-    icon: 'share' 
+  {
+    title: 'Upload Data',
+    href: '/upload',
+    icon: 'cloud_upload'
   },
-  { 
-    name: 'Upload Data', 
-    path: '/upload', 
-    icon: 'upload_file' 
+  {
+    title: 'Manage Access',
+    href: '/access',
+    icon: 'security'
   },
-  { 
-    name: 'Settings', 
-    path: '/settings', 
-    icon: 'settings' 
+  {
+    title: 'Doctor Dashboard',
+    href: '/doctor',
+    icon: 'medical_services',
+    roleRequired: 'doctor'
   }
 ];
 
-// Record types
+// Health record types
 export const RECORD_TYPES = [
-  'Vaccination Record',
-  'Lab Test',
-  'Doctor\'s Note',
-  'Prescription',
-  'Medical Imaging'
+  { 
+    value: 'medical_history', 
+    label: 'Medical History',
+    icon: 'history' 
+  },
+  { 
+    value: 'lab_results', 
+    label: 'Laboratory Results',
+    icon: 'science' 
+  },
+  { 
+    value: 'prescriptions', 
+    label: 'Prescriptions',
+    icon: 'receipt' 
+  },
+  { 
+    value: 'imaging', 
+    label: 'Imaging (X-rays, MRIs, etc.)',
+    icon: 'image' 
+  },
+  { 
+    value: 'allergies', 
+    label: 'Allergies',
+    icon: 'warning' 
+  },
+  { 
+    value: 'immunizations', 
+    label: 'Immunizations',
+    icon: 'vaccines' 
+  },
+  { 
+    value: 'vital_signs', 
+    label: 'Vital Signs',
+    icon: 'monitor_heart' 
+  },
+  { 
+    value: 'emergency', 
+    label: 'Emergency Information',
+    icon: 'emergency' 
+  }
 ];
 
-// Access status types
+// Access status definitions
 export const ACCESS_STATUS = {
   ACTIVE: 'Active',
   REVOKED: 'Revoked',
   PENDING: 'Pending'
 };
 
-// Activity types
+// Activity types for tracking
 export const ACTIVITY_TYPES = {
   UPLOAD: 'UPLOAD',
-  GRANT_ACCESS: 'GRANT_ACCESS',
-  REVOKE_ACCESS: 'REVOKE_ACCESS',
-  VIEW_RECORD: 'VIEW_RECORD'
+  ACCESS_GRANTED: 'ACCESS_GRANTED',
+  ACCESS_REVOKED: 'ACCESS_REVOKED',
+  RECORD_ACCESSED: 'RECORD_ACCESSED',
+  EMERGENCY_ACCESS: 'EMERGENCY_ACCESS'
 };
 
-// API endpoints
+// API Endpoints
 export const API_ENDPOINTS = {
-  // IPFS endpoints
-  UPLOAD_TO_IPFS: '/api/ipfs/upload',
-  GET_FROM_IPFS: '/api/ipfs/get',
-  
-  // Health record endpoints
-  HEALTH_RECORDS: '/api/health-records',
-  HEALTH_RECORDS_BY_USER: (userId) => `/api/health-records/user/${userId}`,
-  HEALTH_RECORD_BY_ID: (id) => `/api/health-records/${id}`,
-  
-  // Access grant endpoints
-  ACCESS_GRANTS: '/api/access-grants',
-  ACCESS_GRANTS_BY_PATIENT: (patientId) => `/api/access-grants/patient/${patientId}`,
-  ACCESS_GRANTS_BY_PROVIDER: (providerAddress) => `/api/access-grants/provider/${providerAddress}`,
-  REVOKE_ACCESS: (id) => `/api/access-grants/${id}/revoke`,
-  
-  // User endpoints
-  REGISTER_USER: '/api/users/register'
+  AUTH: {
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/register',
+    LOGOUT: '/api/auth/logout',
+    USER: '/api/auth/user'
+  },
+  RECORDS: {
+    LIST: '/api/records',
+    CREATE: '/api/records',
+    GET: (id) => `/api/records/${id}`,
+    DELETE: (id) => `/api/records/${id}`,
+    TYPES: '/api/records/types'
+  },
+  ACCESS: {
+    LIST: '/api/access',
+    GRANT: '/api/access/grant',
+    REVOKE: (id) => `/api/access/${id}/revoke`,
+    PROVIDERS: '/api/access/providers'
+  },
+  EMERGENCY: {
+    GENERATE: '/api/emergency/generate',
+    VERIFY: '/api/emergency/verify',
+    DATA: (token) => `/api/emergency/data/${token}`
+  },
+  IPFS: {
+    UPLOAD: '/api/ipfs/upload',
+    GET: (hash) => `/api/ipfs/${hash}`
+  }
 };

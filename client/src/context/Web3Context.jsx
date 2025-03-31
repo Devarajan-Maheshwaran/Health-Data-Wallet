@@ -1,7 +1,9 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { DEFAULT_NETWORK } from '@/constants';
+import { useToast } from '@/hooks/use-toast';
+import { DEFAULT_NETWORK, SUPPORTED_NETWORKS } from '@/constants';
 
+// Create the Web3 context with default values
 export const Web3Context = createContext({
   provider: null,
   signer: null,
@@ -11,9 +13,10 @@ export const Web3Context = createContext({
   isCorrectNetwork: false,
   connect: async () => {},
   disconnect: () => {},
-  switchNetwork: async () => {},
+  switchNetwork: async () => {}
 });
 
+// Web3Provider component wraps children with the Web3Context
 export const Web3Provider = ({ children }) => {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
@@ -21,136 +24,233 @@ export const Web3Provider = ({ children }) => {
   const [chainId, setChainId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+  const { toast } = useToast();
 
-  const connect = useCallback(async () => {
-    if (!window.ethereum) {
-      throw new Error("MetaMask not installed. Please install MetaMask to use this app.");
-    }
-
+  // Check if MetaMask or other Ethereum provider is available
+  const checkIfWalletIsConnected = async () => {
     try {
+      if (!window.ethereum) {
+        console.log('Make sure you have MetaMask installed!');
+        return false;
+      }
+
+      // Create a Web3Provider instance
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(web3Provider);
+
+      const accounts = await web3Provider.listAccounts();
+      if (accounts.length !== 0) {
+        // User already connected, get the first account
+        const account = accounts[0];
+        const signer = web3Provider.getSigner();
+        
+        setAccount(account);
+        setSigner(signer);
+        setIsConnected(true);
+        
+        // Get chain ID
+        const network = await web3Provider.getNetwork();
+        setChainId('0x' + network.chainId.toString(16));
+        setIsCorrectNetwork(network.chainId.toString(16) === DEFAULT_NETWORK.chainId.slice(2));
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error checking wallet connection:', error);
+      return false;
+    }
+  };
+
+  // Connect wallet
+  const connect = async () => {
+    try {
+      if (!window.ethereum) {
+        toast({
+          title: 'No Wallet Found',
+          description: 'Please install MetaMask or other Ethereum wallet extension.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Create a Web3Provider instance
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(web3Provider);
+
       // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const account = accounts[0];
+      const signer = web3Provider.getSigner();
       
-      // Create ethers provider and signer
-      const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
-      const ethersSigner = ethersProvider.getSigner();
-      
-      // Get current chain ID
-      const networkId = await window.ethereum.request({ method: 'eth_chainId' });
-      
-      setProvider(ethersProvider);
-      setSigner(ethersSigner);
-      setAccount(accounts[0]);
-      setChainId(networkId);
+      setAccount(account);
+      setSigner(signer);
       setIsConnected(true);
-      setIsCorrectNetwork(networkId === DEFAULT_NETWORK.chainId);
+      
+      // Get chain ID
+      const network = await web3Provider.getNetwork();
+      const hexChainId = '0x' + network.chainId.toString(16);
+      setChainId(hexChainId);
+      
+      // Check if user is on the correct network
+      setIsCorrectNetwork(hexChainId === DEFAULT_NETWORK.chainId);
+      
+      if (hexChainId !== DEFAULT_NETWORK.chainId) {
+        toast({
+          title: 'Wrong Network',
+          description: `Please switch to ${DEFAULT_NETWORK.chainName}`,
+          variant: 'destructive'
+        });
+      }
     } catch (error) {
-      console.error('Error connecting to wallet:', error);
-      throw error;
-    }
-  }, []);
-
-  const disconnect = useCallback(() => {
-    setProvider(null);
-    setSigner(null);
-    setAccount(null);
-    setChainId(null);
-    setIsConnected(false);
-    setIsCorrectNetwork(false);
-  }, []);
-
-  const switchNetwork = useCallback(async () => {
-    if (!window.ethereum) {
-      throw new Error("MetaMask not installed.");
-    }
-
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: DEFAULT_NETWORK.chainId }],
+      console.error('Error connecting wallet:', error);
+      let errorMessage = 'Failed to connect wallet';
+      
+      if (error.code === 4001) {
+        errorMessage = 'You rejected the connection request';
+      }
+      
+      toast({
+        title: 'Connection Error',
+        description: errorMessage,
+        variant: 'destructive'
       });
-    } catch (switchError) {
-      // This error code indicates that the chain has not been added to MetaMask
-      if (switchError.code === 4902) {
-        try {
+    }
+  };
+
+  // Disconnect wallet
+  const disconnect = () => {
+    setAccount(null);
+    setSigner(null);
+    setIsConnected(false);
+    setChainId(null);
+    setIsCorrectNetwork(false);
+  };
+
+  // Switch to the correct network
+  const switchNetwork = async () => {
+    try {
+      if (!window.ethereum) return;
+      
+      // Try to switch to the required network
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: DEFAULT_NETWORK.chainId }]
+        });
+      } catch (switchError) {
+        // If the chain is not added to MetaMask, add it
+        if (switchError.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: DEFAULT_NETWORK.chainId,
-                chainName: DEFAULT_NETWORK.chainName,
-                nativeCurrency: DEFAULT_NETWORK.nativeCurrency,
-                rpcUrls: DEFAULT_NETWORK.rpcUrls,
-                blockExplorerUrls: DEFAULT_NETWORK.blockExplorerUrls,
-              },
-            ],
+            params: [DEFAULT_NETWORK]
           });
-        } catch (addError) {
-          console.error('Error adding network to MetaMask:', addError);
-          throw addError;
+        } else {
+          throw switchError;
         }
-      } else {
-        console.error('Error switching network in MetaMask:', switchError);
-        throw switchError;
       }
+      
+      // Update chain ID and connection status
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      const network = await web3Provider.getNetwork();
+      setChainId('0x' + network.chainId.toString(16));
+      setIsCorrectNetwork(network.chainId.toString(16) === DEFAULT_NETWORK.chainId.slice(2));
+      
+      // Update signer
+      const signer = web3Provider.getSigner();
+      setSigner(signer);
+    } catch (error) {
+      console.error('Error switching network:', error);
+      toast({
+        title: 'Network Switch Failed',
+        description: error.message || 'Failed to switch network',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+
+  // Handle account change
+  const handleAccountsChanged = (accounts) => {
+    if (accounts.length === 0) {
+      // User disconnected their wallet
+      disconnect();
+      toast({
+        title: 'Wallet Disconnected',
+        description: 'Your wallet has been disconnected',
+      });
+    } else {
+      // Account changed, update state
+      setAccount(accounts[0]);
+      
+      if (provider) {
+        setSigner(provider.getSigner());
+      }
+      
+      toast({
+        title: 'Account Changed',
+        description: 'Your wallet account has changed',
+      });
+    }
+  };
+
+  // Handle chain change
+  const handleChainChanged = async (chainIdHex) => {
+    setChainId(chainIdHex);
+    
+    // Reload provider with new chain
+    if (window.ethereum) {
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(web3Provider);
+      setSigner(web3Provider.getSigner());
+      
+      // Check if the new chain is the correct one
+      setIsCorrectNetwork(chainIdHex === DEFAULT_NETWORK.chainId);
+      
+      toast({
+        title: 'Network Changed',
+        description: `Switched to ${chainIdHex === DEFAULT_NETWORK.chainId ? DEFAULT_NETWORK.chainName : 'a different network'}`,
+      });
+    }
+  };
+
+  // Set up event listeners for wallet changes
+  useEffect(() => {
+    // Check if wallet is already connected on component mount
+    checkIfWalletIsConnected();
+    
+    if (window.ethereum) {
+      // Set up event listeners
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+      
+      // Clean up event listeners on unmount
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
     }
   }, []);
 
-  useEffect(() => {
-    // Check if we're already connected
-    if (window.ethereum && window.ethereum.selectedAddress) {
-      connect().catch(console.error);
-    }
-
-    // Setup event listeners
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length === 0) {
-          // User disconnected their wallet
-          disconnect();
-        } else {
-          // Account changed, update state
-          setAccount(accounts[0]);
-        }
-      };
-
-      const handleChainChanged = (chainId) => {
-        // Chain changed, reload page as recommended by MetaMask
-        window.location.reload();
-      };
-
-      const handleDisconnect = () => {
-        disconnect();
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('disconnect', handleDisconnect);
-
-      return () => {
-        // Cleanup event listeners
-        if (window.ethereum.removeListener) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
-          window.ethereum.removeListener('disconnect', handleDisconnect);
-        }
-      };
-    }
-  }, [connect, disconnect]);
+  // The value to be provided by the context
+  const contextValue = {
+    provider,
+    signer,
+    account,
+    chainId,
+    isConnected,
+    isCorrectNetwork,
+    connect,
+    disconnect,
+    switchNetwork
+  };
 
   return (
-    <Web3Context.Provider value={{
-      provider,
-      signer,
-      account,
-      chainId,
-      isConnected,
-      isCorrectNetwork,
-      connect,
-      disconnect,
-      switchNetwork,
-    }}>
+    <Web3Context.Provider value={contextValue}>
       {children}
     </Web3Context.Provider>
   );
 };
+
+export default Web3Provider;

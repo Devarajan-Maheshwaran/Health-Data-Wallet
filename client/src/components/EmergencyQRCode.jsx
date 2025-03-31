@@ -1,81 +1,135 @@
-import React, { useState } from 'react';
-import QRCode from 'react-qr-code';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { shortenAddress } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
+import { API_ENDPOINTS } from '@/constants';
+import QRCode from 'react-qr-code';
 
-const EmergencyQRCode = ({ patient, patientData }) => {
-  const [showQRDialog, setShowQRDialog] = useState(false);
-
-  // Create a data structure to represent essential patient info for emergency access
-  const emergencyData = {
-    patientId: patient?.id || '',
-    patientAddress: patient?.address || '',
-    bloodType: patientData?.bloodType || 'Unknown',
-    allergies: patientData?.allergies || [],
-    emergencyContact: patientData?.emergencyContact || '',
-    timestamp: new Date().toISOString(),
-    accessType: 'emergency'
+const EmergencyQRCode = () => {
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [qrValue, setQrValue] = useState('');
+  const [expiryTime, setExpiryTime] = useState(null);
+  
+  // Fetch QR code data when requested
+  const { data, error, isLoading, refetch, isRefetching } = useQuery({
+    queryKey: [API_ENDPOINTS.EMERGENCY.GENERATE],
+    queryFn: ({ queryKey }) => fetch(queryKey[0], { credentials: 'include' }).then(res => res.json()),
+    enabled: false, // Don't run query on component mount
+  });
+  
+  // When data is loaded, update QR code
+  useEffect(() => {
+    if (data && data.success && data.qrData) {
+      setQrValue(data.qrData.url);
+      
+      // Set expiry time to 24 hours from now
+      const expiry = new Date();
+      expiry.setHours(expiry.getHours() + 24);
+      setExpiryTime(expiry);
+      
+      setShowQrCode(true);
+    }
+  }, [data]);
+  
+  const handleGenerateQr = () => {
+    refetch();
   };
-
-  // Convert the data to JSON string for the QR code
-  const qrData = JSON.stringify(emergencyData);
-
+  
+  const handleCloseQr = () => {
+    setShowQrCode(false);
+    setQrValue('');
+    setExpiryTime(null);
+  };
+  
   return (
-    <>
-      <Button 
-        onClick={() => setShowQRDialog(true)}
-        variant="secondary"
-        className="flex items-center gap-2"
-      >
-        <span className="material-icons text-sm">qr_code</span>
-        Emergency QR Code
-      </Button>
-
-      <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Emergency Access QR Code</DialogTitle>
-            <DialogDescription>
-              Scan this QR code in case of emergency to access critical patient information.
-              This code provides limited access to essential health data.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex items-center justify-center py-4">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <QRCode
-                value={qrData}
+    <Card className="border-primary-100">
+      <CardHeader className="bg-primary-50 rounded-t-lg">
+        <CardTitle className="text-lg text-primary-900">Emergency Access QR Code</CardTitle>
+        <CardDescription>
+          Generate a QR code that healthcare providers can scan for emergency access to your critical health information.
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="pt-6">
+        {error && (
+          <div className="p-4 mb-4 text-error-700 bg-error-100 rounded-md">
+            <p className="font-medium">Error generating QR code</p>
+            <p className="text-sm">{error.message || 'Please try again later'}</p>
+          </div>
+        )}
+        
+        {!showQrCode ? (
+          <div className="text-center py-8">
+            <div className="mb-4 text-neutral-600">
+              <span className="material-icons text-4xl mb-2">qr_code_2</span>
+              <p>This QR code will provide limited, time-based access to critical health information in emergency situations.</p>
+            </div>
+            <Button 
+              onClick={handleGenerateQr} 
+              disabled={isLoading || isRefetching}
+              className="mt-2"
+              size="lg"
+            >
+              {(isLoading || isRefetching) ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons mr-2">qr_code</span>
+                  Generate Emergency QR
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <div className="bg-white p-4 inline-block rounded-lg mb-4">
+              <QRCode 
+                value={qrValue}
                 size={200}
                 level="H"
+                className="mx-auto"
               />
             </div>
+            
+            {expiryTime && (
+              <div className="text-sm text-neutral-600 mb-4">
+                <p className="font-medium">Valid until:</p>
+                <p>{expiryTime.toLocaleString()}</p>
+                <p className="mt-2 text-error-600 text-xs font-medium">This QR code provides limited access to your emergency health information.</p>
+              </div>
+            )}
           </div>
-          
-          <div className="bg-neutral-50 p-3 rounded-md text-sm">
-            <h4 className="font-medium mb-2">Emergency Access Information</h4>
-            <p className="text-neutral-600 mb-1">
-              Patient ID: <span className="font-mono">{patient?.id || 'N/A'}</span>
-            </p>
-            <p className="text-neutral-600 mb-1">
-              Wallet: <span className="font-mono">{shortenAddress(patient?.address || '')}</span>
-            </p>
-            <p className="text-neutral-600 mb-3">
-              This QR code will grant temporary emergency access to critical health information.
-            </p>
-            <div className="text-error-600 text-xs">
-              <p>Important: Share this QR code only with trusted healthcare providers.</p>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button onClick={() => setShowQRDialog(false)}>
+        )}
+      </CardContent>
+      
+      <CardFooter className="flex justify-center border-t pt-4">
+        {showQrCode ? (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleCloseQr}
+            >
               Close
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            <Button 
+              variant="secondary"
+              onClick={() => window.print()}
+            >
+              <span className="material-icons mr-2 text-sm">print</span>
+              Print QR Code
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs text-neutral-500">
+            For security, this QR code will expire after 24 hours.
+          </p>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 

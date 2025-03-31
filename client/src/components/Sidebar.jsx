@@ -1,61 +1,100 @@
-import React from 'react';
-import { Link, useLocation } from 'wouter';
+import React, { useState } from 'react';
+import { useLocation, Link } from 'wouter';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { NAV_ITEMS } from '@/constants';
 import { useWallet } from '@/hooks/useWallet';
-import { shortenAddress } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const Sidebar = () => {
   const [location] = useLocation();
-  const { account } = useWallet();
-
-  return (
-    <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64 border-r border-neutral-200">
-        <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-primary-600">
-          <div className="flex items-center justify-center flex-shrink-0 px-4">
-            <div className="h-8 w-auto flex items-center text-white font-bold text-xl gap-2">
-              <span className="material-icons">healing</span>
-              HealthChain
-            </div>
-          </div>
-          <div className="mt-5 flex-1 flex flex-col">
-            <nav className="flex-1 px-2 space-y-1">
-              {NAV_ITEMS.map((item) => (
-                <div key={item.path}>
-                  <Link 
-                    href={item.path}
-                    className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                      location === item.path 
-                        ? 'text-white bg-primary-700' 
-                        : 'text-primary-100 hover:bg-primary-700'
+  const { isConnected, account } = useWallet();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Filter navigation items based on user role
+  // In a real app, you'd have user roles stored in the context
+  const filteredNavItems = NAV_ITEMS.filter(item => {
+    // For this prototype, if the item requires a role, only show it if the user is connected
+    if (item.roleRequired) {
+      return isConnected;
+    }
+    return true;
+  });
+  
+  const NavContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="px-4 py-6">
+        <h2 className="text-xl font-bold text-primary mb-1">Health Chain</h2>
+        <p className="text-sm text-muted-foreground">Secure Health Data Management</p>
+      </div>
+      
+      <Separator />
+      
+      <nav className="flex-1 px-2 py-4">
+        <ul className="space-y-1">
+          {filteredNavItems.map((item) => {
+            const isActive = location === item.href;
+            
+            return (
+              <li key={item.href}>
+                <Link href={item.href}>
+                  <a 
+                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     }`}
+                    onClick={() => isMobile && setIsOpen(false)}
                   >
-                    <span className={`material-icons mr-3 ${
-                      location === item.path 
-                        ? 'text-white' 
-                        : 'text-primary-300'
-                    }`}>
-                      {item.icon}
-                    </span>
-                    {item.name}
-                  </Link>
-                </div>
-              ))}
-            </nav>
-          </div>
-          {/* User profile section */}
-          <div className="flex-shrink-0 flex border-t border-primary-700 p-4">
-            <div className="flex items-center">
-              <div>
-                <div className="text-white text-sm font-medium">Patient Profile</div>
-                <div className="text-primary-200 text-xs">
-                  {shortenAddress(account, 4)}
-                </div>
-              </div>
+                    <span className="material-icons mr-2 text-lg">{item.icon}</span>
+                    {item.title}
+                  </a>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      
+      <div className="px-4 py-4 mt-auto border-t">
+        <div className="flex flex-col gap-2">
+          {isConnected ? (
+            <div className="mb-2">
+              <p className="text-xs text-muted-foreground mb-1">Connected Wallet</p>
+              <p className="text-xs font-mono bg-muted p-2 rounded truncate">{account}</p>
             </div>
-          </div>
+          ) : (
+            <p className="text-xs text-muted-foreground mb-2">Connect your wallet to access all features</p>
+          )}
         </div>
       </div>
+    </div>
+  );
+  
+  // Mobile sidebar with sheet component
+  if (isMobile) {
+    return (
+      <>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="absolute top-4 left-4 z-50 md:hidden">
+              <span className="material-icons">menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[240px]">
+            <NavContent />
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+  
+  // Desktop sidebar
+  return (
+    <div className="hidden md:block w-[240px] border-r bg-card">
+      <NavContent />
     </div>
   );
 };

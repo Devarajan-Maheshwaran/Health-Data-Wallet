@@ -23,13 +23,9 @@ export async function apiRequest(
   return res;
 }
 
-/**
- * Create a query function based on unauthorized behavior
- * @param {Object} options - Options for the query function
- * @param {string} options.on401 - How to handle 401 responses: "returnNull" or "throw"
- * @returns {Function} Query function for TanStack Query
- */
-export const getQueryFn = ({ on401: unauthorizedBehavior }) => {
+export const getQueryFn = (options) => {
+  const { on401: unauthorizedBehavior } = options;
+  
   return async ({ queryKey }) => {
     const res = await fetch(queryKey[0], {
       credentials: "include",

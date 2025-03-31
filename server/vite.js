@@ -1,87 +1,83 @@
-import express from "express";
-import fs from "fs";
-import path, { dirname } from "path";
-import { fileURLToPath } from "url";
-import { createServer as createViteServer, createLogger } from "vite";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-import { nanoid } from "nanoid";
-import viteConfig from "../vite.config.js";
+import { createServer } from 'vite';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
+import express from 'express';
 
-const viteLogger = createLogger();
+// Get directory name for current module
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Logger for server messages
 export function log(message, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
+  console.log(`[${source}] ${message}`);
 }
 
+// Set up Vite middleware for development
 export async function setupVite(app, server) {
-  const serverOptions = {
-    middlewareMode: true,
-    hmr: { server },
-    allowedHosts: true,
-  };
+  try {
+    // Create a Vite server
+    const vite = await createServer({
+      configFile: resolve(__dirname, '../vite.config.js'),
+      server: {
+        middlewareMode: true,
+        hmr: {
+          server: server
+        }
+      }
+    });
 
-  const vite = await createViteServer({
-    ...viteConfig,
-    configFile: false,
-    customLogger: {
-      ...viteLogger,
-      error: (msg, options) => {
-        viteLogger.error(msg, options);
-        process.exit(1);
-      },
-    },
-    server: serverOptions,
-    appType: "custom",
-  });
+    // Use Vite's middleware
+    app.use(vite.middlewares);
+    log("Vite middleware set up successfully", "vite");
 
-  app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
+    // Set up catch-all routes for client-side routing
+    app.use('*', async (req, res, next) => {
+      try {
+        // If it's an API route, skip
+        if (req.originalUrl.startsWith('/api/')) {
+          return next();
+        }
 
-    try {
-      const clientTemplate = path.resolve(
-        __dirname,
-        "..",
-        "client",
-        "index.html",
-      );
+        // Get the client's entry HTML
+        const template = await vite.transformIndexHtml(
+          req.originalUrl,
+          `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Health Data Platform</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/client/src/main.jsx"></script>
+  </body>
+</html>`
+        );
 
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.jsx"`,
-        `src="/src/main.jsx?v=${nanoid()}"`,
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e);
-      next(e);
-    }
-  });
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (error) {
+        vite.ssrFixStacktrace(error);
+        next(error);
+      }
+    });
+  } catch (error) {
+    console.error("Error setting up Vite:", error);
+  }
 }
 
+// Serve static files in production
 export function serveStatic(app) {
-  const distPath = path.resolve(__dirname, "public");
-
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
-  }
-
-  app.use(express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // Serve client/dist as static files
+  const staticPath = resolve(__dirname, '../client/dist');
+  app.use(express.static(staticPath));
+  
+  log(`Serving static files from ${staticPath}`, "static");
+  
+  // Catch-all route for client-side routing in production
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return;
+    }
+    res.sendFile(resolve(staticPath, 'index.html'));
   });
 }

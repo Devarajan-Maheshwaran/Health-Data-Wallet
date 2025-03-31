@@ -1,152 +1,195 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Spinner } from '@/components/ui/spinner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/useWallet';
+import { API_ENDPOINTS } from '@/constants';
+import { apiRequest } from '@/lib/queryClient';
 
-// In a real application, we would use a proper QR code scanner library
-// For this prototype, we'll simulate scanning with a button press
-const QRCodeScanner = () => {
-  const [showScanDialog, setShowScanDialog] = useState(false);
-  const [scanningStatus, setScanningStatus] = useState('idle'); // idle, scanning, success, error
-  const [scannedData, setScannedData] = useState(null);
-  
-  const simulateScan = () => {
-    setScanningStatus('scanning');
+// This is a mock scanner component - in a real app, you'd use a library like jsQR or a React wrapper for it
+const QRCodeScanner = ({ onScanSuccess }) => {
+  const videoRef = useRef(null);
+  const [scanning, setScanning] = useState(false);
+  const [error, setError] = useState(null);
+  const [permissions, setPermissions] = useState(false);
+  const { toast } = useToast();
+  const { account } = useWallet();
+
+  // Mock function to handle QR code scanning
+  // In a real implementation, this would be replaced with actual QR scanning logic
+  const startScanning = async () => {
+    setScanning(true);
+    setError(null);
     
-    // Simulate scan delay
-    setTimeout(() => {
-      // Mock scanned data - in a real app this would come from a QR scanner
-      const mockPatientData = {
-        patientId: '12345',
-        patientAddress: '0x8F3c123456789abcdef123456789abcdef123789',
-        bloodType: 'O+',
-        allergies: ['Penicillin', 'Peanuts'],
-        emergencyContact: '+1-555-123-4567',
-        timestamp: new Date().toISOString(),
-        accessType: 'emergency'
-      };
+    try {
+      // Check if browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser does not support camera access');
+      }
       
-      setScannedData(mockPatientData);
-      setScanningStatus('success');
-    }, 2000);
+      // Request camera permissions
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setPermissions(true);
+        
+        // Simulate finding a QR code after 3 seconds
+        // This is where you'd implement real QR code detection
+        setTimeout(() => {
+          // Mock QR code data
+          const mockQrData = {
+            patientId: '12345',
+            timestamp: Date.now(),
+            token: 'mockEmergencyToken' + Math.random().toString(36).substr(2, 5)
+          };
+          
+          // Verify the QR code with the backend
+          verifyQrCode(mockQrData);
+          
+          // Stop the camera
+          const tracks = stream.getTracks();
+          tracks.forEach(track => track.stop());
+        }, 3000);
+      }
+    } catch (err) {
+      console.error('Camera access error:', err);
+      setError(err.message || 'Failed to access camera');
+      setScanning(false);
+    }
   };
   
-  const handleClose = () => {
-    setShowScanDialog(false);
-    setScanningStatus('idle');
-    setScannedData(null);
+  const stopScanning = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setScanning(false);
+    setPermissions(false);
   };
-
-  // In a real app, we would request camera permissions here
+  
+  // Verify the QR code with the backend
+  const verifyQrCode = async (qrData) => {
+    try {
+      // In a real implementation, this would send the QR data to your backend
+      const response = await apiRequest('POST', API_ENDPOINTS.EMERGENCY.VERIFY, {
+        qrData,
+        providerAddress: account
+      });
+      
+      // Success - call the callback with patient data
+      const result = await response.json();
+      setScanning(false);
+      
+      if (result.success && result.patientData) {
+        toast({
+          title: 'Emergency Access Granted',
+          description: `Access granted to ${result.patientData.name}'s emergency information`,
+        });
+        
+        if (onScanSuccess) {
+          onScanSuccess(result.patientData);
+        }
+      } else {
+        throw new Error(result.message || 'Invalid QR code');
+      }
+    } catch (err) {
+      console.error('QR verification error:', err);
+      setError(err.message || 'Failed to verify QR code');
+      setScanning(false);
+      
+      toast({
+        title: 'Verification Failed',
+        description: err.message || 'Failed to verify emergency access QR code',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, []);
   
   return (
-    <>
-      <Button 
-        onClick={() => setShowScanDialog(true)}
-        variant="outline"
-        className="flex items-center gap-2"
-      >
-        <span className="material-icons text-sm">qr_code_scanner</span>
-        Scan Patient QR
-      </Button>
-
-      <Dialog open={showScanDialog} onOpenChange={setShowScanDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Scan Patient QR Code</DialogTitle>
-            <DialogDescription>
-              Scan a patient's emergency QR code to access their critical health information.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex flex-col items-center justify-center py-4">
-            {scanningStatus === 'idle' && (
+    <Card className="border-primary-100">
+      <CardHeader className="bg-primary-50 rounded-t-lg">
+        <CardTitle className="text-lg text-primary-900">Emergency Access Scanner</CardTitle>
+        <CardDescription>
+          Scan a patient's emergency QR code to access critical health information
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="pt-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
+        <div className="relative aspect-video max-h-[350px] bg-black rounded-lg overflow-hidden mb-4">
+          {scanning ? (
+            <>
+              <video 
+                ref={videoRef} 
+                className="w-full h-full object-cover"
+                playsInline
+                muted
+              />
+              
+              {permissions && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-48 h-48 border-2 border-white rounded-lg"></div>
+                </div>
+              )}
+              
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2 text-sm text-center">
+                Position the QR code within the square
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full bg-neutral-100">
               <div className="text-center">
-                <div className="border-2 border-dashed border-neutral-300 rounded-lg p-8 mb-4">
-                  <span className="material-icons text-neutral-400 text-6xl">qr_code_scanner</span>
-                  <p className="mt-2 text-neutral-600">Ready to scan</p>
-                </div>
-                <Button onClick={simulateScan} className="mt-2">
-                  Start Scanning
-                </Button>
+                <span className="material-icons text-4xl text-neutral-400 mb-2">qr_code_scanner</span>
+                <p className="text-neutral-500">Camera preview will appear here</p>
               </div>
-            )}
-            
-            {scanningStatus === 'scanning' && (
-              <div className="text-center">
-                <div className="border-2 border-primary-300 rounded-lg p-8 mb-4 animate-pulse">
-                  <span className="material-icons text-primary-500 text-6xl">qr_code_scanner</span>
-                  <p className="mt-2 text-primary-600">Scanning...</p>
-                </div>
-              </div>
-            )}
-            
-            {scanningStatus === 'success' && scannedData && (
-              <div className="w-full">
-                <Alert className="mb-4 border-secondary-300 bg-secondary-50">
-                  <span className="material-icons text-secondary-500 mr-2">check_circle</span>
-                  <AlertTitle>Successfully Scanned</AlertTitle>
-                  <AlertDescription>Patient information retrieved</AlertDescription>
-                </Alert>
-                
-                <div className="bg-white p-4 rounded-lg border border-neutral-200 mb-4">
-                  <h3 className="font-medium text-lg mb-3">Emergency Patient Information</h3>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="font-medium text-neutral-600">Patient ID:</span>
-                      <span className="font-mono">{scannedData.patientId}</span>
-                    </div>
-                    
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="font-medium text-neutral-600">Blood Type:</span>
-                      <span className="font-semibold text-primary-700">{scannedData.bloodType}</span>
-                    </div>
-                    
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="font-medium text-neutral-600">Allergies:</span>
-                      <span className="text-error-600">{scannedData.allergies.join(', ')}</span>
-                    </div>
-                    
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="font-medium text-neutral-600">Emergency Contact:</span>
-                      <span>{scannedData.emergencyContact}</span>
-                    </div>
-                    
-                    <div className="flex justify-between pt-1">
-                      <span className="font-medium text-neutral-600">Access Type:</span>
-                      <span className="uppercase text-xs bg-error-100 text-error-800 px-2 py-1 rounded font-semibold">
-                        {scannedData.accessType}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <Button 
-                    variant="secondary"
-                    className="mb-2"
-                    onClick={() => {
-                      // In a real app, this would navigate to a detailed patient view
-                      alert('Accessing full patient records...');
-                    }}
-                  >
-                    <span className="material-icons mr-1 text-sm">folder_open</span>
-                    Access Patient Records
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={handleClose}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            </div>
+          )}
+        </div>
+      </CardContent>
+      
+      <CardFooter className="flex justify-center border-t pt-4">
+        {scanning ? (
+          <Button 
+            variant="destructive" 
+            onClick={stopScanning}
+          >
+            <span className="material-icons mr-2">stop</span>
+            Stop Scanning
+          </Button>
+        ) : (
+          <Button 
+            onClick={startScanning}
+            size="lg"
+          >
+            <span className="material-icons mr-2">qr_code_scanner</span>
+            Start Scanning
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 
