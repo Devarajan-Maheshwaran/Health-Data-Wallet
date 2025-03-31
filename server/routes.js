@@ -1,428 +1,423 @@
-import { createServer } from "http";
-import { storage } from "./storage.js";
-import multer from 'multer';
-import { addToIPFS, getFromIPFS } from './ipfs.js';
+import { z } from 'zod';
+import { storage } from './storage.js';
+import { insertUserSchema, insertHealthRecordSchema, insertAccessGrantSchema } from '../shared/schema.js';
+import { addToIPFS, getFromIPFS, getIPFSGatewayUrl } from './ipfs.js';
 
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-});
+/**
+ * Middleware to check if user is authenticated
+ */
+export function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({ error: 'Unauthorized' });
+}
 
-export async function registerRoutes(app) {
-  // IPFS upload endpoint
-  app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
+/**
+ * Register all API routes
+ * @param {Express} app - Express application
+ * @param {Object} upload - Multer upload middleware
+ */
+export async function registerRoutes(app, upload) {
+  // Auth routes
+  app.post('/api/auth/register', async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
+      const data = insertUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(data.username);
+      if (existingUser) {
+        return res.status(400).json({ error: 'Username already exists' });
       }
       
-      // Upload encrypted file to IPFS
-      const ipfsHash = await addToIPFS(req.file.buffer);
-      
-      // Return the IPFS hash to the client
-      res.status(200).json({ 
-        hash: ipfsHash,
-        success: true,
-        message: 'File uploaded to IPFS successfully',
+      const user = await storage.createUser(data);
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        walletAddress: user.walletAddress
       });
     } catch (error) {
-      console.error('Error in IPFS upload:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to upload file to IPFS',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Registration error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Registration failed' });
     }
   });
 
-  // IPFS get endpoint
-  app.get('/api/ipfs/get/:hash', async (req, res) => {
-    try {
-      const ipfsHash = req.params.hash;
-      
-      if (!ipfsHash) {
-        return res.status(400).json({ message: 'IPFS hash is required' });
+  app.post('/api/auth/login', (req, res, next) => {
+    // Passport authentication is handled in index.js
+    res.status(200).json({ 
+      user: {
+        id: req.user.id,
+        username: req.user.username,
+        walletAddress: req.user.walletAddress
       }
-      
-      // Get file from IPFS
-      const fileBuffer = await getFromIPFS(ipfsHash);
-      
-      // Set headers for file download
-      res.setHeader('Content-Type', 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="file-${ipfsHash}.bin"`);
-      
-      // Send the file data
-      res.send(fileBuffer);
-    } catch (error) {
-      console.error('Error getting file from IPFS:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to retrieve file from IPFS',
-        error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Logout failed' });
+      }
+      res.status(200).json({ message: 'Logged out successfully' });
+    });
+  });
+
+  app.get('/api/auth/status', (req, res) => {
+    if (req.isAuthenticated()) {
+      return res.status(200).json({ 
+        isAuthenticated: true,
+        user: {
+          id: req.user.id,
+          username: req.user.username,
+          walletAddress: req.user.walletAddress
+        }
       });
     }
+    res.status(200).json({ isAuthenticated: false });
   });
 
   // User routes
-  app.post('/api/users/register', async (req, res) => {
+  app.get('/api/users/me', isAuthenticated, async (req, res) => {
     try {
-      const { username, password, walletAddress } = req.body;
-      
-      // Basic validation
-      if (!username || !password || !walletAddress) {
-        return res.status(400).json({ message: 'Username, password, and wallet address are required' });
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
       }
       
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(409).json({ message: 'Username already exists' });
-      }
-      
-      // Create new user
-      const newUser = await storage.createUser({
-        username,
-        password,
-        walletAddress
-      });
-      
-      res.status(201).json({
-        success: true,
-        message: 'User registered successfully',
-        user: {
-          id: newUser.id,
-          username: newUser.username
-        }
+      res.status(200).json({
+        id: user.id,
+        username: user.username,
+        walletAddress: user.walletAddress,
+        createdAt: user.createdAt
       });
     } catch (error) {
-      console.error('Error registering user:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to register user',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  });
+
+  app.patch('/api/users/wallet', isAuthenticated, async (req, res) => {
+    try {
+      const { walletAddress } = z.object({
+        walletAddress: z.string().min(1)
+      }).parse(req.body);
+      
+      // Update user's wallet address in database
+      // This is a placeholder - actual implementation would need to update the user record
+      
+      res.status(200).json({ message: 'Wallet address updated', walletAddress });
+    } catch (error) {
+      console.error('Error updating wallet address:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to update wallet address' });
     }
   });
 
   // Health record routes
-  app.post('/api/health-records', async (req, res) => {
+  app.post('/api/records', isAuthenticated, upload.single('file'), async (req, res) => {
     try {
-      const { userId, recordType, title, ipfsHash, blockchainTxHash } = req.body;
-      
-      // Basic validation
-      if (!userId || !recordType || !title || !ipfsHash) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'User ID, record type, title, and IPFS hash are required' 
-        });
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
       }
       
-      // Create new health record
-      const newRecord = await storage.createHealthRecord({
-        userId,
+      const { recordType, title } = z.object({
+        recordType: z.string().min(1),
+        title: z.string().min(1)
+      }).parse(req.body);
+      
+      // Upload file to IPFS
+      const ipfsHash = await addToIPFS(req.file.buffer);
+      
+      // Create record in database
+      const record = await storage.createHealthRecord({
+        userId: req.user.id,
         recordType,
         title,
         ipfsHash,
-        blockchainTxHash
+        blockchainTxHash: null // Will be updated later after blockchain transaction
       });
       
       res.status(201).json({
-        success: true,
-        message: 'Health record created successfully',
-        record: newRecord
+        id: record.id,
+        title: record.title,
+        recordType: record.recordType,
+        ipfsHash: record.ipfsHash,
+        ipfsUrl: getIPFSGatewayUrl(record.ipfsHash),
+        uploadedAt: record.uploadedAt
       });
     } catch (error) {
       console.error('Error creating health record:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to create health record',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to create health record' });
     }
   });
 
-  app.get('/api/health-records/user/:userId', async (req, res) => {
+  app.get('/api/records', isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
+      const records = await storage.getHealthRecordsByUser(req.user.id);
       
-      if (isNaN(userId)) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Invalid user ID' 
-        });
-      }
+      // Enhance records with IPFS URLs
+      const enhancedRecords = records.map(record => ({
+        id: record.id,
+        title: record.title,
+        recordType: record.recordType,
+        ipfsHash: record.ipfsHash,
+        ipfsUrl: getIPFSGatewayUrl(record.ipfsHash),
+        blockchainTxHash: record.blockchainTxHash,
+        uploadedAt: record.uploadedAt
+      }));
       
-      const records = await storage.getHealthRecordsByUser(userId);
-      
-      res.status(200).json({
-        success: true,
-        count: records.length,
-        records
-      });
+      res.status(200).json(enhancedRecords);
     } catch (error) {
       console.error('Error fetching health records:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch health records',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch health records' });
     }
   });
 
-  app.get('/api/health-records/:id', async (req, res) => {
+  app.get('/api/records/:id', isAuthenticated, async (req, res) => {
     try {
-      const recordId = parseInt(req.params.id);
-      
-      if (isNaN(recordId)) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Invalid record ID' 
-        });
-      }
-      
-      const record = await storage.getHealthRecord(recordId);
+      const record = await storage.getHealthRecord(req.params.id);
       
       if (!record) {
-        return res.status(404).json({ 
-          success: false,
-          message: 'Health record not found' 
-        });
+        return res.status(404).json({ error: 'Record not found' });
       }
       
+      // Check if user owns the record
+      if (record.userId !== req.user.id) {
+        // TODO: Check if user has been granted access instead of just returning 403
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      
+      // Get file data from IPFS
+      const fileData = await getFromIPFS(record.ipfsHash);
+      
       res.status(200).json({
-        success: true,
-        record
+        id: record.id,
+        title: record.title,
+        recordType: record.recordType,
+        ipfsHash: record.ipfsHash,
+        ipfsUrl: getIPFSGatewayUrl(record.ipfsHash),
+        blockchainTxHash: record.blockchainTxHash,
+        uploadedAt: record.uploadedAt,
+        fileData: fileData.toString('base64')
       });
     } catch (error) {
       console.error('Error fetching health record:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch health record',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch health record' });
     }
   });
 
-  // Access grant routes
-  app.post('/api/access-grants', async (req, res) => {
+  // Access management routes
+  app.post('/api/access', isAuthenticated, async (req, res) => {
     try {
-      const { patientId, providerAddress } = req.body;
+      const data = insertAccessGrantSchema.parse(req.body);
       
-      // Basic validation
-      if (!patientId || !providerAddress) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Patient ID and provider address are required' 
-        });
+      // Ensure user is granting access to their own records
+      if (data.patientId !== req.user.id) {
+        return res.status(403).json({ error: 'Cannot grant access for other users' });
       }
       
-      // Create new access grant
-      const newGrant = await storage.createAccessGrant({
-        patientId,
-        providerAddress,
+      const grant = await storage.createAccessGrant({
+        patientId: data.patientId,
+        providerAddress: data.providerAddress,
         isActive: true
       });
       
       res.status(201).json({
-        success: true,
-        message: 'Access granted successfully',
-        grant: newGrant
+        id: grant.id,
+        patientId: grant.patientId,
+        providerAddress: grant.providerAddress,
+        isActive: grant.isActive,
+        grantedAt: grant.grantedAt
       });
     } catch (error) {
       console.error('Error granting access:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to grant access',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to grant access' });
     }
   });
 
-  app.get('/api/access-grants/patient/:patientId', async (req, res) => {
+  app.get('/api/access/granted', isAuthenticated, async (req, res) => {
     try {
-      const patientId = parseInt(req.params.patientId);
-      
-      if (isNaN(patientId)) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Invalid patient ID' 
-        });
-      }
-      
-      const grants = await storage.getAccessGrantsByPatient(patientId);
-      
-      res.status(200).json({
-        success: true,
-        count: grants.length,
-        grants
-      });
+      const grants = await storage.getAccessGrantsByPatient(req.user.id);
+      res.status(200).json(grants);
     } catch (error) {
       console.error('Error fetching access grants:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch access grants',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to fetch access grants' });
     }
   });
 
-  app.get('/api/access-grants/provider/:providerAddress', async (req, res) => {
+  app.get('/api/access/received', isAuthenticated, async (req, res) => {
     try {
-      const { providerAddress } = req.params;
-      
-      if (!providerAddress) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Provider address is required' 
-        });
+      if (!req.user.walletAddress) {
+        return res.status(400).json({ error: 'User does not have a wallet address' });
       }
       
-      const grants = await storage.getAccessGrantsByProvider(providerAddress);
-      
-      res.status(200).json({
-        success: true,
-        count: grants.length,
-        grants
-      });
+      const grants = await storage.getAccessGrantsByProvider(req.user.walletAddress);
+      res.status(200).json(grants);
     } catch (error) {
-      console.error('Error fetching access grants:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch access grants',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-  
-  // Patient data endpoints for doctor view
-  app.get('/api/patients/:id', async (req, res) => {
-    try {
-      const patientId = req.params.id;
-      
-      if (!patientId) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Patient ID is required' 
-        });
-      }
-      
-      // For the demo we'll return mock data, but in a real app
-      // this would pull from the database
-      const patient = {
-        id: patientId,
-        name: 'John Doe',
-        age: 45,
-        gender: 'Male',
-        walletAddress: '0x1234567890abcdef1234567890abcdef12345678'
-      };
-      
-      res.status(200).json({
-        success: true,
-        patient
-      });
-    } catch (error) {
-      console.error('Error fetching patient:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch patient information',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-  
-  app.get('/api/patients/:id/records', async (req, res) => {
-    try {
-      const patientId = req.params.id;
-      
-      if (!patientId) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Patient ID is required' 
-        });
-      }
-      
-      // For the demo we'll return mock records, but in a real app
-      // this would pull from the database after access verification
-      const records = [
-        { 
-          id: '1', 
-          title: 'Annual Physical', 
-          recordType: 'medical_history',
-          ipfsHash: 'QmExample1',
-          blockchainTxHash: '0xexample1',
-          uploadedAt: new Date()
-        },
-        {
-          id: '2', 
-          title: 'Blood Test Results', 
-          recordType: 'lab_results',
-          ipfsHash: 'QmExample2',
-          blockchainTxHash: '0xexample2',
-          uploadedAt: new Date()
-        },
-        { 
-          id: '3', 
-          title: 'Vaccination Record', 
-          recordType: 'immunizations',
-          ipfsHash: 'QmExample3',
-          blockchainTxHash: '0xexample3',
-          uploadedAt: new Date()
-        }
-      ];
-      
-      res.status(200).json({
-        success: true,
-        count: records.length,
-        records
-      });
-    } catch (error) {
-      console.error('Error fetching patient records:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch patient records',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Error fetching received access grants:', error);
+      res.status(500).json({ error: 'Failed to fetch received access grants' });
     }
   });
 
-  app.patch('/api/access-grants/:id/revoke', async (req, res) => {
+  app.patch('/api/access/:id/revoke', isAuthenticated, async (req, res) => {
     try {
-      const grantId = parseInt(req.params.id);
+      const grant = await storage.getAccessGrant(req.params.id);
       
-      if (isNaN(grantId)) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Invalid grant ID' 
-        });
+      if (!grant) {
+        return res.status(404).json({ error: 'Access grant not found' });
       }
       
-      const updatedGrant = await storage.revokeAccess(grantId);
-      
-      if (!updatedGrant) {
-        return res.status(404).json({ 
-          success: false,
-          message: 'Access grant not found' 
-        });
+      // Check if user is the patient who granted access
+      if (grant.patientId !== req.user.id) {
+        return res.status(403).json({ error: 'Cannot revoke access granted by other users' });
       }
+      
+      const updatedGrant = await storage.revokeAccess(req.params.id);
       
       res.status(200).json({
-        success: true,
-        message: 'Access revoked successfully',
-        grant: updatedGrant
+        id: updatedGrant.id,
+        patientId: updatedGrant.patientId,
+        providerAddress: updatedGrant.providerAddress,
+        isActive: updatedGrant.isActive,
+        grantedAt: updatedGrant.grantedAt,
+        revokedAt: updatedGrant.revokedAt
       });
     } catch (error) {
       console.error('Error revoking access:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to revoke access',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      res.status(500).json({ error: 'Failed to revoke access' });
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Emergency access via QR code routes
+  app.post('/api/emergency/generate', isAuthenticated, async (req, res) => {
+    try {
+      // Generate a temporary access token for the patient's records
+      // This would typically involve creating a time-limited token
+      const tempToken = `emergency_${req.user.id}_${Date.now()}`;
+      
+      // In a real app, this should be stored securely and expire after use
+      
+      res.status(200).json({ token: tempToken });
+    } catch (error) {
+      console.error('Error generating emergency token:', error);
+      res.status(500).json({ error: 'Failed to generate emergency token' });
+    }
+  });
+
+  app.post('/api/emergency/validate', isAuthenticated, async (req, res) => {
+    try {
+      const { token } = z.object({
+        token: z.string().min(1)
+      }).parse(req.body);
+      
+      // Validate the emergency token
+      if (!token.startsWith('emergency_')) {
+        return res.status(400).json({ error: 'Invalid token format' });
+      }
+      
+      // Extract patient ID from token (simple implementation for example)
+      const parts = token.split('_');
+      if (parts.length !== 3) {
+        return res.status(400).json({ error: 'Invalid token format' });
+      }
+      
+      const patientId = parts[1];
+      
+      // In a real app, verify token validity and expiration
+      
+      // Get patient info
+      const patient = await storage.getUser(patientId);
+      if (!patient) {
+        return res.status(404).json({ error: 'Patient not found' });
+      }
+      
+      // Get patient's records
+      const records = await storage.getHealthRecordsByUser(patientId);
+      
+      res.status(200).json({
+        patient: {
+          id: patient.id,
+          username: patient.username
+        },
+        records: records.map(record => ({
+          id: record.id,
+          title: record.title,
+          recordType: record.recordType,
+          ipfsHash: record.ipfsHash,
+          ipfsUrl: getIPFSGatewayUrl(record.ipfsHash),
+          uploadedAt: record.uploadedAt
+        }))
+      });
+    } catch (error) {
+      console.error('Error validating emergency token:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to validate emergency token' });
+    }
+  });
+
+  // Zero-knowledge proof routes
+  app.post('/api/zkp/generate', isAuthenticated, async (req, res) => {
+    try {
+      const { dataHash } = z.object({
+        dataHash: z.string().min(1)
+      }).parse(req.body);
+      
+      // In a real app, generate a zero-knowledge proof
+      // This is a simplified placeholder
+      const proofData = {
+        proof: {
+          a: ['0x1', '0x2'],
+          b: [['0x3', '0x4'], ['0x5', '0x6']],
+          c: ['0x7', '0x8']
+        },
+        inputs: ['0x9', '0xa', dataHash]
+      };
+      
+      res.status(200).json(proofData);
+    } catch (error) {
+      console.error('Error generating ZK proof:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to generate ZK proof' });
+    }
+  });
+
+  app.post('/api/zkp/verify', isAuthenticated, async (req, res) => {
+    try {
+      const { proof, inputs } = z.object({
+        proof: z.object({
+          a: z.array(z.string()),
+          b: z.array(z.array(z.string())),
+          c: z.array(z.string())
+        }),
+        inputs: z.array(z.string())
+      }).parse(req.body);
+      
+      // In a real app, verify the zero-knowledge proof
+      // This is a simplified placeholder that always returns true
+      const isValid = true;
+      
+      res.status(200).json({ isValid });
+    } catch (error) {
+      console.error('Error verifying ZK proof:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to verify ZK proof' });
+    }
+  });
 }

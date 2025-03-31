@@ -1,4 +1,5 @@
 #!/bin/bash
 
-# Start the application using JavaScript instead of TypeScript
-node --experimental-specifier-resolution=node run.js
+# Start our application using Node.js
+echo "Starting application with Node.js..."
+node run.js

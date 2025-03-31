@@ -1,19 +1,39 @@
 import { create } from 'ipfs-http-client';
+import { Buffer } from 'buffer';
 
-// Configure IPFS client with Infura
-const projectId = process.env.INFURA_IPFS_PROJECT_ID;
-const projectSecret = process.env.INFURA_IPFS_PROJECT_SECRET;
-const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
+// Infura IPFS credentials
+const PROJECT_ID = process.env.INFURA_IPFS_PROJECT_ID;
+const PROJECT_SECRET = process.env.INFURA_IPFS_PROJECT_SECRET;
 
-// Initialize IPFS client
-const ipfsClient = create({
-  host: 'ipfs.infura.io',
-  port: 5001,
-  protocol: 'https',
-  headers: {
-    authorization: auth
+// IPFS Gateway URL
+const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+
+// Create IPFS client
+const createIPFSClient = () => {
+  if (!PROJECT_ID || !PROJECT_SECRET) {
+    console.warn('IPFS credentials not found. Some functionality may not work.');
+    return null;
   }
-});
+  
+  const auth = 'Basic ' + Buffer.from(PROJECT_ID + ':' + PROJECT_SECRET).toString('base64');
+  
+  return create({
+    host: 'ipfs.infura.io',
+    port: 5001,
+    protocol: 'https',
+    headers: {
+      authorization: auth
+    }
+  });
+};
+
+let ipfsClient;
+
+try {
+  ipfsClient = createIPFSClient();
+} catch (error) {
+  console.error('Failed to create IPFS client:', error);
+}
 
 /**
  * Upload a file to IPFS
@@ -21,18 +41,16 @@ const ipfsClient = create({
  * @returns {Promise<string>} IPFS hash (CID)
  */
 export const addToIPFS = async (fileData) => {
+  if (!ipfsClient) {
+    throw new Error('IPFS client not initialized. Check your credentials.');
+  }
+  
   try {
-    // Check if credentials are available
-    if (!projectId || !projectSecret) {
-      throw new Error('IPFS credentials not configured. Please set INFURA_IPFS_PROJECT_ID and INFURA_IPFS_PROJECT_SECRET environment variables.');
-    }
-    
-    const result = await ipfsClient.add(fileData);
-    console.log('File uploaded to IPFS with hash:', result.path);
-    return result.path;
+    const added = await ipfsClient.add(fileData);
+    return added.path;
   } catch (error) {
-    console.error('IPFS upload error:', error);
-    throw new Error(`Failed to upload to IPFS: ${error.message}`);
+    console.error('Error uploading to IPFS:', error);
+    throw new Error('Failed to upload to IPFS');
   }
 };
 
@@ -42,54 +60,48 @@ export const addToIPFS = async (fileData) => {
  * @returns {Promise<Buffer>} File buffer
  */
 export const getFromIPFS = async (ipfsHash) => {
+  if (!ipfsClient) {
+    throw new Error('IPFS client not initialized. Check your credentials.');
+  }
+  
   try {
-    // Check if credentials are available
-    if (!projectId || !projectSecret) {
-      throw new Error('IPFS credentials not configured. Please set INFURA_IPFS_PROJECT_ID and INFURA_IPFS_PROJECT_SECRET environment variables.');
-    }
-    
     const chunks = [];
     
-    // For newer IPFS versions, use client.cat
     for await (const chunk of ipfsClient.cat(ipfsHash)) {
       chunks.push(chunk);
     }
     
-    // Concatenate chunks into a single buffer
     return Buffer.concat(chunks);
   } catch (error) {
-    console.error('IPFS fetch error:', error);
-    throw new Error(`Failed to fetch from IPFS: ${error.message}`);
+    console.error('Error retrieving from IPFS:', error);
+    throw new Error('Failed to retrieve from IPFS');
   }
 };
 
-// Get the gateway URL for a CID
+/**
+ * Get the public gateway URL for an IPFS hash
+ * @param {string} cid - IPFS hash (CID)
+ * @returns {string} Gateway URL
+ */
 export const getIPFSGatewayUrl = (cid) => {
-  if (!cid) return null;
-  return `https://ipfs.io/ipfs/${cid}`;
+  return `${IPFS_GATEWAY}${cid}`;
 };
 
-// Test if IPFS connection is working
+/**
+ * Test IPFS connection
+ * @returns {Promise<boolean>} Connection status
+ */
 export const testIPFSConnection = async () => {
+  if (!ipfsClient) {
+    return false;
+  }
+  
   try {
-    if (!projectId || !projectSecret) {
-      return { success: false, message: 'IPFS credentials not configured' };
-    }
-    
-    // Try to add a small test file
-    const testData = Buffer.from('IPFS Connection Test');
-    const result = await ipfsClient.add(testData);
-    
-    return { 
-      success: true, 
-      message: 'IPFS connection successful',
-      hash: result.path
-    };
+    // Simple test to verify connectivity
+    await ipfsClient.id();
+    return true;
   } catch (error) {
     console.error('IPFS connection test failed:', error);
-    return { 
-      success: false, 
-      message: `IPFS connection failed: ${error.message}` 
-    };
+    return false;
   }
 };

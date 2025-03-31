@@ -1,17 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import Layout from "@/components/Layout";
-import Dashboard from "@/pages/Dashboard";
-import UploadData from "@/pages/UploadData";
-import ManageAccess from "@/pages/ManageAccess";
-import ViewRecords from "@/pages/ViewRecords";
-import DoctorDashboard from "@/pages/DoctorDashboard";
-import PatientDetailView from "@/pages/PatientDetailView";
-import PrivacyCenter from "@/pages/PrivacyCenter";
-import NotFound from "@/pages/not-found";
-import { Web3Provider } from "@/context/Web3Context";
+import Layout from "./components/Layout";
+import Dashboard from "./pages/Dashboard";
+import UploadData from "./pages/UploadData";
+import ManageAccess from "./pages/ManageAccess";
+import ViewRecords from "./pages/ViewRecords";
+import DoctorDashboard from "./pages/DoctorDashboard";
+import PatientDetailView from "./pages/PatientDetailView";
+import PrivacyCenter from "./pages/PrivacyCenter";
+import NotFound from "./pages/not-found";
+import { Web3Provider } from "./context/Web3Context";
+import { useToast } from "./hooks/use-toast";
+import { cn } from "./lib/utils";
 
 function Router() {
   return (
@@ -28,26 +30,12 @@ function Router() {
   );
 }
 
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Web3Provider>
-        <Layout>
-          <Router />
-        </Layout>
-        <ToastContainer />
-      </Web3Provider>
-    </QueryClientProvider>
-  );
-}
-
 // Simple toast container component
 const ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
+  const { subscribe } = useToast();
   
   useEffect(() => {
-    const { subscribe } = useToast();
-    
     // Subscribe to toast updates
     const unsubscribe = subscribe(action => {
       if (action.type === 'ADD_TOAST') {
@@ -58,7 +46,7 @@ const ToastContainer = () => {
     });
     
     return () => unsubscribe();
-  }, []);
+  }, [subscribe]);
   
   return (
     <div className="fixed top-0 right-0 p-4 w-full md:max-w-sm z-50 flex flex-col gap-2">
@@ -77,5 +65,18 @@ const ToastContainer = () => {
     </div>
   );
 };
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Web3Provider>
+        <Layout>
+          <Router />
+        </Layout>
+        <ToastContainer />
+      </Web3Provider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
