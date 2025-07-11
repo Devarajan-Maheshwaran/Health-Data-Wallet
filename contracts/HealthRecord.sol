@@ -68,7 +68,7 @@ contract HealthRecord {
     /**
      * @dev Register a new healthcare provider
      */
-    function registerProvider() external {
+    function registerProvider() external onlyOwner {
         providers[msg.sender] = true;
     }
 
