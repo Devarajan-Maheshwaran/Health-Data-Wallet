@@ -47,6 +47,11 @@ contract HealthRecord {
         _;
     }
 
+    modifier onlyOwner(){
+        require(msg.sender == owner, "Only owners can use this function");
+        _;
+    }
+
     /**
      * @dev Register a new patient
      * @param name Name of the patient
