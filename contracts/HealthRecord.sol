@@ -97,31 +97,17 @@ contract HealthRecord {
         emit AccessRevoked(msg.sender, providerAddress);
     }
 
-    /**
-     * @dev Check if a provider has access to a patient's records
-     * @param patientAddress Address of the patient
-     * @param providerAddress Address of the healthcare provider
-     * @return bool indicating if provider has access
-     */
+    //check if a provider has access to a patient's record
     function checkAccess(address patientAddress, address providerAddress) external view returns (bool) {
         return patients[patientAddress].authorizedProviders[providerAddress];
     }
 
-    /**
-     * @dev Get patient record count
-     * @param patientAddress Address of the patient
-     * @return recordCount Number of records for the patient
-     */
+    //get patients record count
     function getRecordCount(address patientAddress) external view onlyAuthorized(patientAddress) returns (uint256) {
         return patients[patientAddress].recordCount;
     }
 
-    /**
-     * @dev Get a specific patient record
-     * @param patientAddress Address of the patient
-     * @param recordId ID of the record to retrieve
-     * @return recordType, title, ipfsHash, timestamp
-     */
+    //get a specific record for a patient
     function getRecord(address patientAddress, uint256 recordId) 
         external 
         view 
