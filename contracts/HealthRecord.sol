@@ -22,7 +22,6 @@ contract HealthRecord {
         string title;
         string ipfsHash;
         uint256 timestamp;
-        bool exists;
     }
 
     // Events
@@ -55,7 +54,7 @@ contract HealthRecord {
     }
 
     modifier onlyAdmin(){
-        require(msg.sender == owner, "Only admins can use this function");
+        require(msg.sender == admin, "Only admins can use this function");
         _;
     }
 
@@ -83,13 +82,29 @@ contract HealthRecord {
             title: title,
             ipfsHash: ipfsHash,
             timestamp: block.timestamp,
-            exists: true
         });
         
         patients[msg.sender].recordCount++;
         
         emit RecordAdded(msg.sender, recordId, recordType, ipfsHash);
     }
+
+    //updation of records for patients
+    function updateRecord(
+            uint256 recordId,
+            string memory newRecordType,
+            string memory newTitle,
+            string memory newIpfsHash
+    ) external onlyRegistered {
+            require(recordId < patients[msg.sender].recordCount, "Record does not exist");
+
+            Record storage record = patients[msg.sender].records[recordId];
+            record.recordType = newRecordType;
+            record.title = newTitle;
+            record.ipfsHash = newIpfsHash;
+            record.timestamp = block.timestamp;
+    }
+
 
     //grant access to a healthprovider
     function grantAccess(address providerAddress) external onlyRegistered {
@@ -126,7 +141,6 @@ contract HealthRecord {
     {
         require(recordId < patients[patientAddress].recordCount, "Record does not exist");
         Record memory record = patients[patientAddress].records[recordId];
-        require(record.exists, "Record does not exist");
         
         return (
             record.recordType,
