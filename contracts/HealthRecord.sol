@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-//contract for maintaing healthrecords
+//Contract for maintaing healthrecords
 contract HealthRecord {
     struct Patient {
         bool isRegistered;
@@ -49,7 +49,7 @@ contract HealthRecord {
         _;
     }
 
-   //registering a new patient
+   //Registering a new patient
     function registerPatient(string memory name) external {
         require(!patients[msg.sender].isRegistered, "Patient already registered");
         
@@ -59,19 +59,12 @@ contract HealthRecord {
         emit PatientRegistered(msg.sender, name);
     }
 
-    /**
-     * @dev Register a new healthcare provider
-     */
+    //Registering a new healthcare provider
     function registerProvider() external onlyOwner {
         providers[msg.sender] = true;
     }
 
-    /**
-     * @dev Add a new health record for a patient
-     * @param recordType Type of medical record
-     * @param title Title of the record
-     * @param ipfsHash IPFS hash of the encrypted record data
-     */
+    //adding new record for a patient
     function addRecord(string memory recordType, string memory title, string memory ipfsHash) external onlyRegistered {
         uint256 recordId = patients[msg.sender].recordCount;
         
@@ -88,10 +81,7 @@ contract HealthRecord {
         emit RecordAdded(msg.sender, recordId, recordType, ipfsHash);
     }
 
-    /**
-     * @dev Grant access to a healthcare provider
-     * @param providerAddress Address of the healthcare provider to authorize
-     */
+    //grant access to a healthprovider
     function grantAccess(address providerAddress) external onlyRegistered {
         require(providers[providerAddress], "Address is not a registered provider");
         patients[msg.sender].authorizedProviders[providerAddress] = true;
@@ -99,10 +89,7 @@ contract HealthRecord {
         emit AccessGranted(msg.sender, providerAddress);
     }
 
-    /**
-     * @dev Revoke access from a healthcare provider
-     * @param providerAddress Address of the healthcare provider to revoke
-     */
+    //revoke access from healthprovider
     function revokeAccess(address providerAddress) external onlyRegistered {
         require(patients[msg.sender].authorizedProviders[providerAddress], "Provider not authorized");
         patients[msg.sender].authorizedProviders[providerAddress] = false;
