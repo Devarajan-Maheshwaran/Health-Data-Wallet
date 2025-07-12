@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/**
- * @title HealthRecord
- * @dev A contract for managing decentralized health records and access control
- */
+//contract for maintaing healthrecords
 contract HealthRecord {
     struct Patient {
         bool isRegistered;
@@ -52,10 +49,7 @@ contract HealthRecord {
         _;
     }
 
-    /**
-     * @dev Register a new patient
-     * @param name Name of the patient
-     */
+   //registering a new patient
     function registerPatient(string memory name) external {
         require(!patients[msg.sender].isRegistered, "Patient already registered");
         
