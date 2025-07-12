@@ -25,7 +25,7 @@ contract HealthRecord {
     event AccessGranted(address patientAddress, address providerAddress);
     event AccessRevoked(address patientAddress, address providerAddress);
 
-    // State variables
+    //Mappings
     mapping(address => Patient) private patients;
     mapping(address => bool) private providers;
     
