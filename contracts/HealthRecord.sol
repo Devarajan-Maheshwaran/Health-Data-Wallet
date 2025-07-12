@@ -126,20 +126,12 @@ contract HealthRecord {
         );
     }
 
-    /**
-     * @dev Check if a patient is registered
-     * @param patientAddress Address of the patient
-     * @return bool indicating if patient is registered
-     */
+    //check if a patient is registered
     function isPatientRegistered(address patientAddress) external view returns (bool) {
         return patients[patientAddress].isRegistered;
     }
 
-    /**
-     * @dev Get patient name
-     * @param patientAddress Address of the patient
-     * @return name Name of the patient
-     */
+    //get name of the patient
     function getPatientName(address patientAddress) external view onlyAuthorized(patientAddress) returns (string memory) {
         return patients[patientAddress].name;
     }
