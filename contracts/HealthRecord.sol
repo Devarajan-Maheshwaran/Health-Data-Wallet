@@ -3,6 +3,12 @@ pragma solidity ^0.8.20;
 
 //Contract for maintaing healthrecords
 contract HealthRecord {
+
+    address public admin;
+    constructor() {
+        admin = msg.sender;
+    }
+
     struct Patient {
         bool isRegistered;
         string name;
@@ -30,6 +36,10 @@ contract HealthRecord {
     mapping(address => bool) private providers;
     
     // Modifiers
+    modifier onlyAdmin(){
+        require(msg.sender == admin, "only System Admins are allowed");
+    }
+
     modifier onlyRegistered() {
         require(patients[msg.sender].isRegistered, "Patient not registered");
         _;
@@ -44,8 +54,8 @@ contract HealthRecord {
         _;
     }
 
-    modifier onlyOwner(){
-        require(msg.sender == owner, "Only owners can use this function");
+    modifier onlyAdmin(){
+        require(msg.sender == owner, "Only admins can use this function");
         _;
     }
 
@@ -60,7 +70,7 @@ contract HealthRecord {
     }
 
     //Registering a new healthcare provider
-    function registerProvider() external onlyOwner {
+    function registerProvider() external onlyAdmin {
         providers[msg.sender] = true;
     }
 
