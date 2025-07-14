@@ -13,7 +13,8 @@ contract HealthRecord {
         bool isRegistered;
         string name;
         uint256 recordCount;
-        mapping(uint256 => Record) records;
+        mapping(uint256 => mapping(uint256 => Record)) recordHistory;
+        mapping(uint256 => uint256) latestVersion;
         mapping(address => bool) authorizedProviders;
     }
 
@@ -84,7 +85,8 @@ contract HealthRecord {
             ipfsHash: ipfsHash,
             timestamp: block.timestamp,
         });
-        
+
+        patients[msg.sender].latestVersion[recordId] = 1;
         patients[msg.sender].recordCount++;
         
         emit RecordAdded(msg.sender, recordId, recordType, ipfsHash);
@@ -99,13 +101,35 @@ contract HealthRecord {
     ) external onlyRegistered {
             require(recordId < patients[msg.sender].recordCount, "Record does not exist");
 
-            Record storage record = patients[msg.sender].records[recordId];
+            uint256 newVersion = patients[msg.sender].latestVersion[recordId] + 1;
+            
+            patients[msg.sender].recordHistory[recordId][newVersion] = Record({
             record.recordType = newRecordType;
             record.title = newTitle;
             record.ipfsHash = newIpfsHash;
             record.timestamp = block.timestamp;
 
             emit RecordUpdated(msg.sender, recordId, newIpfsHash);
+    });
+
+    //get an older version of a record
+    function getrecordVersion(
+        address patientAddress,
+        uint recordId,
+        uint256 version
+    ) external view onlyAuthorized(patientAddress) returns( atring memory, string memory, string memory, uint256)
+    {
+        require(recordId < patients[patientAddress].recordCount, "Record ID is invalid");
+        require(version > 0 && version <= patients[patientAddress].recordHistory[record][version]);
+
+        Record memory record = patients[patientAddress].recordHistory[recordId][version];
+
+        return(
+            record.recordType,
+            record.title,
+            record.ipfsHash,
+            record.timestamp
+        );
     }
 
 
