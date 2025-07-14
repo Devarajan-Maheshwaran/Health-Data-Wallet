@@ -23,6 +23,7 @@ contract HealthRecord {
         string title;
         string ipfsHash;
         uint256 timestamp;
+        bool isArchived;
     }
 
     // Events
@@ -31,6 +32,7 @@ contract HealthRecord {
     event AccessGranted(address patientAddress, address providerAddress);
     event AccessRevoked(address patientAddress, address providerAddress);
     event RecordUpdated(address indexed patientAddress, uint256 indexed recordId, string newIpfsHash);
+    event RecordArchived(address indexed patient, uint256 indexed recordId, uint256 version);
 
     //Mappings
     mapping(address => Patient) private patients;
@@ -84,6 +86,7 @@ contract HealthRecord {
             title: title,
             ipfsHash: ipfsHash,
             timestamp: block.timestamp,
+            isArchived: false
         });
 
         patients[msg.sender].latestVersion[recordId] = 1;
@@ -104,10 +107,11 @@ contract HealthRecord {
             uint256 newVersion = patients[msg.sender].latestVersion[recordId] + 1;
             
             patients[msg.sender].recordHistory[recordId][newVersion] = Record({
-            record.recordType = newRecordType;
-            record.title = newTitle;
-            record.ipfsHash = newIpfsHash;
-            record.timestamp = block.timestamp;
+            record.recordType = newRecordType,
+            record.title = newTitle,
+            record.ipfsHash = newIpfsHash,
+            record.timestamp = block.timestamp,
+            isArchived: false,
 
             emit RecordUpdated(msg.sender, recordId, newIpfsHash);
     });
@@ -130,8 +134,18 @@ contract HealthRecord {
             record.ipfsHash,
             record.timestamp
         );
-    }
 
+    //Archiving records
+    function archiveRecordVersion(uint256 recordId, uint256 version) external onlyRegistered {
+        require(recordId < patients[msg.sender].recordCount, "Invalid Record ID");
+        require(version > 0 && version <= patients[msg.sender].latestVersion[recordId], "Invalid Version");
+        Record storage record = patients[msg.sender].recordHistory[recordId][version];
+        require(!record.isArchived, "Already archived");
+        
+        record.isArchived = true;
+        
+        emit RecordArchived(msg.sender, recordId, version);
+    }
 
     //grant access to a healthprovider
     function grantAccess(address providerAddress) external onlyRegistered {
