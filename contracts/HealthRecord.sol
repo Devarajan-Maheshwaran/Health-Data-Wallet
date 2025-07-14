@@ -29,6 +29,7 @@ contract HealthRecord {
     event RecordAdded(address patientAddress, uint256 recordId, string recordType, string ipfsHash);
     event AccessGranted(address patientAddress, address providerAddress);
     event AccessRevoked(address patientAddress, address providerAddress);
+    event RecordUpdated(address indexed patientAddress, uint256 indexed recordId, string newIpfsHash);
 
     //Mappings
     mapping(address => Patient) private patients;
@@ -103,6 +104,8 @@ contract HealthRecord {
             record.title = newTitle;
             record.ipfsHash = newIpfsHash;
             record.timestamp = block.timestamp;
+
+            emit RecordUpdated(msg.sender, recordId, newIpfsHash);
     }
 
 
