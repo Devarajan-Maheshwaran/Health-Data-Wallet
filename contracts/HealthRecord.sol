@@ -208,4 +208,24 @@ contract HealthRecord {
     function getPatientName(address patientAddress) external view onlyAuthorized(patientAddress) returns (string memory) {
         return patients[patientAddress].name;
     }
+
+    function logAccess() external onlyAuthorized(msg.sender) {
+        require(recordId < patients[patientAddress].recordCount, "Record does not exist");
+        require(version > 0 && version <= patients[msg.sender].latestVersion[recordId], "Invalid version");
+
+        AccessLog memory newLog = AccessLog({
+            timestamp: block.timestamp,
+            accessor: msg.sender,
+            recordId: recordId,
+            version: verison
+        });
+
+        patients[msg.sender].accessLogs.push(newLog);
+
+    }
+
+    function getAccessLogs(address patientAddress) external view onlyAuthorized(patientAddress) returns (AccessLog[] memory) {
+        return patients[patientAddress].accessLogs;
+    }
+
 }
