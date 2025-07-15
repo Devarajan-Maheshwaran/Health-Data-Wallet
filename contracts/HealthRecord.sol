@@ -16,6 +16,7 @@ contract HealthRecord {
         mapping(uint256 => mapping(uint256 => Record)) recordHistory;
         mapping(uint256 => uint256) latestVersion;
         mapping(address => bool) authorizedProviders;
+        AccessLog[] accessLogs;
     }
 
     struct Record {
@@ -24,6 +25,13 @@ contract HealthRecord {
         string ipfsHash;
         uint256 timestamp;
         bool isArchived;
+    }
+
+    struct AccessLog{
+        uint256 timestamp,
+        address accessor,
+        uint256 recordId,
+        uint256 version
     }
 
     // Events
