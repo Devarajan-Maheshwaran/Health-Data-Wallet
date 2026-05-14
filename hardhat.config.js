@@ -1,6 +1,3 @@
-require("@nomicfoundation/hardhat-toolbox");
-
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
-  solidity: "0.8.28",
-};
+// This file is intentionally left as a redirect notice.
+// The project now uses TypeScript config: hardhat.config.ts
+// Run: npx hardhat compile
