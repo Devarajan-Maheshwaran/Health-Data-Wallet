@@ -1,16 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FolderLock, Users, Bot, QrCode, Stethoscope } from 'lucide-react';
+import { LayoutDashboard, FolderLock, Users, Bot, QrCode, Stethoscope, Pill } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/vault',     icon: FolderLock,      label: 'Records Vault' },
-  { href: '/access',   icon: Users,           label: 'Access Manager' },
-  { href: '/ai',       icon: Bot,             label: 'AI Assistant' },
-  { href: '/emergency',icon: QrCode,          label: 'Emergency Profile' },
-  { href: '/provider', icon: Stethoscope,     label: 'Provider Portal' },
+  { href: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard'        },
+  { href: '/vault',       icon: FolderLock,      label: 'Records Vault'    },
+  { href: '/medication',  icon: Pill,            label: 'Medication'       },
+  { href: '/access',      icon: Users,           label: 'Access Manager'   },
+  { href: '/ai',          icon: Bot,             label: 'AI Assistant'     },
+  { href: '/emergency',   icon: QrCode,          label: 'Emergency Profile'},
+  { href: '/provider',    icon: Stethoscope,     label: 'Provider Portal'  },
 ];
 
 export function Sidebar() {
