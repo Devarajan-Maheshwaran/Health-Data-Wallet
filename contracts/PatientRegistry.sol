@@ -112,11 +112,13 @@ contract PatientRegistry {
     // Views
     // -------------------------------------------------------------------------
 
+    /// @notice Returns profile details for a patient.
+    /// @dev Return variable renamed to `registered` to avoid shadowing isRegistered().
     function getProfile(address patient)
         external
         view
         returns (
-            bool   isRegistered,
+            bool   registered,
             string memory name,
             string memory emergencyIpfsHash,
             uint256 registeredAt
