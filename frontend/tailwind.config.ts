@@ -1,40 +1,55 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  darkMode: 'class',
+  darkMode: ['class'],
   content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './lib/**/*.{ts,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        primary:   '#0EA5E9',
-        surface:   '#0A0F1E',
-        card:      'rgba(255,255,255,0.05)',
-        success:   '#10B981',
-        warning:   '#F59E0B',
-        danger:    '#EF4444',
-        textPrimary: '#F8FAFC',
+        primary: {
+          DEFAULT: '#0EA5E9',
+          50:  '#F0F9FF',
+          100: '#E0F2FE',
+          500: '#0EA5E9',
+          600: '#0284C7',
+          700: '#0369A1',
+        },
+        surface: {
+          DEFAULT: '#0A0F1E',
+          card:    'rgba(255,255,255,0.05)',
+          border:  'rgba(255,255,255,0.08)',
+        },
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger:  '#EF4444',
       },
       backgroundImage: {
-        'grid-pattern': "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230EA5E9' fill-opacity='0.05'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':  'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'hero-glow': 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14,165,233,0.15), transparent)',
       },
-      backdropBlur: { xs: '2px' },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+      },
       animation: {
+        'fade-in':    'fadeIn 0.5s ease-out',
+        'slide-up':   'slideUp 0.4s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 6s ease-in-out infinite',
+        'glow':       'glow 2s ease-in-out infinite alternate',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%':      { transform: 'translateY(-10px)' },
-        },
+        fadeIn:  { from: { opacity: '0' },                      to: { opacity: '1' } },
+        slideUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        glow:    { from: { boxShadow: '0 0 5px #0EA5E9' },     to: { boxShadow: '0 0 20px #0EA5E9, 0 0 40px #0EA5E940' } },
       },
+      backdropBlur: { xs: '2px' },
     },
   },
-  plugins: [],
-};
-
-export default config;
+  plugins: [require('@tailwindcss/typography')],
+}
+export default config
