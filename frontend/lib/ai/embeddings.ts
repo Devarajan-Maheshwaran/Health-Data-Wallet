@@ -1,8 +1,7 @@
 /**
  * embeddings.ts — Phase 5
- * Semantic embedding using Xenova/all-MiniLM-L6-v2 (~23 MB).
- * Converts text chunks to 384-dim float32 vectors for cosine similarity search.
- * Vectors are stored in IndexedDB (idb-keyval) keyed by recordId+chunkIndex.
+ * Semantic embedding using Xenova/all-MiniLM-L6-v2 (~23 MB, ONNX).
+ * Vectors are stored in IndexedDB keyed by `${recordId}:${chunkIndex}`.
  */
 
 import { pipeline } from '@xenova/transformers';
@@ -11,18 +10,18 @@ import { get, set, del, keys } from 'idb-keyval';
 export type EmbeddingVector = number[];
 
 export interface StoredChunk {
-  id: string;           // `${recordId}:${chunkIndex}`
-  recordId: number;
+  id:         string;
+  recordId:   number;
   chunkIndex: number;
-  text: string;
-  embedding: EmbeddingVector;
-  docType: number;
-  title: string;
+  text:       string;
+  embedding:  EmbeddingVector;
+  docType:    number;
+  title:      string;
 }
 
 let embedPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
 
-async function getEmbedder() {
+export async function getEmbedder() {
   if (!embedPipeline) {
     embedPipeline = await pipeline(
       'feature-extraction',
@@ -33,24 +32,17 @@ async function getEmbedder() {
   return embedPipeline;
 }
 
-/**
- * Embeds a single text string → 384-dim vector.
- * Uses mean pooling with L2 normalisation (standard for MiniLM).
- */
 export async function embed(text: string): Promise<EmbeddingVector> {
   const embedder = await getEmbedder();
-  const output = await embedder(text, { pooling: 'mean', normalize: true });
+  const output   = await embedder(text, { pooling: 'mean', normalize: true });
   return Array.from(output.data as Float32Array);
 }
 
-/** Cosine similarity between two unit-normalised vectors (dot product). */
 export function cosineSim(a: EmbeddingVector, b: EmbeddingVector): number {
   let dot = 0;
   for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
   return dot;
 }
-
-// ─── Vector Store (IndexedDB) ────────────────────────────────────────────────
 
 const STORE_PREFIX = 'medvault:chunk:';
 
@@ -59,38 +51,34 @@ export async function saveChunk(chunk: StoredChunk): Promise<void> {
 }
 
 export async function loadAllChunks(): Promise<StoredChunk[]> {
-  const allKeys = await keys();
+  const allKeys   = await keys();
   const chunkKeys = (allKeys as string[]).filter(k => k.startsWith(STORE_PREFIX));
-  const chunks = await Promise.all(chunkKeys.map(k => get<StoredChunk>(k)));
+  const chunks    = await Promise.all(chunkKeys.map(k => get<StoredChunk>(k)));
   return chunks.filter(Boolean) as StoredChunk[];
 }
 
 export async function deleteChunksForRecord(recordId: number): Promise<void> {
-  const allKeys = await keys();
-  const toDelete = (allKeys as string[]).filter(k =>
-    k.startsWith(`${STORE_PREFIX}${recordId}:`)
+  const allKeys  = await keys();
+  const toDelete = (allKeys as string[]).filter(
+    k => k.startsWith(`${STORE_PREFIX}${recordId}:`)
   );
   await Promise.all(toDelete.map(k => del(k)));
 }
 
-/**
- * Semantic search: finds the top-k most relevant chunks for a query.
- * All computation is in-browser — no network call.
- */
+export async function getChunkCount(): Promise<number> {
+  const allKeys = await keys();
+  return (allKeys as string[]).filter(k => k.startsWith(STORE_PREFIX)).length;
+}
+
 export async function semanticSearch(
   query: string,
-  topK = 5
-): Promise<StoredChunk[]> {
-  const [queryVec, allChunks] = await Promise.all([
-    embed(query),
-    loadAllChunks(),
-  ]);
-
-  const scored = allChunks.map(chunk => ({
-    chunk,
-    score: cosineSim(queryVec, chunk.embedding),
-  }));
-
+  topK = 5,
+  minScore = 0.2
+): Promise<Array<StoredChunk & { score: number }>> {
+  const [queryVec, allChunks] = await Promise.all([embed(query), loadAllChunks()]);
+  const scored = allChunks
+    .map(c => ({ ...c, score: cosineSim(queryVec, c.embedding) }))
+    .filter(c => c.score >= minScore);
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, topK).map(s => s.chunk);
+  return scored.slice(0, topK);
 }
