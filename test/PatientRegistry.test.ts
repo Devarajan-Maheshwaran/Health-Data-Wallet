@@ -4,10 +4,10 @@ import { PatientRegistry } from "../typechain-types";
 
 describe("PatientRegistry", () => {
   let registry: PatientRegistry;
-  let owner: any, alice: any, bob: any;
+  let owner: any, alice: any, bob: any, carol: any;
 
   beforeEach(async () => {
-    [owner, alice, bob] = await ethers.getSigners();
+    [owner, alice, bob, carol] = await ethers.getSigners();
     const Factory = await ethers.getContractFactory("PatientRegistry");
     registry = await Factory.deploy();
   });
@@ -61,7 +61,7 @@ describe("PatientRegistry", () => {
       await registry.connect(alice).register("Alice");
     });
 
-    it("adds a trusted party", async () => {
+    it("adds a trusted party and emits event", async () => {
       await expect(registry.connect(alice).addTrustedParty(bob.address))
         .to.emit(registry, "TrustedPartyAdded")
         .withArgs(alice.address, bob.address);
@@ -75,6 +75,17 @@ describe("PatientRegistry", () => {
         .to.be.revertedWith("PatientRegistry: cannot add self");
     });
 
+    it("reverts when adding a duplicate trusted party", async () => {
+      await registry.connect(alice).addTrustedParty(bob.address);
+      await expect(registry.connect(alice).addTrustedParty(bob.address))
+        .to.be.revertedWith("PatientRegistry: already a trusted party");
+    });
+
+    it("isTrusted returns true after adding", async () => {
+      await registry.connect(alice).addTrustedParty(bob.address);
+      expect(await registry.isTrusted(alice.address, bob.address)).to.be.true;
+    });
+
     it("removes a trusted party by index", async () => {
       await registry.connect(alice).addTrustedParty(bob.address);
       await expect(registry.connect(alice).removeTrustedParty(0))
@@ -85,9 +96,29 @@ describe("PatientRegistry", () => {
       expect(parties.length).to.equal(0);
     });
 
+    it("isTrusted returns false after removal", async () => {
+      await registry.connect(alice).addTrustedParty(bob.address);
+      await registry.connect(alice).removeTrustedParty(0);
+      expect(await registry.isTrusted(alice.address, bob.address)).to.be.false;
+    });
+
+    it("can re-add a party after removal", async () => {
+      await registry.connect(alice).addTrustedParty(bob.address);
+      await registry.connect(alice).removeTrustedParty(0);
+      await expect(registry.connect(alice).addTrustedParty(bob.address)).to.not.be.reverted;
+      expect(await registry.isTrusted(alice.address, bob.address)).to.be.true;
+    });
+
     it("reverts on out-of-bounds index", async () => {
       await expect(registry.connect(alice).removeTrustedParty(5))
         .to.be.revertedWith("PatientRegistry: index out of bounds");
+    });
+
+    it("supports multiple trusted parties", async () => {
+      await registry.connect(alice).addTrustedParty(bob.address);
+      await registry.connect(alice).addTrustedParty(carol.address);
+      const parties = await registry.getTrustedParties(alice.address);
+      expect(parties.length).to.equal(2);
     });
   });
 
