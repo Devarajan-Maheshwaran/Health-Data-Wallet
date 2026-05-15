@@ -1,25 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+/**
+ * POST /api/providers/register — register a new provider (admin-gated)
+ */
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { wallet_address, name, specialty, hospital, license_number } = body;
+  try {
+    const { walletAddress, name, specialty, hospital, licenseNumber } = await req.json();
+    if (!walletAddress) return NextResponse.json({ error: 'Missing walletAddress' }, { status: 400 });
 
-  if (!wallet_address || !name) {
-    return NextResponse.json({ error: 'wallet_address and name are required' }, { status: 400 });
+    const { data, error } = await supabaseAdmin
+      .from('providers')
+      .upsert({ wallet_address: walletAddress.toLowerCase(), name, specialty, hospital, license_number: licenseNumber })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true, provider: data });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Registration failed';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
-
-  const { data, error } = await supabase
-    .from('providers')
-    .upsert({ wallet_address, name, specialty, hospital, license_number })
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data, { status: 201 });
 }

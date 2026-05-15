@@ -1,5 +1,2 @@
-'use client';
-import { AIAssistantPage } from '@/components/ai/AIAssistantPage';
-export default function AI() {
-  return <AIAssistantPage />;
-}
+import { AIPage } from '@/components/ai/AIPage';
+export default function Page() { return <AIPage />; }

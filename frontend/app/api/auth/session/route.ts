@@ -1,20 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+/**
+ * GET  /api/auth/session  — returns current session
+ * DELETE /api/auth/session — logout (clears cookie)
+ */
 
-export async function GET(req: NextRequest) {
-  const cookieStore = cookies();
-  const raw = cookieStore.get('medvault-session')?.value;
-  if (!raw) return NextResponse.json({ authenticated: false });
+import { NextRequest, NextResponse } from 'next/server';
+
+function getSession(req: NextRequest) {
+  const cookie = req.cookies.get('medvault-session')?.value;
+  if (!cookie) return null;
   try {
-    const session = JSON.parse(raw);
-    return NextResponse.json({ authenticated: true, ...session });
+    return JSON.parse(Buffer.from(cookie, 'base64').toString('utf-8'));
   } catch {
-    return NextResponse.json({ authenticated: false });
+    return null;
   }
 }
 
+export async function GET(req: NextRequest) {
+  const session = getSession(req);
+  if (!session) return NextResponse.json({ authenticated: false }, { status: 401 });
+  return NextResponse.json({ authenticated: true, ...session });
+}
+
 export async function DELETE() {
-  const cookieStore = cookies();
-  cookieStore.delete('medvault-session');
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set('medvault-session', '', { maxAge: 0, path: '/' });
+  return response;
 }

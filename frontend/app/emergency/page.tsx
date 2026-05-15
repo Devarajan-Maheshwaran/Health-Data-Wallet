@@ -1,5 +1,2 @@
-'use client';
-import { EmergencyProfilePage } from '@/components/emergency/EmergencyProfilePage';
-export default function Emergency() {
-  return <EmergencyProfilePage />;
-}
+import { EmergencyPage } from '@/components/emergency/EmergencyPage';
+export default function Page() { return <EmergencyPage />; }
