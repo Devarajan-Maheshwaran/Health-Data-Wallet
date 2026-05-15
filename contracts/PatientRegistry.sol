@@ -3,9 +3,6 @@ pragma solidity ^0.8.24;
 
 /// @title PatientRegistry
 /// @notice Manages owner identity, registration, and public emergency/trusted profile.
-/// @dev Although named "Patient" for the MedVault hackathon demo, this registry is
-///      domain-agnostic: any wallet owner can register and designate trusted parties
-///      (doctors, attorneys, family members, financial advisors, etc.).
 contract PatientRegistry {
 
     // -------------------------------------------------------------------------
@@ -15,13 +12,9 @@ contract PatientRegistry {
     struct PatientProfile {
         bool   isRegistered;
         string name;
-        /// @dev emergencyIpfsHash stores the PUBLIC summary card on IPFS (NOT encrypted).
-        ///      For medical use: blood type, allergies, current meds.
-        ///      For legal use: executor name, attorney contact, key document locations.
-        ///      Only put data the owner explicitly wants visible without auth.
+        /// @dev emergencyIpfsHash: PUBLIC summary card on IPFS (NOT encrypted).
+        ///      Blood type, allergies, current meds, or attorney/executor contact.
         string emergencyIpfsHash;
-        /// @dev trustedParties replaces a single-purpose "emergency contact" list.
-        ///      Works for doctors, attorneys, family members, or any designate.
         address[] trustedParties;
         uint256 registeredAt;
     }
@@ -31,6 +24,8 @@ contract PatientRegistry {
     // -------------------------------------------------------------------------
 
     mapping(address => PatientProfile) private profiles;
+    /// @dev Quick lookup to prevent duplicate trusted parties without looping.
+    mapping(address => mapping(address => bool)) private isTrustedParty;
     address public admin;
 
     // -------------------------------------------------------------------------
@@ -68,13 +63,11 @@ contract PatientRegistry {
     // Registration
     // -------------------------------------------------------------------------
 
-    /// @notice Register a new wallet as a patient/owner.
-    /// @param name  Display name stored on-chain (not sensitive).
     function register(string calldata name) external {
         require(!profiles[msg.sender].isRegistered, "PatientRegistry: already registered");
-        profiles[msg.sender].isRegistered  = true;
-        profiles[msg.sender].name          = name;
-        profiles[msg.sender].registeredAt  = block.timestamp;
+        profiles[msg.sender].isRegistered = true;
+        profiles[msg.sender].name         = name;
+        profiles[msg.sender].registeredAt = block.timestamp;
         emit PatientRegistered(msg.sender, name, block.timestamp);
     }
 
@@ -82,8 +75,6 @@ contract PatientRegistry {
     // Emergency / Public profile card
     // -------------------------------------------------------------------------
 
-    /// @notice Update the public IPFS card (unencrypted, scannable by anyone).
-    /// @param ipfsHash  CID of the JSON card on IPFS / Greenfield public bucket.
     function updateEmergencyCard(string calldata ipfsHash) external onlyRegistered {
         profiles[msg.sender].emergencyIpfsHash = ipfsHash;
         emit EmergencyCardUpdated(msg.sender, ipfsHash);
@@ -93,22 +84,27 @@ contract PatientRegistry {
     // Trusted parties management
     // -------------------------------------------------------------------------
 
-    /// @notice Add a trusted party (doctor, attorney, family member, etc.).
+    /// @notice Add a trusted party. Reverts if already added (no duplicates).
     function addTrustedParty(address party) external onlyRegistered {
         require(party != address(0), "PatientRegistry: zero address");
         require(party != msg.sender,  "PatientRegistry: cannot add self");
+        require(
+            !isTrustedParty[msg.sender][party],
+            "PatientRegistry: already a trusted party"
+        );
         profiles[msg.sender].trustedParties.push(party);
+        isTrustedParty[msg.sender][party] = true;
         emit TrustedPartyAdded(msg.sender, party);
     }
 
-    /// @notice Remove a trusted party by index.
-    /// @dev Swap-and-pop to avoid gaps; index must be verified off-chain first.
+    /// @notice Remove a trusted party by index (swap-and-pop).
     function removeTrustedParty(uint256 index) external onlyRegistered {
         address[] storage parties = profiles[msg.sender].trustedParties;
         require(index < parties.length, "PatientRegistry: index out of bounds");
         address removed = parties[index];
         parties[index] = parties[parties.length - 1];
         parties.pop();
+        isTrustedParty[msg.sender][removed] = false;
         emit TrustedPartyRemoved(msg.sender, removed);
     }
 
@@ -140,5 +136,10 @@ contract PatientRegistry {
 
     function isRegistered(address patient) external view returns (bool) {
         return profiles[patient].isRegistered;
+    }
+
+    /// @notice Check if a specific address is a trusted party of a patient.
+    function isTrusted(address patient, address party) external view returns (bool) {
+        return isTrustedParty[patient][party];
     }
 }

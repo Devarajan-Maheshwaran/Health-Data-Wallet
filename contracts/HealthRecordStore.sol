@@ -1,35 +1,37 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "./AccessController.sol";
+
 /// @title HealthRecordStore
 /// @notice Versioned, typed document storage. Each record is identified by
 ///         (owner address, recordId) and supports unlimited versions.
-/// @dev Domain-agnostic: DocumentType covers medical AND legal/financial/identity
-///      documents. The contract only stores CIDs and metadata hashes — actual
-///      files live encrypted on BNB Greenfield (or IPFS for fallback).
+/// @dev Integrated with AccessController for on-chain permission enforcement.
+///      Owners add records themselves; authorised providers can update records
+///      (add new versions) on behalf of a patient if granted PROVIDER_WRITE.
+///      All writes automatically emit an immutable audit log entry via
+///      AccessController.logAccess — no manual frontend call needed.
 contract HealthRecordStore {
 
     // -------------------------------------------------------------------------
     // Enums
     // -------------------------------------------------------------------------
 
-    /// @dev Medical types first (hackathon demo), followed by general vault types.
-    ///      Extend OTHER for anything not listed.
     enum DocumentType {
         // --- Medical ---
-        LAB_REPORT,        // 0
-        PRESCRIPTION,      // 1
-        IMAGING,           // 2
-        DISCHARGE_SUMMARY, // 3
-        VACCINATION,       // 4
+        LAB_REPORT,          // 0
+        PRESCRIPTION,        // 1
+        IMAGING,             // 2
+        DISCHARGE_SUMMARY,   // 3
+        VACCINATION,         // 4
         // --- General vault ---
-        INSURANCE_POLICY,  // 5
-        LEGAL_CONTRACT,    // 6  e.g. NDA, court filing, will
-        IDENTITY_DOCUMENT, // 7  e.g. passport, Aadhaar, license
-        FINANCIAL_RECORD,  // 8  e.g. tax return, bank statement
-        PROPERTY_DOCUMENT, // 9  e.g. deed, lease
-        ACADEMIC_CREDENTIAL, // 10 e.g. degree, transcript
-        OTHER              // 11
+        INSURANCE_POLICY,    // 5
+        LEGAL_CONTRACT,      // 6
+        IDENTITY_DOCUMENT,   // 7
+        FINANCIAL_RECORD,    // 8
+        PROPERTY_DOCUMENT,   // 9
+        ACADEMIC_CREDENTIAL, // 10
+        OTHER                // 11
     }
 
     enum RecordStatus {
@@ -43,13 +45,9 @@ contract HealthRecordStore {
     // -------------------------------------------------------------------------
 
     struct RecordVersion {
-        /// @dev CID of the encrypted file on Greenfield or IPFS.
         string  cid;
-        /// @dev keccak256 hash of the AI-extracted metadata JSON.
-        ///      Full JSON stored off-chain; only the integrity hash lives on-chain.
         string  metadataHash;
         uint256 timestamp;
-        /// @dev Who uploaded this version — patient wallet or an authorized provider.
         address uploadedBy;
         RecordStatus status;
     }
@@ -65,6 +63,8 @@ contract HealthRecordStore {
     // -------------------------------------------------------------------------
     // State
     // -------------------------------------------------------------------------
+
+    AccessController private immutable accessController;
 
     /// owner → recordId → RecordHead
     mapping(address => mapping(uint256 => RecordHead)) private recordHeads;
@@ -97,16 +97,44 @@ contract HealthRecordStore {
     );
 
     // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    /// @param _accessController Address of the deployed AccessController contract.
+    constructor(address _accessController) {
+        require(_accessController != address(0), "HealthRecordStore: zero address");
+        accessController = AccessController(_accessController);
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal helpers
+    // -------------------------------------------------------------------------
+
+    /// @dev Revert if msg.sender is neither the patient nor holds PROVIDER_WRITE.
+    function _requireWriteAccess(address patient, uint256 recordId) internal view {
+        if (msg.sender == patient) return; // owner always allowed
+        (bool allowed, AccessController.AccessTier tier) =
+            accessController.checkAccess(patient, msg.sender, recordId);
+        require(
+            allowed && tier == AccessController.AccessTier.PROVIDER_WRITE,
+            "HealthRecordStore: caller lacks PROVIDER_WRITE access"
+        );
+    }
+
+    /// @dev Log an access event immutably via AccessController.
+    function _log(address patient, uint256 recordId, uint256 version, string memory action) internal {
+        // Use try/catch so a logging failure never blocks the main operation.
+        try accessController.logAccess(patient, recordId, version, action) {}
+        catch {}
+    }
+
+    // -------------------------------------------------------------------------
     // Write functions
     // -------------------------------------------------------------------------
 
-    /// @notice Add a brand-new record (version 1).
-    /// @param docType       Enum value for the document category.
-    /// @param title         Human-readable title stored on-chain.
-    /// @param cid           Greenfield / IPFS object name of the encrypted file.
-    /// @param metadataHash  keccak256 of the AI-extracted metadata JSON.
+    /// @notice Add a brand-new record (version 1). Only the owner can call this.
     function addRecord(
-        DocumentType   docType,
+        DocumentType    docType,
         string calldata title,
         string calldata cid,
         string calldata metadataHash
@@ -128,45 +156,56 @@ contract HealthRecordStore {
         });
         recordCounts[msg.sender]++;
         emit RecordAdded(msg.sender, id, docType, cid);
+        _log(msg.sender, id, 1, "ADD_RECORD");
     }
 
     /// @notice Add a new version to an existing record.
-    /// @dev Can be called by the owner OR an authorized provider
-    ///      (caller authorization is enforced in AccessController — frontend
-    ///       should check AccessController.checkAccess before calling this).
+    /// @param patient   The owner of the record.
+    /// @param recordId  The record to update.
+    /// @dev Caller must be the patient OR hold PROVIDER_WRITE in AccessController.
+    ///      An immutable audit log entry is created automatically on-chain.
     function updateRecord(
+        address patient,
         uint256 recordId,
         string calldata newCid,
         string calldata newMetadataHash
     ) external {
         require(
-            recordHeads[msg.sender][recordId].exists,
+            recordHeads[patient][recordId].exists,
             "HealthRecordStore: record does not exist"
         );
-        uint256 newVersion = recordHeads[msg.sender][recordId].latestVersion + 1;
-        recordHeads[msg.sender][recordId].latestVersion = newVersion;
-        versions[msg.sender][recordId][newVersion] = RecordVersion({
+        _requireWriteAccess(patient, recordId);
+
+        uint256 newVersion = recordHeads[patient][recordId].latestVersion + 1;
+        recordHeads[patient][recordId].latestVersion = newVersion;
+        versions[patient][recordId][newVersion] = RecordVersion({
             cid:          newCid,
             metadataHash: newMetadataHash,
             timestamp:    block.timestamp,
             uploadedBy:   msg.sender,
             status:       RecordStatus.ACTIVE
         });
-        emit RecordUpdated(msg.sender, recordId, newVersion, newCid);
+        emit RecordUpdated(patient, recordId, newVersion, newCid);
+        _log(patient, recordId, newVersion, "UPDATE_RECORD");
     }
 
     /// @notice Change the status of a specific version (archive or soft-delete).
+    /// @param patient  The owner of the record.
+    /// @dev Caller must be the patient OR hold PROVIDER_WRITE.
     function setVersionStatus(
-        uint256    recordId,
-        uint256    version,
+        address      patient,
+        uint256      recordId,
+        uint256      version,
         RecordStatus newStatus
     ) external {
         require(
-            recordHeads[msg.sender][recordId].exists,
+            recordHeads[patient][recordId].exists,
             "HealthRecordStore: record does not exist"
         );
-        versions[msg.sender][recordId][version].status = newStatus;
-        emit RecordStatusChanged(msg.sender, recordId, version, newStatus);
+        _requireWriteAccess(patient, recordId);
+        versions[patient][recordId][version].status = newStatus;
+        emit RecordStatusChanged(patient, recordId, version, newStatus);
+        _log(patient, recordId, version, "SET_STATUS");
     }
 
     // -------------------------------------------------------------------------
@@ -224,5 +263,10 @@ contract HealthRecordStore {
 
     function getRecordCount(address owner) external view returns (uint256) {
         return recordCounts[owner];
+    }
+
+    /// @notice Returns the address of the wired AccessController.
+    function getAccessController() external view returns (address) {
+        return address(accessController);
     }
 }

@@ -1,16 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 
-/// @dev HealthRecordStore now requires the AccessController address in its constructor.
-///      This script reads the AccessController deployment and passes it automatically.
+/// @dev HealthRecordStore requires the AccessController address at construction time.
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
   const { deploy, get } = hre.deployments;
   const { deployer } = await hre.getNamedAccounts();
 
-  // AccessController must be deployed first (script 03 was renamed — see note below)
-  // Deploy order: 01 PatientRegistry, 02 AccessController, 03 HealthRecordStore
-  // If you run all scripts together with `hardhat deploy`, ordering is by filename.
-  // AccessController is deployed in 02_... so we read it here.
   const accessController = await get('AccessController');
 
   await deploy('HealthRecordStore', {
