@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.3",
+    "next": "14.2.29",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "typescript": "^5.4.5",
@@ -56,5 +56,14 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.13"
+  },
+  "overrides": {
+    "axios": "^1.8.4",
+    "undici": "^6.21.2",
+    "follow-redirects": "^1.15.9",
+    "fast-uri": "^3.0.6",
+    "cookie": "^0.7.2",
+    "elliptic": "^6.6.1",
+    "form-data": "^4.0.2"
   }
 }
