@@ -1,5 +1,10 @@
 -- MedVault — Supabase Database Schema
 -- Run this in the Supabase SQL editor to initialize the database.
+-- NOTE: record_metadata_cache was intentionally removed.
+--       AI-extracted medical data (diseases, drugs, symptoms) is stored
+--       exclusively in the user's browser IndexedDB and never sent to any server.
+--       Cross-device access is handled via wallet re-authentication (SIWE) +
+--       re-download and re-index from BNB Greenfield on login.
 
 -- ============================================================
 -- Providers registry
@@ -53,40 +58,16 @@ CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipien
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(recipient_address, read);
 
 -- ============================================================
--- Off-chain metadata cache
--- Mirrors AI-extracted metadata from on-chain + Greenfield
--- ============================================================
-CREATE TABLE IF NOT EXISTS record_metadata_cache (
-    id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    patient_address     TEXT NOT NULL,
-    record_id           INTEGER NOT NULL,
-    version             INTEGER NOT NULL DEFAULT 1,
-    object_name         TEXT,             -- Greenfield object name / CID
-    ai_extracted        JSONB,            -- NER output JSON: { diseases, drugs, symptoms, lab_values }
-    document_type       TEXT,             -- matches DocumentType enum
-    summary             TEXT,             -- LLM-generated summary (Phase 5)
-    indexed_at          TIMESTAMPTZ DEFAULT now(),
-    UNIQUE(patient_address, record_id, version)
-);
-
-CREATE INDEX IF NOT EXISTS idx_metadata_patient ON record_metadata_cache(patient_address);
-CREATE INDEX IF NOT EXISTS idx_metadata_doc_type ON record_metadata_cache(patient_address, document_type);
-
--- ============================================================
 -- Row Level Security
--- Note: API routes use the admin (service-role) client so these
--- policies apply only to direct client-side Supabase calls.
 -- ============================================================
-ALTER TABLE providers              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE access_requests        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE record_metadata_cache  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE providers       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE access_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications   ENABLE ROW LEVEL SECURITY;
 
 -- Providers: anyone can read verified providers
 CREATE POLICY "public read verified providers" ON providers
     FOR SELECT USING (verified = true);
 
--- Notifications: only the recipient can read their notifications
--- (enforced at API layer via wallet auth; this is a belt-and-suspenders)
+-- Notifications: API-layer auth is primary gating
 CREATE POLICY "own notifications" ON notifications
-    FOR ALL USING (true); -- API-layer auth is primary gating
+    FOR ALL USING (true);
