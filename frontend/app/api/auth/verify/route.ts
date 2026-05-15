@@ -1,11 +1,12 @@
 /**
  * POST /api/auth/verify
- * Verifies a SIWE (Sign-In With Ethereum) message + signature.
- * Returns a session cookie on success.
+ * Verifies a SIWE message + signature.
+ * FIX: session cookie is now HMAC-SHA256 signed (not plain base64) to prevent tampering.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { SiweMessage } from 'siwe';
+import { signSession, SESSION_COOKIE } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,22 +23,15 @@ export async function POST(req: NextRequest) {
     }
 
     const { address, chainId } = result.data;
-
-    // Create a lightweight session payload
-    const session = {
-      address,
-      chainId,
-      issuedAt: new Date().toISOString(),
-    };
+    const token = await signSession({ address, chainId, issuedAt: new Date().toISOString() });
 
     const response = NextResponse.json({ ok: true, address });
-    // Encode session as base64 in a HttpOnly cookie (production: use iron-session or JWT)
-    response.cookies.set('medvault-session', Buffer.from(JSON.stringify(session)).toString('base64'), {
+    response.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure:   process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
+      maxAge:   60 * 60 * 24, // 24 hours
+      path:     '/',
     });
 
     return response;

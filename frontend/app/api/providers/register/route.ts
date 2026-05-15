@@ -1,18 +1,26 @@
 /**
- * POST /api/providers/register — register a new provider (admin-gated)
+ * POST /api/providers/register — register a new provider
+ * FIX: requires a valid session cookie; wallet address must match the session.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
-    const { walletAddress, name, specialty, hospital, licenseNumber } = await req.json();
-    if (!walletAddress) return NextResponse.json({ error: 'Missing walletAddress' }, { status: 400 });
+    // Auth guard
+    const session = getSession(req);
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { name, specialty, hospital, licenseNumber } = await req.json();
+
+    // Wallet address always comes from the verified session — never from the request body
+    const walletAddress = session.address.toLowerCase();
 
     const { data, error } = await supabaseAdmin
       .from('providers')
-      .upsert({ wallet_address: walletAddress.toLowerCase(), name, specialty, hospital, license_number: licenseNumber })
+      .upsert({ wallet_address: walletAddress, name, specialty, hospital, license_number: licenseNumber, verified: false })
       .select()
       .single();
 

@@ -1,10 +1,11 @@
 /**
  * POST /api/access-requests — create a new access request (provider → patient)
- * GET  /api/access-requests?address=0x... — list requests for a patient or provider
+ * GET  /api/access-requests?address=0x...&role=patient|provider
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,25 +19,27 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('access_requests')
       .insert({
-        patient_address: patientAddress.toLowerCase(),
+        patient_address:   patientAddress.toLowerCase(),
         requester_address: requesterAddress.toLowerCase(),
         tier,
-        record_ids: recordIds ?? [],
-        duration_seconds: durationSeconds ?? null,
-        reason: reason ?? '',
-        status: 'pending',
+        record_ids:        recordIds ?? [],
+        duration_seconds:  durationSeconds ?? null,
+        reason:            reason ?? '',
+        status:            'pending',
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    // Create notification for the patient
+    // FIX: payload contains only request coordination metadata — NO free-text reason.
+    // The patient fetches the full access_request row (including reason) separately
+    // via GET /api/access-requests, so reason never needs to live in notifications.
     await supabaseAdmin.from('notifications').insert({
       recipient_address: patientAddress.toLowerCase(),
-      type: 'access_request',
-      payload: { requestId: data.id, requesterAddress, tier, reason },
-      read: false,
+      type:              'access_request',
+      payload:           { requestId: data.id, requesterAddress, tier },
+      read:              false,
     });
 
     return NextResponse.json({ ok: true, request: data });
@@ -48,7 +51,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get('address');
-  const role = req.nextUrl.searchParams.get('role') ?? 'patient'; // 'patient' | 'provider'
+  const role    = req.nextUrl.searchParams.get('role') ?? 'patient';
 
   if (!address) return NextResponse.json({ error: 'Missing address' }, { status: 400 });
 
