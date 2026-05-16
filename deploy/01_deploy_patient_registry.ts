@@ -12,19 +12,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     from: deployer,
     args: [],
     log: true,
-    waitConfirmations: hre.network.name === "hardhat" ? 1 : 5,
+    waitConfirmations: 1,
   });
 
   console.log("PatientRegistry deployed to:", result.address);
-
-  // Verify on BscScan (skip for local)
-  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
-    console.log("Verifying on BscScan...");
-    await hre.run("verify:verify", {
-      address: result.address,
-      constructorArguments: [],
-    });
-  }
 };
 
 func.tags = ["PatientRegistry", "all"];

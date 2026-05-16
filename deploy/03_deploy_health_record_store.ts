@@ -1,21 +1,25 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { DeployFunction } from 'hardhat-deploy/types';
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { DeployFunction } from "hardhat-deploy/types";
 
-/// @dev HealthRecordStore requires the AccessController address at construction time.
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
-  const { deploy, get } = hre.deployments;
-  const { deployer } = await hre.getNamedAccounts();
+  const { deployments, getNamedAccounts } = hre;
+  const { deploy, get } = deployments;
+  const { deployer } = await getNamedAccounts();
 
-  const accessController = await get('AccessController');
+  const accessController = await get("AccessController");
+  console.log("Deploying HealthRecordStore with account:", deployer);
+  console.log("Using AccessController at:", accessController.address);
 
-  await deploy('HealthRecordStore', {
+  const result = await deploy("HealthRecordStore", {
     from: deployer,
     args: [accessController.address],
-    log:  true,
-    autoMine: true,
+    log: true,
+    waitConfirmations: 1,
   });
+
+  console.log("HealthRecordStore deployed to:", result.address);
 };
 
-func.tags = ['HealthRecordStore'];
-func.dependencies = ['AccessController'];
+func.tags = ["HealthRecordStore", "all"];
+func.dependencies = ["AccessController"];
 export default func;
