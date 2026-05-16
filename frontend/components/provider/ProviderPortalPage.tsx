@@ -15,8 +15,8 @@ export function ProviderPortalPage() {
   const { data: accessData } = useReadContract({
     address: CONTRACT_ADDRESSES.AccessController,
     abi: ACCESS_CONTROLLER_ABI,
-    functionName: 'checkAccess',
-    args: [checkedAddr as `0x${string}`, address!, 0n],
+    functionName: 'hasAccess',
+    args: [checkedAddr as `0x${string}`, address!, 0],
     query: { enabled: !!checkedAddr && !!address },
   });
 
@@ -41,10 +41,13 @@ export function ProviderPortalPage() {
               />
               <Button onClick={() => setCheckedAddr(patientAddr)}>Check Access</Button>
             </div>
-            {accessData && (
+            {accessData !== undefined && (
               <div className="mt-4 glass rounded-xl p-4">
                 <p className="text-sm">
-                  Access: <span className={accessData[0] ? 'text-success' : 'text-danger'}>{accessData[0] ? '✅ Allowed' : '❌ Denied'}</span>
+                  Access:{' '}
+                  <span className={accessData ? 'text-success' : 'text-danger'}>
+                    {accessData ? '\u2705 Allowed' : '\u274c Denied'}
+                  </span>
                 </p>
               </div>
             )}
