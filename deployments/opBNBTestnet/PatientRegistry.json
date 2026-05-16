@@ -1,0 +1,433 @@
+{
+  "address": "0xD67042Aee284d21D6C9D7BCDFd0FFC0C80e0d0B1",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        }
+      ],
+      "name": "EmergencyCardUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "PatientRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "party",
+          "type": "address"
+        }
+      ],
+      "name": "TrustedPartyAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "party",
+          "type": "address"
+        }
+      ],
+      "name": "TrustedPartyRemoved",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "party",
+          "type": "address"
+        }
+      ],
+      "name": "addTrustedParty",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "getProfile",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "registered",
+          "type": "bool"
+        },
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "emergencyIpfsHash",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "registeredAt",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "getTrustedParties",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "isRegistered",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "party",
+          "type": "address"
+        }
+      ],
+      "name": "isTrusted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "register",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }
+      ],
+      "name": "removeTrustedParty",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "ipfsHash",
+          "type": "string"
+        }
+      ],
+      "name": "updateEmergencyCard",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x44620358cc6a43873b590330f8386f0c6f375a61282dcd525dbcb966f0ad394e",
+  "receipt": {
+    "to": null,
+    "from": "0x76F469759b4F6a614cA22D77837C58208B0835A4",
+    "contractAddress": "0xD67042Aee284d21D6C9D7BCDFd0FFC0C80e0d0B1",
+    "transactionIndex": 1,
+    "gasUsed": "808223",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xc4fabac93f259460b5feb848dd49974c838004984b1070ee19e5d3b2928fb6ed",
+    "transactionHash": "0x44620358cc6a43873b590330f8386f0c6f375a61282dcd525dbcb966f0ad394e",
+    "logs": [],
+    "blockNumber": 160368596,
+    "cumulativeGasUsed": "854850",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "fc0ed2fbe58616b4576abe11a905287b",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"ipfsHash\",\"type\":\"string\"}],\"name\":\"EmergencyCardUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"PatientRegistered\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"party\",\"type\":\"address\"}],\"name\":\"TrustedPartyAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"party\",\"type\":\"address\"}],\"name\":\"TrustedPartyRemoved\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"party\",\"type\":\"address\"}],\"name\":\"addTrustedParty\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"}],\"name\":\"getProfile\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"registered\",\"type\":\"bool\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"emergencyIpfsHash\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"registeredAt\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"}],\"name\":\"getTrustedParties\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"}],\"name\":\"isRegistered\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"party\",\"type\":\"address\"}],\"name\":\"isTrusted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"register\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"removeTrustedParty\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"ipfsHash\",\"type\":\"string\"}],\"name\":\"updateEmergencyCard\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"getProfile(address)\":{\"details\":\"Return variable renamed to `registered` to avoid shadowing isRegistered().\"}},\"stateVariables\":{\"isTrustedParty\":{\"details\":\"Quick lookup to prevent duplicate trusted parties without looping.\"}},\"title\":\"PatientRegistry\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addTrustedParty(address)\":{\"notice\":\"Add a trusted party. Reverts if already added (no duplicates).\"},\"getProfile(address)\":{\"notice\":\"Returns profile details for a patient.\"},\"isTrusted(address,address)\":{\"notice\":\"Check if a specific address is a trusted party of a patient.\"},\"removeTrustedParty(uint256)\":{\"notice\":\"Remove a trusted party by index (swap-and-pop).\"}},\"notice\":\"Manages owner identity, registration, and public emergency/trusted profile.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/PatientRegistry.sol\":\"PatientRegistry\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/PatientRegistry.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\r\\npragma solidity ^0.8.24;\\r\\n\\r\\n/// @title PatientRegistry\\r\\n/// @notice Manages owner identity, registration, and public emergency/trusted profile.\\r\\ncontract PatientRegistry {\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Data structures\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    struct PatientProfile {\\r\\n        bool   isRegistered;\\r\\n        string name;\\r\\n        /// @dev emergencyIpfsHash: PUBLIC summary card on IPFS (NOT encrypted).\\r\\n        ///      Blood type, allergies, current meds, or attorney/executor contact.\\r\\n        string emergencyIpfsHash;\\r\\n        address[] trustedParties;\\r\\n        uint256 registeredAt;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // State\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    mapping(address => PatientProfile) private profiles;\\r\\n    /// @dev Quick lookup to prevent duplicate trusted parties without looping.\\r\\n    mapping(address => mapping(address => bool)) private isTrustedParty;\\r\\n    address public admin;\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Events\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    event PatientRegistered(address indexed patient, string name, uint256 timestamp);\\r\\n    event EmergencyCardUpdated(address indexed patient, string ipfsHash);\\r\\n    event TrustedPartyAdded(address indexed patient, address indexed party);\\r\\n    event TrustedPartyRemoved(address indexed patient, address indexed party);\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Modifiers\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    modifier onlyAdmin() {\\r\\n        require(msg.sender == admin, \\\"PatientRegistry: not admin\\\");\\r\\n        _;\\r\\n    }\\r\\n\\r\\n    modifier onlyRegistered() {\\r\\n        require(profiles[msg.sender].isRegistered, \\\"PatientRegistry: not registered\\\");\\r\\n        _;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Constructor\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    constructor() {\\r\\n        admin = msg.sender;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Registration\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    function register(string calldata name) external {\\r\\n        require(!profiles[msg.sender].isRegistered, \\\"PatientRegistry: already registered\\\");\\r\\n        profiles[msg.sender].isRegistered = true;\\r\\n        profiles[msg.sender].name         = name;\\r\\n        profiles[msg.sender].registeredAt = block.timestamp;\\r\\n        emit PatientRegistered(msg.sender, name, block.timestamp);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Emergency / Public profile card\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    function updateEmergencyCard(string calldata ipfsHash) external onlyRegistered {\\r\\n        profiles[msg.sender].emergencyIpfsHash = ipfsHash;\\r\\n        emit EmergencyCardUpdated(msg.sender, ipfsHash);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Trusted parties management\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Add a trusted party. Reverts if already added (no duplicates).\\r\\n    function addTrustedParty(address party) external onlyRegistered {\\r\\n        require(party != address(0), \\\"PatientRegistry: zero address\\\");\\r\\n        require(party != msg.sender,  \\\"PatientRegistry: cannot add self\\\");\\r\\n        require(\\r\\n            !isTrustedParty[msg.sender][party],\\r\\n            \\\"PatientRegistry: already a trusted party\\\"\\r\\n        );\\r\\n        profiles[msg.sender].trustedParties.push(party);\\r\\n        isTrustedParty[msg.sender][party] = true;\\r\\n        emit TrustedPartyAdded(msg.sender, party);\\r\\n    }\\r\\n\\r\\n    /// @notice Remove a trusted party by index (swap-and-pop).\\r\\n    function removeTrustedParty(uint256 index) external onlyRegistered {\\r\\n        address[] storage parties = profiles[msg.sender].trustedParties;\\r\\n        require(index < parties.length, \\\"PatientRegistry: index out of bounds\\\");\\r\\n        address removed = parties[index];\\r\\n        parties[index] = parties[parties.length - 1];\\r\\n        parties.pop();\\r\\n        isTrustedParty[msg.sender][removed] = false;\\r\\n        emit TrustedPartyRemoved(msg.sender, removed);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Views\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Returns profile details for a patient.\\r\\n    /// @dev Return variable renamed to `registered` to avoid shadowing isRegistered().\\r\\n    function getProfile(address patient)\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            bool   registered,\\r\\n            string memory name,\\r\\n            string memory emergencyIpfsHash,\\r\\n            uint256 registeredAt\\r\\n        )\\r\\n    {\\r\\n        PatientProfile storage p = profiles[patient];\\r\\n        return (p.isRegistered, p.name, p.emergencyIpfsHash, p.registeredAt);\\r\\n    }\\r\\n\\r\\n    function getTrustedParties(address patient)\\r\\n        external\\r\\n        view\\r\\n        returns (address[] memory)\\r\\n    {\\r\\n        return profiles[patient].trustedParties;\\r\\n    }\\r\\n\\r\\n    function isRegistered(address patient) external view returns (bool) {\\r\\n        return profiles[patient].isRegistered;\\r\\n    }\\r\\n\\r\\n    /// @notice Check if a specific address is a trusted party of a patient.\\r\\n    function isTrusted(address patient, address party) external view returns (bool) {\\r\\n        return isTrustedParty[patient][party];\\r\\n    }\\r\\n}\\r\\n\",\"keccak256\":\"0x00e8a0231c970faf2afbc17d0009c5cc3d6bcc13d08f8b0e00732a5ba833b991\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50600280546001600160a01b03191633179055610d40806100326000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806377f3c8cf1161006657806377f3c8cf1461011c578063c3c5a5471461012f578063cf3ec0931461015b578063f2c298be1461016e578063f851a4401461018157600080fd5b80630f53a470146100985780632c3cf0ac146100c45780634aed36d1146100d95780636713e230146100f9575b600080fd5b6100ab6100a6366004610909565b6101ac565b6040516100bb9493929190610971565b60405180910390f35b6100d76100d23660046109b0565b61030e565b005b6100ec6100e7366004610909565b6104ea565b6040516100bb91906109c9565b61010c610107366004610a16565b610561565b60405190151581526020016100bb565b6100d761012a366004610a49565b610591565b61010c61013d366004610909565b6001600160a01b031660009081526020819052604090205460ff1690565b6100d7610169366004610909565b610625565b6100d761017c366004610a49565b61080d565b600254610194906001600160a01b031681565b6040516001600160a01b0390911681526020016100bb565b6001600160a01b03811660009081526020819052604081208054600482015460018301805460609485948794919360ff909116929091600285019183906101f290610abb565b80601f016020809104026020016040519081016040528092919081815260200182805461021e90610abb565b801561026b5780601f106102405761010080835404028352916020019161026b565b820191906000526020600020905b81548152906001019060200180831161024e57829003601f168201915b5050505050925081805461027e90610abb565b80601f01602080910402602001604051908101604052809291908181526020018280546102aa90610abb565b80156102f75780601f106102cc576101008083540402835291602001916102f7565b820191906000526020600020905b8154815290600101906020018083116102da57829003601f168201915b505050505091509450945094509450509193509193565b3360009081526020819052604090205460ff166103465760405162461bcd60e51b815260040161033d90610af5565b60405180910390fd5b336000908152602081905260409020600301805482106103b45760405162461bcd60e51b8152602060048201526024808201527f50617469656e7452656769737472793a20696e646578206f7574206f6620626f604482015263756e647360e01b606482015260840161033d565b60008183815481106103c8576103c8610b2c565b60009182526020909120015482546001600160a01b03909116915082906103f190600190610b42565b8154811061040157610401610b2c565b9060005260206000200160009054906101000a90046001600160a01b031682848154811061043157610431610b2c565b9060005260206000200160006101000a8154816001600160a01b0302191690836001600160a01b031602179055508180548061046f5761046f610b63565b60008281526020808220830160001990810180546001600160a01b0319169055909201909255338083526001825260408084206001600160a01b0386168086529352808420805460ff1916905551919290917f2f999cdad3fde0bfffd676dceb6ea4a0278c98b43cfef16b5d06142ccb446e249190a3505050565b6001600160a01b0381166000908152602081815260409182902060030180548351818402810184019094528084526060939283018282801561055557602002820191906000526020600020905b81546001600160a01b03168152600190910190602001808311610537575b50505050509050919050565b6001600160a01b0380831660009081526001602090815260408083209385168352929052205460ff165b92915050565b3360009081526020819052604090205460ff166105c05760405162461bcd60e51b815260040161033d90610af5565b3360009081526020819052604090206002016105dd828483610be0565b50336001600160a01b03167f5587268a270d0b100478ce1cace0f250332f9bf68f6dd9af8473b3cedcb981b78383604051610619929190610cca565b60405180910390a25050565b3360009081526020819052604090205460ff166106545760405162461bcd60e51b815260040161033d90610af5565b6001600160a01b0381166106aa5760405162461bcd60e51b815260206004820152601d60248201527f50617469656e7452656769737472793a207a65726f2061646472657373000000604482015260640161033d565b336001600160a01b038216036107025760405162461bcd60e51b815260206004820181905260248201527f50617469656e7452656769737472793a2063616e6e6f74206164642073656c66604482015260640161033d565b3360009081526001602090815260408083206001600160a01b038516845290915290205460ff16156107875760405162461bcd60e51b815260206004820152602860248201527f50617469656e7452656769737472793a20616c72656164792061207472757374604482015267656420706172747960c01b606482015260840161033d565b336000818152602081815260408083206003018054600180820183559185528385200180546001600160a01b0319166001600160a01b038816908117909155858552818452828520818652909352818420805460ff19169091179055519092917fd0c9fa3a7c4d7678d9e442c183cd160a4a4e53493397df5fc9cd95c5d70fd13091a350565b3360009081526020819052604090205460ff16156108795760405162461bcd60e51b815260206004820152602360248201527f50617469656e7452656769737472793a20616c726561647920726567697374656044820152621c995960ea1b606482015260840161033d565b336000908152602081905260409020805460ff191660019081178255016108a1828483610be0565b50336000818152602081905260409081902042600490910181905590517f096f893428730b9f440cde9930f6fbd450ce2d7ac1f2895f0d869da7376a36d1916106199186918691610ce6565b80356001600160a01b038116811461090457600080fd5b919050565b60006020828403121561091b57600080fd5b610924826108ed565b9392505050565b6000815180845260005b8181101561095157602081850181015186830182015201610935565b506000602082860101526020601f19601f83011685010191505092915050565b841515815260806020820152600061098c608083018661092b565b828103604084015261099e818661092b565b91505082606083015295945050505050565b6000602082840312156109c257600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b81811015610a0a5783516001600160a01b0316835292840192918401916001016109e5565b50909695505050505050565b60008060408385031215610a2957600080fd5b610a32836108ed565b9150610a40602084016108ed565b90509250929050565b60008060208385031215610a5c57600080fd5b823567ffffffffffffffff80821115610a7457600080fd5b818501915085601f830112610a8857600080fd5b813581811115610a9757600080fd5b866020828501011115610aa957600080fd5b60209290920196919550909350505050565b600181811c90821680610acf57607f821691505b602082108103610aef57634e487b7160e01b600052602260045260246000fd5b50919050565b6020808252601f908201527f50617469656e7452656769737472793a206e6f74207265676973746572656400604082015260600190565b634e487b7160e01b600052603260045260246000fd5b8181038181111561058b57634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052603160045260246000fd5b634e487b7160e01b600052604160045260246000fd5b601f821115610bdb576000816000526020600020601f850160051c81016020861015610bb85750805b601f850160051c820191505b81811015610bd757828155600101610bc4565b5050505b505050565b67ffffffffffffffff831115610bf857610bf8610b79565b610c0c83610c068354610abb565b83610b8f565b6000601f841160018114610c405760008515610c285750838201355b600019600387901b1c1916600186901b178355610c9a565b600083815260209020601f19861690835b82811015610c715786850135825560209485019460019092019101610c51565b5086821015610c8e5760001960f88860031b161c19848701351681555b505060018560011b0183555b5050505050565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b602081526000610cde602083018486610ca1565b949350505050565b604081526000610cfa604083018587610ca1565b905082602083015294935050505056fea264697066735822122075ad0bcb32a061aa8c94083a6df64eddff4e555880f40d43a2051a3355a9ac9164736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100935760003560e01c806377f3c8cf1161006657806377f3c8cf1461011c578063c3c5a5471461012f578063cf3ec0931461015b578063f2c298be1461016e578063f851a4401461018157600080fd5b80630f53a470146100985780632c3cf0ac146100c45780634aed36d1146100d95780636713e230146100f9575b600080fd5b6100ab6100a6366004610909565b6101ac565b6040516100bb9493929190610971565b60405180910390f35b6100d76100d23660046109b0565b61030e565b005b6100ec6100e7366004610909565b6104ea565b6040516100bb91906109c9565b61010c610107366004610a16565b610561565b60405190151581526020016100bb565b6100d761012a366004610a49565b610591565b61010c61013d366004610909565b6001600160a01b031660009081526020819052604090205460ff1690565b6100d7610169366004610909565b610625565b6100d761017c366004610a49565b61080d565b600254610194906001600160a01b031681565b6040516001600160a01b0390911681526020016100bb565b6001600160a01b03811660009081526020819052604081208054600482015460018301805460609485948794919360ff909116929091600285019183906101f290610abb565b80601f016020809104026020016040519081016040528092919081815260200182805461021e90610abb565b801561026b5780601f106102405761010080835404028352916020019161026b565b820191906000526020600020905b81548152906001019060200180831161024e57829003601f168201915b5050505050925081805461027e90610abb565b80601f01602080910402602001604051908101604052809291908181526020018280546102aa90610abb565b80156102f75780601f106102cc576101008083540402835291602001916102f7565b820191906000526020600020905b8154815290600101906020018083116102da57829003601f168201915b505050505091509450945094509450509193509193565b3360009081526020819052604090205460ff166103465760405162461bcd60e51b815260040161033d90610af5565b60405180910390fd5b336000908152602081905260409020600301805482106103b45760405162461bcd60e51b8152602060048201526024808201527f50617469656e7452656769737472793a20696e646578206f7574206f6620626f604482015263756e647360e01b606482015260840161033d565b60008183815481106103c8576103c8610b2c565b60009182526020909120015482546001600160a01b03909116915082906103f190600190610b42565b8154811061040157610401610b2c565b9060005260206000200160009054906101000a90046001600160a01b031682848154811061043157610431610b2c565b9060005260206000200160006101000a8154816001600160a01b0302191690836001600160a01b031602179055508180548061046f5761046f610b63565b60008281526020808220830160001990810180546001600160a01b0319169055909201909255338083526001825260408084206001600160a01b0386168086529352808420805460ff1916905551919290917f2f999cdad3fde0bfffd676dceb6ea4a0278c98b43cfef16b5d06142ccb446e249190a3505050565b6001600160a01b0381166000908152602081815260409182902060030180548351818402810184019094528084526060939283018282801561055557602002820191906000526020600020905b81546001600160a01b03168152600190910190602001808311610537575b50505050509050919050565b6001600160a01b0380831660009081526001602090815260408083209385168352929052205460ff165b92915050565b3360009081526020819052604090205460ff166105c05760405162461bcd60e51b815260040161033d90610af5565b3360009081526020819052604090206002016105dd828483610be0565b50336001600160a01b03167f5587268a270d0b100478ce1cace0f250332f9bf68f6dd9af8473b3cedcb981b78383604051610619929190610cca565b60405180910390a25050565b3360009081526020819052604090205460ff166106545760405162461bcd60e51b815260040161033d90610af5565b6001600160a01b0381166106aa5760405162461bcd60e51b815260206004820152601d60248201527f50617469656e7452656769737472793a207a65726f2061646472657373000000604482015260640161033d565b336001600160a01b038216036107025760405162461bcd60e51b815260206004820181905260248201527f50617469656e7452656769737472793a2063616e6e6f74206164642073656c66604482015260640161033d565b3360009081526001602090815260408083206001600160a01b038516845290915290205460ff16156107875760405162461bcd60e51b815260206004820152602860248201527f50617469656e7452656769737472793a20616c72656164792061207472757374604482015267656420706172747960c01b606482015260840161033d565b336000818152602081815260408083206003018054600180820183559185528385200180546001600160a01b0319166001600160a01b038816908117909155858552818452828520818652909352818420805460ff19169091179055519092917fd0c9fa3a7c4d7678d9e442c183cd160a4a4e53493397df5fc9cd95c5d70fd13091a350565b3360009081526020819052604090205460ff16156108795760405162461bcd60e51b815260206004820152602360248201527f50617469656e7452656769737472793a20616c726561647920726567697374656044820152621c995960ea1b606482015260840161033d565b336000908152602081905260409020805460ff191660019081178255016108a1828483610be0565b50336000818152602081905260409081902042600490910181905590517f096f893428730b9f440cde9930f6fbd450ce2d7ac1f2895f0d869da7376a36d1916106199186918691610ce6565b80356001600160a01b038116811461090457600080fd5b919050565b60006020828403121561091b57600080fd5b610924826108ed565b9392505050565b6000815180845260005b8181101561095157602081850181015186830182015201610935565b506000602082860101526020601f19601f83011685010191505092915050565b841515815260806020820152600061098c608083018661092b565b828103604084015261099e818661092b565b91505082606083015295945050505050565b6000602082840312156109c257600080fd5b5035919050565b6020808252825182820181905260009190848201906040850190845b81811015610a0a5783516001600160a01b0316835292840192918401916001016109e5565b50909695505050505050565b60008060408385031215610a2957600080fd5b610a32836108ed565b9150610a40602084016108ed565b90509250929050565b60008060208385031215610a5c57600080fd5b823567ffffffffffffffff80821115610a7457600080fd5b818501915085601f830112610a8857600080fd5b813581811115610a9757600080fd5b866020828501011115610aa957600080fd5b60209290920196919550909350505050565b600181811c90821680610acf57607f821691505b602082108103610aef57634e487b7160e01b600052602260045260246000fd5b50919050565b6020808252601f908201527f50617469656e7452656769737472793a206e6f74207265676973746572656400604082015260600190565b634e487b7160e01b600052603260045260246000fd5b8181038181111561058b57634e487b7160e01b600052601160045260246000fd5b634e487b7160e01b600052603160045260246000fd5b634e487b7160e01b600052604160045260246000fd5b601f821115610bdb576000816000526020600020601f850160051c81016020861015610bb85750805b601f850160051c820191505b81811015610bd757828155600101610bc4565b5050505b505050565b67ffffffffffffffff831115610bf857610bf8610b79565b610c0c83610c068354610abb565b83610b8f565b6000601f841160018114610c405760008515610c285750838201355b600019600387901b1c1916600186901b178355610c9a565b600083815260209020601f19861690835b82811015610c715786850135825560209485019460019092019101610c51565b5086821015610c8e5760001960f88860031b161c19848701351681555b505060018560011b0183555b5050505050565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b602081526000610cde602083018486610ca1565b949350505050565b604081526000610cfa604083018587610ca1565b905082602083015294935050505056fea264697066735822122075ad0bcb32a061aa8c94083a6df64eddff4e555880f40d43a2051a3355a9ac9164736f6c63430008180033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "getProfile(address)": {
+        "details": "Return variable renamed to `registered` to avoid shadowing isRegistered()."
+      }
+    },
+    "stateVariables": {
+      "isTrustedParty": {
+        "details": "Quick lookup to prevent duplicate trusted parties without looping."
+      }
+    },
+    "title": "PatientRegistry",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "addTrustedParty(address)": {
+        "notice": "Add a trusted party. Reverts if already added (no duplicates)."
+      },
+      "getProfile(address)": {
+        "notice": "Returns profile details for a patient."
+      },
+      "isTrusted(address,address)": {
+        "notice": "Check if a specific address is a trusted party of a patient."
+      },
+      "removeTrustedParty(uint256)": {
+        "notice": "Remove a trusted party by index (swap-and-pop)."
+      }
+    },
+    "notice": "Manages owner identity, registration, and public emergency/trusted profile.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 20,
+        "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+        "label": "profiles",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_address,t_struct(PatientProfile)15_storage)"
+      },
+      {
+        "astId": 27,
+        "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+        "label": "isTrustedParty",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_bool))"
+      },
+      {
+        "astId": 29,
+        "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+        "label": "admin",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_address)dyn_storage": {
+        "base": "t_address",
+        "encoding": "dynamic_array",
+        "label": "address[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(address => bool))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_bool)"
+      },
+      "t_mapping(t_address,t_struct(PatientProfile)15_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct PatientRegistry.PatientProfile)",
+        "numberOfBytes": "32",
+        "value": "t_struct(PatientProfile)15_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(PatientProfile)15_storage": {
+        "encoding": "inplace",
+        "label": "struct PatientRegistry.PatientProfile",
+        "members": [
+          {
+            "astId": 4,
+            "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+            "label": "isRegistered",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool"
+          },
+          {
+            "astId": 6,
+            "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+            "label": "name",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 9,
+            "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+            "label": "emergencyIpfsHash",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 12,
+            "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+            "label": "trustedParties",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_address)dyn_storage"
+          },
+          {
+            "astId": 14,
+            "contract": "contracts/PatientRegistry.sol:PatientRegistry",
+            "label": "registeredAt",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256"
+          }
+        ],
+        "numberOfBytes": "160"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

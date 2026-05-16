@@ -1,0 +1,36 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/PatientRegistry.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.24;\r\n\r\n/// @title PatientRegistry\r\n/// @notice Manages owner identity, registration, and public emergency/trusted profile.\r\ncontract PatientRegistry {\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Data structures\r\n    // -------------------------------------------------------------------------\r\n\r\n    struct PatientProfile {\r\n        bool   isRegistered;\r\n        string name;\r\n        /// @dev emergencyIpfsHash: PUBLIC summary card on IPFS (NOT encrypted).\r\n        ///      Blood type, allergies, current meds, or attorney/executor contact.\r\n        string emergencyIpfsHash;\r\n        address[] trustedParties;\r\n        uint256 registeredAt;\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // State\r\n    // -------------------------------------------------------------------------\r\n\r\n    mapping(address => PatientProfile) private profiles;\r\n    /// @dev Quick lookup to prevent duplicate trusted parties without looping.\r\n    mapping(address => mapping(address => bool)) private isTrustedParty;\r\n    address public admin;\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Events\r\n    // -------------------------------------------------------------------------\r\n\r\n    event PatientRegistered(address indexed patient, string name, uint256 timestamp);\r\n    event EmergencyCardUpdated(address indexed patient, string ipfsHash);\r\n    event TrustedPartyAdded(address indexed patient, address indexed party);\r\n    event TrustedPartyRemoved(address indexed patient, address indexed party);\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Modifiers\r\n    // -------------------------------------------------------------------------\r\n\r\n    modifier onlyAdmin() {\r\n        require(msg.sender == admin, \"PatientRegistry: not admin\");\r\n        _;\r\n    }\r\n\r\n    modifier onlyRegistered() {\r\n        require(profiles[msg.sender].isRegistered, \"PatientRegistry: not registered\");\r\n        _;\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Constructor\r\n    // -------------------------------------------------------------------------\r\n\r\n    constructor() {\r\n        admin = msg.sender;\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Registration\r\n    // -------------------------------------------------------------------------\r\n\r\n    function register(string calldata name) external {\r\n        require(!profiles[msg.sender].isRegistered, \"PatientRegistry: already registered\");\r\n        profiles[msg.sender].isRegistered = true;\r\n        profiles[msg.sender].name         = name;\r\n        profiles[msg.sender].registeredAt = block.timestamp;\r\n        emit PatientRegistered(msg.sender, name, block.timestamp);\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Emergency / Public profile card\r\n    // -------------------------------------------------------------------------\r\n\r\n    function updateEmergencyCard(string calldata ipfsHash) external onlyRegistered {\r\n        profiles[msg.sender].emergencyIpfsHash = ipfsHash;\r\n        emit EmergencyCardUpdated(msg.sender, ipfsHash);\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Trusted parties management\r\n    // -------------------------------------------------------------------------\r\n\r\n    /// @notice Add a trusted party. Reverts if already added (no duplicates).\r\n    function addTrustedParty(address party) external onlyRegistered {\r\n        require(party != address(0), \"PatientRegistry: zero address\");\r\n        require(party != msg.sender,  \"PatientRegistry: cannot add self\");\r\n        require(\r\n            !isTrustedParty[msg.sender][party],\r\n            \"PatientRegistry: already a trusted party\"\r\n        );\r\n        profiles[msg.sender].trustedParties.push(party);\r\n        isTrustedParty[msg.sender][party] = true;\r\n        emit TrustedPartyAdded(msg.sender, party);\r\n    }\r\n\r\n    /// @notice Remove a trusted party by index (swap-and-pop).\r\n    function removeTrustedParty(uint256 index) external onlyRegistered {\r\n        address[] storage parties = profiles[msg.sender].trustedParties;\r\n        require(index < parties.length, \"PatientRegistry: index out of bounds\");\r\n        address removed = parties[index];\r\n        parties[index] = parties[parties.length - 1];\r\n        parties.pop();\r\n        isTrustedParty[msg.sender][removed] = false;\r\n        emit TrustedPartyRemoved(msg.sender, removed);\r\n    }\r\n\r\n    // -------------------------------------------------------------------------\r\n    // Views\r\n    // -------------------------------------------------------------------------\r\n\r\n    /// @notice Returns profile details for a patient.\r\n    /// @dev Return variable renamed to `registered` to avoid shadowing isRegistered().\r\n    function getProfile(address patient)\r\n        external\r\n        view\r\n        returns (\r\n            bool   registered,\r\n            string memory name,\r\n            string memory emergencyIpfsHash,\r\n            uint256 registeredAt\r\n        )\r\n    {\r\n        PatientProfile storage p = profiles[patient];\r\n        return (p.isRegistered, p.name, p.emergencyIpfsHash, p.registeredAt);\r\n    }\r\n\r\n    function getTrustedParties(address patient)\r\n        external\r\n        view\r\n        returns (address[] memory)\r\n    {\r\n        return profiles[patient].trustedParties;\r\n    }\r\n\r\n    function isRegistered(address patient) external view returns (bool) {\r\n        return profiles[patient].isRegistered;\r\n    }\r\n\r\n    /// @notice Check if a specific address is a trusted party of a patient.\r\n    function isTrusted(address patient, address party) external view returns (bool) {\r\n        return isTrustedParty[patient][party];\r\n    }\r\n}\r\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "paris",
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}

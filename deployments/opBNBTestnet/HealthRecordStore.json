@@ -1,0 +1,622 @@
+{
+  "address": "0x61BE3eC4513148C7F9C0402F2aD027a75256bC43",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_accessController",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum HealthRecordStore.DocumentType",
+          "name": "docType",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "cid",
+          "type": "string"
+        }
+      ],
+      "name": "RecordAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum HealthRecordStore.RecordStatus",
+          "name": "newStatus",
+          "type": "uint8"
+        }
+      ],
+      "name": "RecordStatusChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newVersion",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "cid",
+          "type": "string"
+        }
+      ],
+      "name": "RecordUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum HealthRecordStore.DocumentType",
+          "name": "docType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "cid",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataHash",
+          "type": "string"
+        }
+      ],
+      "name": "addRecord",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getAccessController",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getLatestRecord",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "cid",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataHash",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "uploadedBy",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "getRecordCount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getRecordHead",
+      "outputs": [
+        {
+          "internalType": "enum HealthRecordStore.DocumentType",
+          "name": "docType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "string",
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "latestVersion",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "createdAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        }
+      ],
+      "name": "getVersion",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "cid",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "metadataHash",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "uploadedBy",
+          "type": "address"
+        },
+        {
+          "internalType": "enum HealthRecordStore.RecordStatus",
+          "name": "status",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum HealthRecordStore.RecordStatus",
+          "name": "newStatus",
+          "type": "uint8"
+        }
+      ],
+      "name": "setVersionStatus",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "newCid",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "newMetadataHash",
+          "type": "string"
+        }
+      ],
+      "name": "updateRecord",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x9f41a572d1a341c90f6135a16b8c02e7d6def368285e9c837a3283c0853a4371",
+  "receipt": {
+    "to": null,
+    "from": "0x76F469759b4F6a614cA22D77837C58208B0835A4",
+    "contractAddress": "0x61BE3eC4513148C7F9C0402F2aD027a75256bC43",
+    "transactionIndex": 1,
+    "gasUsed": "1201353",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x7b8f74695adc052a3d946076c3a674fbbc31f3e2f2dfbe96d1ad6689b7e7b0b1",
+    "transactionHash": "0x9f41a572d1a341c90f6135a16b8c02e7d6def368285e9c837a3283c0853a4371",
+    "logs": [],
+    "blockNumber": 160370132,
+    "cumulativeGasUsed": "1245192",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xD3f8DB1120087776330c10D81d900A4Fc8433487"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "78dd4924603543f0b3991872fb8549a8",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_accessController\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enum HealthRecordStore.DocumentType\",\"name\":\"docType\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"cid\",\"type\":\"string\"}],\"name\":\"RecordAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"enum HealthRecordStore.RecordStatus\",\"name\":\"newStatus\",\"type\":\"uint8\"}],\"name\":\"RecordStatusChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newVersion\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"cid\",\"type\":\"string\"}],\"name\":\"RecordUpdated\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"enum HealthRecordStore.DocumentType\",\"name\":\"docType\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"cid\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"metadataHash\",\"type\":\"string\"}],\"name\":\"addRecord\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getAccessController\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"}],\"name\":\"getLatestRecord\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"cid\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"metadataHash\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"uploadedBy\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"getRecordCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"}],\"name\":\"getRecordHead\",\"outputs\":[{\"internalType\":\"enum HealthRecordStore.DocumentType\",\"name\":\"docType\",\"type\":\"uint8\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"latestVersion\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"createdAt\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"}],\"name\":\"getVersion\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"cid\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"metadataHash\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"uploadedBy\",\"type\":\"address\"},{\"internalType\":\"enum HealthRecordStore.RecordStatus\",\"name\":\"status\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"},{\"internalType\":\"enum HealthRecordStore.RecordStatus\",\"name\":\"newStatus\",\"type\":\"uint8\"}],\"name\":\"setVersionStatus\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"newCid\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"newMetadataHash\",\"type\":\"string\"}],\"name\":\"updateRecord\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Integrated with AccessController for on-chain permission enforcement.      Owners add records themselves; authorised providers can update records      (add new versions) on behalf of a patient if granted PROVIDER_WRITE.      All writes automatically emit an immutable audit log entry via      AccessController.logAccess \\u2014 no manual frontend call needed.\",\"kind\":\"dev\",\"methods\":{\"constructor\":{\"params\":{\"_accessController\":\"Address of the deployed AccessController contract.\"}},\"setVersionStatus(address,uint256,uint256,uint8)\":{\"details\":\"Caller must be the patient OR hold PROVIDER_WRITE.\",\"params\":{\"patient\":\"The owner of the record.\"}},\"updateRecord(address,uint256,string,string)\":{\"details\":\"Caller must be the patient OR hold PROVIDER_WRITE in AccessController.      An immutable audit log entry is created automatically on-chain.\",\"params\":{\"patient\":\"The owner of the record.\",\"recordId\":\"The record to update.\"}}},\"title\":\"HealthRecordStore\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addRecord(uint8,string,string,string)\":{\"notice\":\"Add a brand-new record (version 1). Only the owner can call this.\"},\"getAccessController()\":{\"notice\":\"Returns the address of the wired AccessController.\"},\"setVersionStatus(address,uint256,uint256,uint8)\":{\"notice\":\"Change the status of a specific version (archive or soft-delete).\"},\"updateRecord(address,uint256,string,string)\":{\"notice\":\"Add a new version to an existing record.\"}},\"notice\":\"Versioned, typed document storage. Each record is identified by         (owner address, recordId) and supports unlimited versions.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/HealthRecordStore.sol\":\"HealthRecordStore\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/AccessController.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\r\\npragma solidity ^0.8.24;\\r\\n\\r\\n/// @title AccessController\\r\\n/// @notice Fine-grained, time-limited, per-record access control with immutable audit log.\\r\\n/// @dev This is the most critical contract in the system.\\r\\n///      Key design decisions:\\r\\n///      - Access is granted BY the owner TO any address (doctor, attorney, auditor, family).\\r\\n///      - Grants can be scoped to specific record IDs (empty array = all records).\\r\\n///      - Grants carry a tier (read-only vs write) and an optional expiry.\\r\\n///      - Every access event is logged immutably on-chain.\\r\\n///      - The admin can register \\\"verified providers\\\" (doctors, law firms) but\\r\\n///        the owner decides who gets access \\u2014 admin cannot override this.\\r\\ncontract AccessController {\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Enums\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @dev Tiers are ordered by privilege level (lower index = less access).\\r\\n    enum AccessTier {\\r\\n        EMERGENCY_READ,  // 0 \\u2014 view public emergency card only (no encrypted records)\\r\\n        RECORD_READ,     // 1 \\u2014 read specific or all encrypted records\\r\\n        FULL_READ,       // 2 \\u2014 read all records + version history + metadata\\r\\n        PROVIDER_WRITE   // 3 \\u2014 read + add new versions / clinical/legal annotations\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Data structures\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    struct AccessGrant {\\r\\n        AccessTier tier;\\r\\n        uint256    grantedAt;\\r\\n        /// @dev expiresAt == 0 means the grant is permanent until explicitly revoked.\\r\\n        uint256    expiresAt;\\r\\n        /// @dev allowedRecordIds: empty array means access to ALL records.\\r\\n        ///      Populated array restricts to only those specific record IDs.\\r\\n        uint256[]  allowedRecordIds;\\r\\n        bool       active;\\r\\n    }\\r\\n\\r\\n    struct AccessLog {\\r\\n        address accessor;\\r\\n        uint256 recordId;\\r\\n        uint256 version;\\r\\n        uint256 timestamp;\\r\\n        /// @dev Free-form action string: \\\"READ\\\", \\\"DOWNLOAD\\\", \\\"ADD_NOTE\\\", \\\"SHARE\\\", etc.\\r\\n        string  action;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // State\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// patient/owner \\u2192 accessor \\u2192 grant\\r\\n    mapping(address => mapping(address => AccessGrant)) private grants;\\r\\n    /// patient/owner \\u2192 immutable access log array\\r\\n    mapping(address => AccessLog[]) private accessLogs;\\r\\n    /// verified providers registered by admin (optional \\u2014 owner can grant to any address)\\r\\n    mapping(address => bool) public registeredProviders;\\r\\n    address public admin;\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Events\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    event AccessGranted(\\r\\n        address indexed patient,\\r\\n        address indexed accessor,\\r\\n        AccessTier      tier,\\r\\n        uint256         expiresAt\\r\\n    );\\r\\n    event AccessRevoked(\\r\\n        address indexed patient,\\r\\n        address indexed accessor\\r\\n    );\\r\\n    event AccessLogged(\\r\\n        address indexed patient,\\r\\n        address indexed accessor,\\r\\n        uint256         recordId,\\r\\n        string          action\\r\\n    );\\r\\n    event ProviderRegistered(address indexed provider);\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Modifiers\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    modifier onlyAdmin() {\\r\\n        require(msg.sender == admin, \\\"AccessController: not admin\\\");\\r\\n        _;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Constructor\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    constructor() {\\r\\n        admin = msg.sender;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Admin functions\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Register a healthcare provider / law firm / verified accessor.\\r\\n    /// @dev Registration does NOT grant them access to any patient \\u2014 it only\\r\\n    ///      marks them as a verified entity that patients can discover and choose.\\r\\n    function registerProvider(address provider) external onlyAdmin {\\r\\n        require(provider != address(0), \\\"AccessController: zero address\\\");\\r\\n        registeredProviders[provider] = true;\\r\\n        emit ProviderRegistered(provider);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Grant / Revoke (called by the data owner)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Grant access to any address for a configurable tier and duration.\\r\\n    /// @param accessor        The address receiving access (doctor, attorney, auditor).\\r\\n    /// @param tier            Privilege level (see AccessTier enum).\\r\\n    /// @param durationSeconds How long the grant is valid. 0 = permanent.\\r\\n    /// @param recordIds       Specific record IDs to allow. Empty = all records.\\r\\n    function grantAccess(\\r\\n        address          accessor,\\r\\n        AccessTier       tier,\\r\\n        uint256          durationSeconds,\\r\\n        uint256[] calldata recordIds\\r\\n    ) external {\\r\\n        require(accessor != address(0), \\\"AccessController: zero address\\\");\\r\\n        require(accessor != msg.sender,  \\\"AccessController: cannot grant to self\\\");\\r\\n        uint256 expiry = durationSeconds == 0\\r\\n            ? 0\\r\\n            : block.timestamp + durationSeconds;\\r\\n        grants[msg.sender][accessor] = AccessGrant({\\r\\n            tier:             tier,\\r\\n            grantedAt:        block.timestamp,\\r\\n            expiresAt:        expiry,\\r\\n            allowedRecordIds: recordIds,\\r\\n            active:           true\\r\\n        });\\r\\n        emit AccessGranted(msg.sender, accessor, tier, expiry);\\r\\n    }\\r\\n\\r\\n    /// @notice Revoke an existing grant immediately.\\r\\n    function revokeAccess(address accessor) external {\\r\\n        require(\\r\\n            grants[msg.sender][accessor].active,\\r\\n            \\\"AccessController: no active grant to revoke\\\"\\r\\n        );\\r\\n        grants[msg.sender][accessor].active = false;\\r\\n        emit AccessRevoked(msg.sender, accessor);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Access check (read-only, called by frontend before fetching files)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Check whether `accessor` is currently allowed to access `recordId`\\r\\n    ///         belonging to `patient`.\\r\\n    /// @return allowed  True if access is currently valid.\\r\\n    /// @return tier     The access tier granted (only meaningful when allowed == true).\\r\\n    function checkAccess(\\r\\n        address patient,\\r\\n        address accessor,\\r\\n        uint256 recordId\\r\\n    ) external view returns (bool allowed, AccessTier tier) {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n\\r\\n        // Check grant is active\\r\\n        if (!g.active) return (false, AccessTier.EMERGENCY_READ);\\r\\n\\r\\n        // Check expiry\\r\\n        if (g.expiresAt != 0 && block.timestamp > g.expiresAt)\\r\\n            return (false, AccessTier.EMERGENCY_READ);\\r\\n\\r\\n        // Check record-level restriction\\r\\n        if (g.allowedRecordIds.length > 0) {\\r\\n            bool found = false;\\r\\n            for (uint256 i = 0; i < g.allowedRecordIds.length; i++) {\\r\\n                if (g.allowedRecordIds[i] == recordId) {\\r\\n                    found = true;\\r\\n                    break;\\r\\n                }\\r\\n            }\\r\\n            if (!found) return (false, AccessTier.EMERGENCY_READ);\\r\\n        }\\r\\n\\r\\n        return (true, g.tier);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Audit log (called by frontend / provider after accessing a record)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Append an access event to the patient's immutable audit log.\\r\\n    /// @param patient   The owner whose record was accessed.\\r\\n    /// @param recordId  Which record was accessed.\\r\\n    /// @param version   Which version was accessed.\\r\\n    /// @param action    String descriptor: \\\"READ\\\", \\\"DOWNLOAD\\\", \\\"ADD_NOTE\\\", etc.\\r\\n    function logAccess(\\r\\n        address patient,\\r\\n        uint256 recordId,\\r\\n        uint256 version,\\r\\n        string calldata action\\r\\n    ) external {\\r\\n        // Allow patient to log their own actions too (e.g., self-download)\\r\\n        require(\\r\\n            msg.sender == patient || grants[patient][msg.sender].active,\\r\\n            \\\"AccessController: not authorized to log for this patient\\\"\\r\\n        );\\r\\n        accessLogs[patient].push(AccessLog({\\r\\n            accessor:  msg.sender,\\r\\n            recordId:  recordId,\\r\\n            version:   version,\\r\\n            timestamp: block.timestamp,\\r\\n            action:    action\\r\\n        }));\\r\\n        emit AccessLogged(patient, msg.sender, recordId, action);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Views\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    function getAccessLogs(address patient)\\r\\n        external\\r\\n        view\\r\\n        returns (AccessLog[] memory)\\r\\n    {\\r\\n        return accessLogs[patient];\\r\\n    }\\r\\n\\r\\n    function getGrant(\\r\\n        address patient,\\r\\n        address accessor\\r\\n    )\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            AccessTier tier,\\r\\n            uint256    grantedAt,\\r\\n            uint256    expiresAt,\\r\\n            bool       active\\r\\n        )\\r\\n    {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n        return (g.tier, g.grantedAt, g.expiresAt, g.active);\\r\\n    }\\r\\n\\r\\n    /// @notice Returns true if a grant exists and has not yet expired.\\r\\n    ///         Does NOT check record-level restrictions.\\r\\n    function isActiveAccessor(address patient, address accessor)\\r\\n        external\\r\\n        view\\r\\n        returns (bool)\\r\\n    {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n        if (!g.active) return false;\\r\\n        if (g.expiresAt != 0 && block.timestamp > g.expiresAt) return false;\\r\\n        return true;\\r\\n    }\\r\\n}\\r\\n\",\"keccak256\":\"0x9d7be32aa6479f192aa5e148dbebce3afe2efd96863a01cab3871c5b382c88f4\",\"license\":\"MIT\"},\"contracts/HealthRecordStore.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\r\\npragma solidity ^0.8.24;\\r\\n\\r\\nimport \\\"./AccessController.sol\\\";\\r\\n\\r\\n/// @title HealthRecordStore\\r\\n/// @notice Versioned, typed document storage. Each record is identified by\\r\\n///         (owner address, recordId) and supports unlimited versions.\\r\\n/// @dev Integrated with AccessController for on-chain permission enforcement.\\r\\n///      Owners add records themselves; authorised providers can update records\\r\\n///      (add new versions) on behalf of a patient if granted PROVIDER_WRITE.\\r\\n///      All writes automatically emit an immutable audit log entry via\\r\\n///      AccessController.logAccess \\u2014 no manual frontend call needed.\\r\\ncontract HealthRecordStore {\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Enums\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    enum DocumentType {\\r\\n        // --- Medical ---\\r\\n        LAB_REPORT,          // 0\\r\\n        PRESCRIPTION,        // 1\\r\\n        IMAGING,             // 2\\r\\n        DISCHARGE_SUMMARY,   // 3\\r\\n        VACCINATION,         // 4\\r\\n        // --- General vault ---\\r\\n        INSURANCE_POLICY,    // 5\\r\\n        LEGAL_CONTRACT,      // 6\\r\\n        IDENTITY_DOCUMENT,   // 7\\r\\n        FINANCIAL_RECORD,    // 8\\r\\n        PROPERTY_DOCUMENT,   // 9\\r\\n        ACADEMIC_CREDENTIAL, // 10\\r\\n        OTHER                // 11\\r\\n    }\\r\\n\\r\\n    enum RecordStatus {\\r\\n        ACTIVE,\\r\\n        ARCHIVED,\\r\\n        DELETED\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Data structures\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    struct RecordVersion {\\r\\n        string  cid;\\r\\n        string  metadataHash;\\r\\n        uint256 timestamp;\\r\\n        address uploadedBy;\\r\\n        RecordStatus status;\\r\\n    }\\r\\n\\r\\n    struct RecordHead {\\r\\n        DocumentType docType;\\r\\n        string   title;\\r\\n        uint256  latestVersion;\\r\\n        uint256  createdAt;\\r\\n        bool     exists;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // State\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    AccessController private immutable accessController;\\r\\n\\r\\n    /// owner \\u2192 recordId \\u2192 RecordHead\\r\\n    mapping(address => mapping(uint256 => RecordHead)) private recordHeads;\\r\\n    /// owner \\u2192 recordId \\u2192 version \\u2192 RecordVersion\\r\\n    mapping(address => mapping(uint256 => mapping(uint256 => RecordVersion))) private versions;\\r\\n    /// owner \\u2192 total record count (also used as next recordId)\\r\\n    mapping(address => uint256) private recordCounts;\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Events\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    event RecordAdded(\\r\\n        address indexed owner,\\r\\n        uint256 indexed recordId,\\r\\n        DocumentType docType,\\r\\n        string cid\\r\\n    );\\r\\n    event RecordUpdated(\\r\\n        address indexed owner,\\r\\n        uint256 indexed recordId,\\r\\n        uint256 newVersion,\\r\\n        string cid\\r\\n    );\\r\\n    event RecordStatusChanged(\\r\\n        address indexed owner,\\r\\n        uint256 indexed recordId,\\r\\n        uint256 version,\\r\\n        RecordStatus newStatus\\r\\n    );\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Constructor\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @param _accessController Address of the deployed AccessController contract.\\r\\n    constructor(address _accessController) {\\r\\n        require(_accessController != address(0), \\\"HealthRecordStore: zero address\\\");\\r\\n        accessController = AccessController(_accessController);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Internal helpers\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @dev Revert if msg.sender is neither the patient nor holds PROVIDER_WRITE.\\r\\n    function _requireWriteAccess(address patient, uint256 recordId) internal view {\\r\\n        if (msg.sender == patient) return; // owner always allowed\\r\\n        (bool allowed, AccessController.AccessTier tier) =\\r\\n            accessController.checkAccess(patient, msg.sender, recordId);\\r\\n        require(\\r\\n            allowed && tier == AccessController.AccessTier.PROVIDER_WRITE,\\r\\n            \\\"HealthRecordStore: caller lacks PROVIDER_WRITE access\\\"\\r\\n        );\\r\\n    }\\r\\n\\r\\n    /// @dev Log an access event immutably via AccessController.\\r\\n    function _log(address patient, uint256 recordId, uint256 version, string memory action) internal {\\r\\n        // Use try/catch so a logging failure never blocks the main operation.\\r\\n        try accessController.logAccess(patient, recordId, version, action) {}\\r\\n        catch {}\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Write functions\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Add a brand-new record (version 1). Only the owner can call this.\\r\\n    function addRecord(\\r\\n        DocumentType    docType,\\r\\n        string calldata title,\\r\\n        string calldata cid,\\r\\n        string calldata metadataHash\\r\\n    ) external {\\r\\n        uint256 id = recordCounts[msg.sender];\\r\\n        recordHeads[msg.sender][id] = RecordHead({\\r\\n            docType:       docType,\\r\\n            title:         title,\\r\\n            latestVersion: 1,\\r\\n            createdAt:     block.timestamp,\\r\\n            exists:        true\\r\\n        });\\r\\n        versions[msg.sender][id][1] = RecordVersion({\\r\\n            cid:          cid,\\r\\n            metadataHash: metadataHash,\\r\\n            timestamp:    block.timestamp,\\r\\n            uploadedBy:   msg.sender,\\r\\n            status:       RecordStatus.ACTIVE\\r\\n        });\\r\\n        recordCounts[msg.sender]++;\\r\\n        emit RecordAdded(msg.sender, id, docType, cid);\\r\\n        _log(msg.sender, id, 1, \\\"ADD_RECORD\\\");\\r\\n    }\\r\\n\\r\\n    /// @notice Add a new version to an existing record.\\r\\n    /// @param patient   The owner of the record.\\r\\n    /// @param recordId  The record to update.\\r\\n    /// @dev Caller must be the patient OR hold PROVIDER_WRITE in AccessController.\\r\\n    ///      An immutable audit log entry is created automatically on-chain.\\r\\n    function updateRecord(\\r\\n        address patient,\\r\\n        uint256 recordId,\\r\\n        string calldata newCid,\\r\\n        string calldata newMetadataHash\\r\\n    ) external {\\r\\n        require(\\r\\n            recordHeads[patient][recordId].exists,\\r\\n            \\\"HealthRecordStore: record does not exist\\\"\\r\\n        );\\r\\n        _requireWriteAccess(patient, recordId);\\r\\n\\r\\n        uint256 newVersion = recordHeads[patient][recordId].latestVersion + 1;\\r\\n        recordHeads[patient][recordId].latestVersion = newVersion;\\r\\n        versions[patient][recordId][newVersion] = RecordVersion({\\r\\n            cid:          newCid,\\r\\n            metadataHash: newMetadataHash,\\r\\n            timestamp:    block.timestamp,\\r\\n            uploadedBy:   msg.sender,\\r\\n            status:       RecordStatus.ACTIVE\\r\\n        });\\r\\n        emit RecordUpdated(patient, recordId, newVersion, newCid);\\r\\n        _log(patient, recordId, newVersion, \\\"UPDATE_RECORD\\\");\\r\\n    }\\r\\n\\r\\n    /// @notice Change the status of a specific version (archive or soft-delete).\\r\\n    /// @param patient  The owner of the record.\\r\\n    /// @dev Caller must be the patient OR hold PROVIDER_WRITE.\\r\\n    function setVersionStatus(\\r\\n        address      patient,\\r\\n        uint256      recordId,\\r\\n        uint256      version,\\r\\n        RecordStatus newStatus\\r\\n    ) external {\\r\\n        require(\\r\\n            recordHeads[patient][recordId].exists,\\r\\n            \\\"HealthRecordStore: record does not exist\\\"\\r\\n        );\\r\\n        _requireWriteAccess(patient, recordId);\\r\\n        versions[patient][recordId][version].status = newStatus;\\r\\n        emit RecordStatusChanged(patient, recordId, version, newStatus);\\r\\n        _log(patient, recordId, version, \\\"SET_STATUS\\\");\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // View functions\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    function getLatestRecord(address owner, uint256 recordId)\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            string memory cid,\\r\\n            string memory metadataHash,\\r\\n            uint256       timestamp,\\r\\n            address       uploadedBy\\r\\n        )\\r\\n    {\\r\\n        uint256 v = recordHeads[owner][recordId].latestVersion;\\r\\n        RecordVersion storage rv = versions[owner][recordId][v];\\r\\n        return (rv.cid, rv.metadataHash, rv.timestamp, rv.uploadedBy);\\r\\n    }\\r\\n\\r\\n    function getVersion(\\r\\n        address owner,\\r\\n        uint256 recordId,\\r\\n        uint256 version\\r\\n    )\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            string memory   cid,\\r\\n            string memory   metadataHash,\\r\\n            uint256         timestamp,\\r\\n            address         uploadedBy,\\r\\n            RecordStatus    status\\r\\n        )\\r\\n    {\\r\\n        RecordVersion storage rv = versions[owner][recordId][version];\\r\\n        return (rv.cid, rv.metadataHash, rv.timestamp, rv.uploadedBy, rv.status);\\r\\n    }\\r\\n\\r\\n    function getRecordHead(address owner, uint256 recordId)\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            DocumentType docType,\\r\\n            string memory title,\\r\\n            uint256 latestVersion,\\r\\n            uint256 createdAt,\\r\\n            bool    exists\\r\\n        )\\r\\n    {\\r\\n        RecordHead storage h = recordHeads[owner][recordId];\\r\\n        return (h.docType, h.title, h.latestVersion, h.createdAt, h.exists);\\r\\n    }\\r\\n\\r\\n    function getRecordCount(address owner) external view returns (uint256) {\\r\\n        return recordCounts[owner];\\r\\n    }\\r\\n\\r\\n    /// @notice Returns the address of the wired AccessController.\\r\\n    function getAccessController() external view returns (address) {\\r\\n        return address(accessController);\\r\\n    }\\r\\n}\\r\\n\",\"keccak256\":\"0x63ba71f29e52d3700ee5284275f445751712a91c3a53a13215fe350f2057befc\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60a060405234801561001057600080fd5b506040516115a83803806115a883398101604081905261002f9161009a565b6001600160a01b0381166100895760405162461bcd60e51b815260206004820152601f60248201527f4865616c74685265636f726453746f72653a207a65726f206164647265737300604482015260640160405180910390fd5b6001600160a01b03166080526100ca565b6000602082840312156100ac57600080fd5b81516001600160a01b03811681146100c357600080fd5b9392505050565b6080516114b66100f260003960008181609a01528181610c590152610d6601526114b66000f3fe608060405234801561001057600080fd5b50600436106100885760003560e01c80634a3e3a611161005b5780634a3e3a61146101045780635821430814610128578063985627681461015f578063c59f2a1b1461018257600080fd5b806316d6b5f61461008d57806333c46719146100c957806347206f2e146100de57806349c37595146100f1575b600080fd5b6040516001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001681526020015b60405180910390f35b6100dc6100d7366004610e3c565b6101a6565b005b6100dc6100ec366004610ec6565b610416565b6100dc6100ff366004610f12565b610532565b610117610112366004610fc3565b61080c565b6040516100c0959493929190611066565b6101516101363660046110bc565b6001600160a01b031660009081526002602052604090205490565b6040519081526020016100c0565b61017261016d3660046110de565b610995565b6040516100c09493929190611108565b6101956101903660046110de565b610b25565b6040516100c095949392919061115f565b6001600160a01b03861660009081526020818152604080832088845290915290206004015460ff166101f35760405162461bcd60e51b81526004016101ea9061119e565b60405180910390fd5b6101fd8686610c14565b6001600160a01b03861660009081526020818152604080832088845290915281206002015461022d9060016111fc565b6001600160a01b0388166000908152602081815260408083208a8452825291829020600201839055815160c0601f89018390049092028101820190925260a08201878152929350909182918890889081908501838280828437600092019190915250505090825250604080516020601f87018190048102820181019092528581529181019190869086908190840183828082843760009201829052509385525050426020840152503360408301526060909101526001600160a01b03881660009081526001602090815260408083208a8452825280832085845290915290208151819061031a90826112b6565b506020820151600182019061032f90826112b6565b50604082015160028083019190915560608301516003830180546001600160a01b039092166001600160a01b031983168117825560808601519391926001600160a81b0319161790600160a01b90849081111561038e5761038e61103c565b021790555090505085876001600160a01b03167f9aaad6b9a5bd98c2fdfa522c1411ae3933f78b3600b2754611e66787618f53f28388886040516103d49392919061139f565b60405180910390a361040d8787836040518060400160405280600d81526020016c15541110551157d49150d3d491609a1b815250610d4f565b50505050505050565b6001600160a01b03841660009081526020818152604080832086845290915290206004015460ff1661045a5760405162461bcd60e51b81526004016101ea9061119e565b6104648484610c14565b6001600160a01b038416600090815260016020908152604080832086845282528083208584529091529020600301805482919060ff60a01b1916600160a01b8360028111156104b5576104b561103c565b021790555082846001600160a01b03167f09b898d2e4dec6d1e83ad5d8b527fabd30a6682075069b207a8b37730db8364d84846040516104f69291906113c2565b60405180910390a361052c8484846040518060400160405280600a8152602001695345545f53544154555360b01b815250610d4f565b50505050565b336000908152600260205260409081902054815160a08101909252908089600b8111156105615761056161103c565b815260200188888080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920182905250938552505060016020808501829052426040808701919091526060909501829052338452838152848420878552905292909120835181549193909250839160ff19169083600b8111156105ed576105ed61103c565b02179055506020820151600182019061060690826112b6565b506040828101516002830155606083015160038301556080909201516004909101805460ff191691151591909117905580516020601f870181900402810160c090810190925260a0810186815290918291908890889081908501838280828437600092019190915250505090825250604080516020601f870181900481028201810190925285815291810191908690869081908401838280828437600092018290525093855250504260208401525033604083015260609091015233600090815260016020818152604080842086855282528084209284529190529020815181906106f190826112b6565b506020820151600182019061070690826112b6565b50604082015160028083019190915560608301516003830180546001600160a01b039092166001600160a01b031983168117825560808601519391926001600160a81b0319161790600160a01b9084908111156107655761076561103c565b0217905550503360009081526002602052604081208054925090610788836113d6565b919050555080336001600160a01b03167f3f2e101018739d06aff01a8f1d7ab95e3d2d210d107b7645ae7841698b9f33a88a88886040516107cb939291906113ef565b60405180910390a3610802338260016040518060400160405280600a81526020016910511117d49150d3d49160b21b815250610d4f565b5050505050505050565b6001600160a01b03838116600090815260016020818152604080842087855282528084208685529091528220600281015460038201548254606096879695869586959094859492850193919291811691600160a01b90910460ff169085906108739061122b565b80601f016020809104026020016040519081016040528092919081815260200182805461089f9061122b565b80156108ec5780601f106108c1576101008083540402835291602001916108ec565b820191906000526020600020905b8154815290600101906020018083116108cf57829003601f168201915b505050505094508380546108ff9061122b565b80601f016020809104026020016040519081016040528092919081815260200182805461092b9061122b565b80156109785780601f1061094d57610100808354040283529160200191610978565b820191906000526020600020905b81548152906001019060200180831161095b57829003601f168201915b505050505093509550955095509550955050939792965093509350565b6001600160a01b03808316600081815260208181526040808320868452825280832060029081015494845260018084528285208886528452828520868652909352908320908101546003820154825460609788978796909594859491850193909291909116908490610a069061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610a329061122b565b8015610a7f5780601f10610a5457610100808354040283529160200191610a7f565b820191906000526020600020905b815481529060010190602001808311610a6257829003601f168201915b50505050509350828054610a929061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610abe9061122b565b8015610b0b5780601f10610ae057610100808354040283529160200191610b0b565b820191906000526020600020905b815481529060010190602001808311610aee57829003601f168201915b505050505092509550955095509550505092959194509250565b6001600160a01b03821660009081526020818152604080832084845290915281208054600282015460038301546004840154600185018054606096889687968796929560ff928316959491939216908490610b7f9061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610bab9061122b565b8015610bf85780601f10610bcd57610100808354040283529160200191610bf8565b820191906000526020600020905b815481529060010190602001808311610bdb57829003601f168201915b5050505050935095509550955095509550509295509295909350565b6001600160a01b0382163303610c28575050565b604051631bbfbb5760e01b81526001600160a01b0383811660048301523360248301526044820183905260009182917f00000000000000000000000000000000000000000000000000000000000000001690631bbfbb57906064016040805180830381865afa158015610c9f573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610cc39190611410565b91509150818015610ce557506003816003811115610ce357610ce361103c565b145b61052c5760405162461bcd60e51b815260206004820152603560248201527f4865616c74685265636f726453746f72653a2063616c6c6572206c61636b732060448201527450524f56494445525f57524954452061636365737360581b60648201526084016101ea565b60405163749c3cd760e11b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063e93879ae90610da1908790879087908790600401611453565b600060405180830381600087803b158015610dbb57600080fd5b505af1925050508015610dcc575060015b1561052c5750505050565b80356001600160a01b0381168114610dee57600080fd5b919050565b60008083601f840112610e0557600080fd5b50813567ffffffffffffffff811115610e1d57600080fd5b602083019150836020828501011115610e3557600080fd5b9250929050565b60008060008060008060808789031215610e5557600080fd5b610e5e87610dd7565b955060208701359450604087013567ffffffffffffffff80821115610e8257600080fd5b610e8e8a838b01610df3565b90965094506060890135915080821115610ea757600080fd5b50610eb489828a01610df3565b979a9699509497509295939492505050565b60008060008060808587031215610edc57600080fd5b610ee585610dd7565b93506020850135925060408501359150606085013560038110610f0757600080fd5b939692955090935050565b60008060008060008060006080888a031215610f2d57600080fd5b8735600c8110610f3c57600080fd5b9650602088013567ffffffffffffffff80821115610f5957600080fd5b610f658b838c01610df3565b909850965060408a0135915080821115610f7e57600080fd5b610f8a8b838c01610df3565b909650945060608a0135915080821115610fa357600080fd5b50610fb08a828b01610df3565b989b979a50959850939692959293505050565b600080600060608486031215610fd857600080fd5b610fe184610dd7565b95602085013595506040909401359392505050565b6000815180845260005b8181101561101c57602081850181015186830182015201611000565b506000602082860101526020601f19601f83011685010191505092915050565b634e487b7160e01b600052602160045260246000fd5b600381106110625761106261103c565b9052565b60a08152600061107960a0830188610ff6565b828103602084015261108b8188610ff6565b604084018790526001600160a01b038616606085015291506110b290506080830184611052565b9695505050505050565b6000602082840312156110ce57600080fd5b6110d782610dd7565b9392505050565b600080604083850312156110f157600080fd5b6110fa83610dd7565b946020939093013593505050565b60808152600061111b6080830187610ff6565b828103602084015261112d8187610ff6565b604084019590955250506001600160a01b039190911660609091015292915050565b600c81106110625761106261103c565b611169818761114f565b60a06020820152600061117f60a0830187610ff6565b6040830195909552506060810192909252151560809091015292915050565b60208082526028908201527f4865616c74685265636f726453746f72653a207265636f726420646f6573206e6040820152671bdd08195e1a5cdd60c21b606082015260800190565b634e487b7160e01b600052601160045260246000fd5b8082018082111561120f5761120f6111e6565b92915050565b634e487b7160e01b600052604160045260246000fd5b600181811c9082168061123f57607f821691505b60208210810361125f57634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156112b1576000816000526020600020601f850160051c8101602086101561128e5750805b601f850160051c820191505b818110156112ad5782815560010161129a565b5050505b505050565b815167ffffffffffffffff8111156112d0576112d0611215565b6112e4816112de845461122b565b84611265565b602080601f83116001811461131957600084156113015750858301515b600019600386901b1c1916600185901b1785556112ad565b600085815260208120601f198616915b8281101561134857888601518255948401946001909101908401611329565b50858210156113665787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b8381526040602082015260006113b9604083018486611376565b95945050505050565b828152604081016110d76020830184611052565b6000600182016113e8576113e86111e6565b5060010190565b6113f9818561114f565b6040602082015260006113b9604083018486611376565b6000806040838503121561142357600080fd5b8251801515811461143357600080fd5b60208401519092506004811061144857600080fd5b809150509250929050565b60018060a01b03851681528360208201528260408201526080606082015260006110b26080830184610ff656fea2646970667358221220844d02a2441db6e4faf3838f925437c76ce769dbb01a824175c6d81b21c8402364736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100885760003560e01c80634a3e3a611161005b5780634a3e3a61146101045780635821430814610128578063985627681461015f578063c59f2a1b1461018257600080fd5b806316d6b5f61461008d57806333c46719146100c957806347206f2e146100de57806349c37595146100f1575b600080fd5b6040516001600160a01b037f00000000000000000000000000000000000000000000000000000000000000001681526020015b60405180910390f35b6100dc6100d7366004610e3c565b6101a6565b005b6100dc6100ec366004610ec6565b610416565b6100dc6100ff366004610f12565b610532565b610117610112366004610fc3565b61080c565b6040516100c0959493929190611066565b6101516101363660046110bc565b6001600160a01b031660009081526002602052604090205490565b6040519081526020016100c0565b61017261016d3660046110de565b610995565b6040516100c09493929190611108565b6101956101903660046110de565b610b25565b6040516100c095949392919061115f565b6001600160a01b03861660009081526020818152604080832088845290915290206004015460ff166101f35760405162461bcd60e51b81526004016101ea9061119e565b60405180910390fd5b6101fd8686610c14565b6001600160a01b03861660009081526020818152604080832088845290915281206002015461022d9060016111fc565b6001600160a01b0388166000908152602081815260408083208a8452825291829020600201839055815160c0601f89018390049092028101820190925260a08201878152929350909182918890889081908501838280828437600092019190915250505090825250604080516020601f87018190048102820181019092528581529181019190869086908190840183828082843760009201829052509385525050426020840152503360408301526060909101526001600160a01b03881660009081526001602090815260408083208a8452825280832085845290915290208151819061031a90826112b6565b506020820151600182019061032f90826112b6565b50604082015160028083019190915560608301516003830180546001600160a01b039092166001600160a01b031983168117825560808601519391926001600160a81b0319161790600160a01b90849081111561038e5761038e61103c565b021790555090505085876001600160a01b03167f9aaad6b9a5bd98c2fdfa522c1411ae3933f78b3600b2754611e66787618f53f28388886040516103d49392919061139f565b60405180910390a361040d8787836040518060400160405280600d81526020016c15541110551157d49150d3d491609a1b815250610d4f565b50505050505050565b6001600160a01b03841660009081526020818152604080832086845290915290206004015460ff1661045a5760405162461bcd60e51b81526004016101ea9061119e565b6104648484610c14565b6001600160a01b038416600090815260016020908152604080832086845282528083208584529091529020600301805482919060ff60a01b1916600160a01b8360028111156104b5576104b561103c565b021790555082846001600160a01b03167f09b898d2e4dec6d1e83ad5d8b527fabd30a6682075069b207a8b37730db8364d84846040516104f69291906113c2565b60405180910390a361052c8484846040518060400160405280600a8152602001695345545f53544154555360b01b815250610d4f565b50505050565b336000908152600260205260409081902054815160a08101909252908089600b8111156105615761056161103c565b815260200188888080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920182905250938552505060016020808501829052426040808701919091526060909501829052338452838152848420878552905292909120835181549193909250839160ff19169083600b8111156105ed576105ed61103c565b02179055506020820151600182019061060690826112b6565b506040828101516002830155606083015160038301556080909201516004909101805460ff191691151591909117905580516020601f870181900402810160c090810190925260a0810186815290918291908890889081908501838280828437600092019190915250505090825250604080516020601f870181900481028201810190925285815291810191908690869081908401838280828437600092018290525093855250504260208401525033604083015260609091015233600090815260016020818152604080842086855282528084209284529190529020815181906106f190826112b6565b506020820151600182019061070690826112b6565b50604082015160028083019190915560608301516003830180546001600160a01b039092166001600160a01b031983168117825560808601519391926001600160a81b0319161790600160a01b9084908111156107655761076561103c565b0217905550503360009081526002602052604081208054925090610788836113d6565b919050555080336001600160a01b03167f3f2e101018739d06aff01a8f1d7ab95e3d2d210d107b7645ae7841698b9f33a88a88886040516107cb939291906113ef565b60405180910390a3610802338260016040518060400160405280600a81526020016910511117d49150d3d49160b21b815250610d4f565b5050505050505050565b6001600160a01b03838116600090815260016020818152604080842087855282528084208685529091528220600281015460038201548254606096879695869586959094859492850193919291811691600160a01b90910460ff169085906108739061122b565b80601f016020809104026020016040519081016040528092919081815260200182805461089f9061122b565b80156108ec5780601f106108c1576101008083540402835291602001916108ec565b820191906000526020600020905b8154815290600101906020018083116108cf57829003601f168201915b505050505094508380546108ff9061122b565b80601f016020809104026020016040519081016040528092919081815260200182805461092b9061122b565b80156109785780601f1061094d57610100808354040283529160200191610978565b820191906000526020600020905b81548152906001019060200180831161095b57829003601f168201915b505050505093509550955095509550955050939792965093509350565b6001600160a01b03808316600081815260208181526040808320868452825280832060029081015494845260018084528285208886528452828520868652909352908320908101546003820154825460609788978796909594859491850193909291909116908490610a069061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610a329061122b565b8015610a7f5780601f10610a5457610100808354040283529160200191610a7f565b820191906000526020600020905b815481529060010190602001808311610a6257829003601f168201915b50505050509350828054610a929061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610abe9061122b565b8015610b0b5780601f10610ae057610100808354040283529160200191610b0b565b820191906000526020600020905b815481529060010190602001808311610aee57829003601f168201915b505050505092509550955095509550505092959194509250565b6001600160a01b03821660009081526020818152604080832084845290915281208054600282015460038301546004840154600185018054606096889687968796929560ff928316959491939216908490610b7f9061122b565b80601f0160208091040260200160405190810160405280929190818152602001828054610bab9061122b565b8015610bf85780601f10610bcd57610100808354040283529160200191610bf8565b820191906000526020600020905b815481529060010190602001808311610bdb57829003601f168201915b5050505050935095509550955095509550509295509295909350565b6001600160a01b0382163303610c28575050565b604051631bbfbb5760e01b81526001600160a01b0383811660048301523360248301526044820183905260009182917f00000000000000000000000000000000000000000000000000000000000000001690631bbfbb57906064016040805180830381865afa158015610c9f573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190610cc39190611410565b91509150818015610ce557506003816003811115610ce357610ce361103c565b145b61052c5760405162461bcd60e51b815260206004820152603560248201527f4865616c74685265636f726453746f72653a2063616c6c6572206c61636b732060448201527450524f56494445525f57524954452061636365737360581b60648201526084016101ea565b60405163749c3cd760e11b81526001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000169063e93879ae90610da1908790879087908790600401611453565b600060405180830381600087803b158015610dbb57600080fd5b505af1925050508015610dcc575060015b1561052c5750505050565b80356001600160a01b0381168114610dee57600080fd5b919050565b60008083601f840112610e0557600080fd5b50813567ffffffffffffffff811115610e1d57600080fd5b602083019150836020828501011115610e3557600080fd5b9250929050565b60008060008060008060808789031215610e5557600080fd5b610e5e87610dd7565b955060208701359450604087013567ffffffffffffffff80821115610e8257600080fd5b610e8e8a838b01610df3565b90965094506060890135915080821115610ea757600080fd5b50610eb489828a01610df3565b979a9699509497509295939492505050565b60008060008060808587031215610edc57600080fd5b610ee585610dd7565b93506020850135925060408501359150606085013560038110610f0757600080fd5b939692955090935050565b60008060008060008060006080888a031215610f2d57600080fd5b8735600c8110610f3c57600080fd5b9650602088013567ffffffffffffffff80821115610f5957600080fd5b610f658b838c01610df3565b909850965060408a0135915080821115610f7e57600080fd5b610f8a8b838c01610df3565b909650945060608a0135915080821115610fa357600080fd5b50610fb08a828b01610df3565b989b979a50959850939692959293505050565b600080600060608486031215610fd857600080fd5b610fe184610dd7565b95602085013595506040909401359392505050565b6000815180845260005b8181101561101c57602081850181015186830182015201611000565b506000602082860101526020601f19601f83011685010191505092915050565b634e487b7160e01b600052602160045260246000fd5b600381106110625761106261103c565b9052565b60a08152600061107960a0830188610ff6565b828103602084015261108b8188610ff6565b604084018790526001600160a01b038616606085015291506110b290506080830184611052565b9695505050505050565b6000602082840312156110ce57600080fd5b6110d782610dd7565b9392505050565b600080604083850312156110f157600080fd5b6110fa83610dd7565b946020939093013593505050565b60808152600061111b6080830187610ff6565b828103602084015261112d8187610ff6565b604084019590955250506001600160a01b039190911660609091015292915050565b600c81106110625761106261103c565b611169818761114f565b60a06020820152600061117f60a0830187610ff6565b6040830195909552506060810192909252151560809091015292915050565b60208082526028908201527f4865616c74685265636f726453746f72653a207265636f726420646f6573206e6040820152671bdd08195e1a5cdd60c21b606082015260800190565b634e487b7160e01b600052601160045260246000fd5b8082018082111561120f5761120f6111e6565b92915050565b634e487b7160e01b600052604160045260246000fd5b600181811c9082168061123f57607f821691505b60208210810361125f57634e487b7160e01b600052602260045260246000fd5b50919050565b601f8211156112b1576000816000526020600020601f850160051c8101602086101561128e5750805b601f850160051c820191505b818110156112ad5782815560010161129a565b5050505b505050565b815167ffffffffffffffff8111156112d0576112d0611215565b6112e4816112de845461122b565b84611265565b602080601f83116001811461131957600084156113015750858301515b600019600386901b1c1916600185901b1785556112ad565b600085815260208120601f198616915b8281101561134857888601518255948401946001909101908401611329565b50858210156113665787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b81835281816020850137506000828201602090810191909152601f909101601f19169091010190565b8381526040602082015260006113b9604083018486611376565b95945050505050565b828152604081016110d76020830184611052565b6000600182016113e8576113e86111e6565b5060010190565b6113f9818561114f565b6040602082015260006113b9604083018486611376565b6000806040838503121561142357600080fd5b8251801515811461143357600080fd5b60208401519092506004811061144857600080fd5b809150509250929050565b60018060a01b03851681528360208201528260408201526080606082015260006110b26080830184610ff656fea2646970667358221220844d02a2441db6e4faf3838f925437c76ce769dbb01a824175c6d81b21c8402364736f6c63430008180033",
+  "devdoc": {
+    "details": "Integrated with AccessController for on-chain permission enforcement.      Owners add records themselves; authorised providers can update records      (add new versions) on behalf of a patient if granted PROVIDER_WRITE.      All writes automatically emit an immutable audit log entry via      AccessController.logAccess — no manual frontend call needed.",
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "_accessController": "Address of the deployed AccessController contract."
+        }
+      },
+      "setVersionStatus(address,uint256,uint256,uint8)": {
+        "details": "Caller must be the patient OR hold PROVIDER_WRITE.",
+        "params": {
+          "patient": "The owner of the record."
+        }
+      },
+      "updateRecord(address,uint256,string,string)": {
+        "details": "Caller must be the patient OR hold PROVIDER_WRITE in AccessController.      An immutable audit log entry is created automatically on-chain.",
+        "params": {
+          "patient": "The owner of the record.",
+          "recordId": "The record to update."
+        }
+      }
+    },
+    "title": "HealthRecordStore",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "addRecord(uint8,string,string,string)": {
+        "notice": "Add a brand-new record (version 1). Only the owner can call this."
+      },
+      "getAccessController()": {
+        "notice": "Returns the address of the wired AccessController."
+      },
+      "setVersionStatus(address,uint256,uint256,uint8)": {
+        "notice": "Change the status of a specific version (archive or soft-delete)."
+      },
+      "updateRecord(address,uint256,string,string)": {
+        "notice": "Add a new version to an existing record."
+      }
+    },
+    "notice": "Versioned, typed document storage. Each record is identified by         (owner address, recordId) and supports unlimited versions.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 542,
+        "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+        "label": "recordHeads",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(RecordHead)531_storage))"
+      },
+      {
+        "astId": 552,
+        "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+        "label": "versions",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_struct(RecordVersion)519_storage)))"
+      },
+      {
+        "astId": 557,
+        "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+        "label": "recordCounts",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_uint256)"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_enum(DocumentType)503": {
+        "encoding": "inplace",
+        "label": "enum HealthRecordStore.DocumentType",
+        "numberOfBytes": "1"
+      },
+      "t_enum(RecordStatus)507": {
+        "encoding": "inplace",
+        "label": "enum HealthRecordStore.RecordStatus",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_struct(RecordVersion)519_storage)))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(uint256 => mapping(uint256 => struct HealthRecordStore.RecordVersion)))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(RecordVersion)519_storage))"
+      },
+      "t_mapping(t_address,t_mapping(t_uint256,t_struct(RecordHead)531_storage))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(uint256 => struct HealthRecordStore.RecordHead))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_struct(RecordHead)531_storage)"
+      },
+      "t_mapping(t_address,t_uint256)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => uint256)",
+        "numberOfBytes": "32",
+        "value": "t_uint256"
+      },
+      "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(RecordVersion)519_storage))": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => mapping(uint256 => struct HealthRecordStore.RecordVersion))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_uint256,t_struct(RecordVersion)519_storage)"
+      },
+      "t_mapping(t_uint256,t_struct(RecordHead)531_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct HealthRecordStore.RecordHead)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RecordHead)531_storage"
+      },
+      "t_mapping(t_uint256,t_struct(RecordVersion)519_storage)": {
+        "encoding": "mapping",
+        "key": "t_uint256",
+        "label": "mapping(uint256 => struct HealthRecordStore.RecordVersion)",
+        "numberOfBytes": "32",
+        "value": "t_struct(RecordVersion)519_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(RecordHead)531_storage": {
+        "encoding": "inplace",
+        "label": "struct HealthRecordStore.RecordHead",
+        "members": [
+          {
+            "astId": 522,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "docType",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_enum(DocumentType)503"
+          },
+          {
+            "astId": 524,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "title",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 526,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "latestVersion",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 528,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "createdAt",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 530,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "exists",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "160"
+      },
+      "t_struct(RecordVersion)519_storage": {
+        "encoding": "inplace",
+        "label": "struct HealthRecordStore.RecordVersion",
+        "members": [
+          {
+            "astId": 509,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "cid",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 511,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "metadataHash",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_string_storage"
+          },
+          {
+            "astId": 513,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "timestamp",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 515,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "uploadedBy",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address"
+          },
+          {
+            "astId": 518,
+            "contract": "contracts/HealthRecordStore.sol:HealthRecordStore",
+            "label": "status",
+            "offset": 20,
+            "slot": "3",
+            "type": "t_enum(RecordStatus)507"
+          }
+        ],
+        "numberOfBytes": "128"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

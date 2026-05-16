@@ -1,0 +1,641 @@
+{
+  "address": "0xD3f8DB1120087776330c10D81d900A4Fc8433487",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum AccessController.AccessTier",
+          "name": "tier",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        }
+      ],
+      "name": "AccessGranted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        }
+      ],
+      "name": "AccessLogged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        }
+      ],
+      "name": "AccessRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        }
+      ],
+      "name": "ProviderRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "admin",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        }
+      ],
+      "name": "checkAccess",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "allowed",
+          "type": "bool"
+        },
+        {
+          "internalType": "enum AccessController.AccessTier",
+          "name": "tier",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        }
+      ],
+      "name": "getAccessLogs",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "accessor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "recordId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "version",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "action",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct AccessController.AccessLog[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        }
+      ],
+      "name": "getGrant",
+      "outputs": [
+        {
+          "internalType": "enum AccessController.AccessTier",
+          "name": "tier",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "grantedAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "expiresAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        },
+        {
+          "internalType": "enum AccessController.AccessTier",
+          "name": "tier",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "durationSeconds",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "recordIds",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "grantAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        }
+      ],
+      "name": "isActiveAccessor",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "patient",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "recordId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "version",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "action",
+          "type": "string"
+        }
+      ],
+      "name": "logAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "provider",
+          "type": "address"
+        }
+      ],
+      "name": "registerProvider",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "registeredProviders",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "accessor",
+          "type": "address"
+        }
+      ],
+      "name": "revokeAccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xcff713141e8824f2ac8a0d5fd049da9706e7050d32c884a0531c2d46dd9a903f",
+  "receipt": {
+    "to": null,
+    "from": "0x76F469759b4F6a614cA22D77837C58208B0835A4",
+    "contractAddress": "0xD3f8DB1120087776330c10D81d900A4Fc8433487",
+    "transactionIndex": 1,
+    "gasUsed": "972587",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xf77ad4bc9ca503669e5ca4ba6a4c8850bc17912fca803b4292d26be07b6adca2",
+    "transactionHash": "0xcff713141e8824f2ac8a0d5fd049da9706e7050d32c884a0531c2d46dd9a903f",
+    "logs": [],
+    "blockNumber": 160369383,
+    "cumulativeGasUsed": "1022014",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "78dd4924603543f0b3991872fb8549a8",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"enum AccessController.AccessTier\",\"name\":\"tier\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"expiresAt\",\"type\":\"uint256\"}],\"name\":\"AccessGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"action\",\"type\":\"string\"}],\"name\":\"AccessLogged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"}],\"name\":\"AccessRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"}],\"name\":\"ProviderRegistered\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"admin\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"}],\"name\":\"checkAccess\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"allowed\",\"type\":\"bool\"},{\"internalType\":\"enum AccessController.AccessTier\",\"name\":\"tier\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"}],\"name\":\"getAccessLogs\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timestamp\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"action\",\"type\":\"string\"}],\"internalType\":\"struct AccessController.AccessLog[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"}],\"name\":\"getGrant\",\"outputs\":[{\"internalType\":\"enum AccessController.AccessTier\",\"name\":\"tier\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"grantedAt\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expiresAt\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"active\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"},{\"internalType\":\"enum AccessController.AccessTier\",\"name\":\"tier\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"durationSeconds\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"recordIds\",\"type\":\"uint256[]\"}],\"name\":\"grantAccess\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"}],\"name\":\"isActiveAccessor\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"patient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"recordId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"version\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"action\",\"type\":\"string\"}],\"name\":\"logAccess\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"provider\",\"type\":\"address\"}],\"name\":\"registerProvider\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"registeredProviders\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"accessor\",\"type\":\"address\"}],\"name\":\"revokeAccess\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This is the most critical contract in the system.      Key design decisions:      - Access is granted BY the owner TO any address (doctor, attorney, auditor, family).      - Grants can be scoped to specific record IDs (empty array = all records).      - Grants carry a tier (read-only vs write) and an optional expiry.      - Every access event is logged immutably on-chain.      - The admin can register \\\"verified providers\\\" (doctors, law firms) but        the owner decides who gets access \\u2014 admin cannot override this.\",\"kind\":\"dev\",\"methods\":{\"checkAccess(address,address,uint256)\":{\"returns\":{\"allowed\":\" True if access is currently valid.\",\"tier\":\"    The access tier granted (only meaningful when allowed == true).\"}},\"grantAccess(address,uint8,uint256,uint256[])\":{\"params\":{\"accessor\":\"The address receiving access (doctor, attorney, auditor).\",\"durationSeconds\":\"How long the grant is valid. 0 = permanent.\",\"recordIds\":\"Specific record IDs to allow. Empty = all records.\",\"tier\":\"Privilege level (see AccessTier enum).\"}},\"logAccess(address,uint256,uint256,string)\":{\"params\":{\"action\":\"String descriptor: \\\"READ\\\", \\\"DOWNLOAD\\\", \\\"ADD_NOTE\\\", etc.\",\"patient\":\"The owner whose record was accessed.\",\"recordId\":\"Which record was accessed.\",\"version\":\"Which version was accessed.\"}},\"registerProvider(address)\":{\"details\":\"Registration does NOT grant them access to any patient \\u2014 it only      marks them as a verified entity that patients can discover and choose.\"}},\"title\":\"AccessController\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"checkAccess(address,address,uint256)\":{\"notice\":\"Check whether `accessor` is currently allowed to access `recordId`         belonging to `patient`.\"},\"grantAccess(address,uint8,uint256,uint256[])\":{\"notice\":\"Grant access to any address for a configurable tier and duration.\"},\"isActiveAccessor(address,address)\":{\"notice\":\"Returns true if a grant exists and has not yet expired.         Does NOT check record-level restrictions.\"},\"logAccess(address,uint256,uint256,string)\":{\"notice\":\"Append an access event to the patient's immutable audit log.\"},\"registerProvider(address)\":{\"notice\":\"Register a healthcare provider / law firm / verified accessor.\"},\"registeredProviders(address)\":{\"notice\":\"verified providers registered by admin (optional \\u2014 owner can grant to any address)\"},\"revokeAccess(address)\":{\"notice\":\"Revoke an existing grant immediately.\"}},\"notice\":\"Fine-grained, time-limited, per-record access control with immutable audit log.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/AccessController.sol\":\"AccessController\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/AccessController.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\r\\npragma solidity ^0.8.24;\\r\\n\\r\\n/// @title AccessController\\r\\n/// @notice Fine-grained, time-limited, per-record access control with immutable audit log.\\r\\n/// @dev This is the most critical contract in the system.\\r\\n///      Key design decisions:\\r\\n///      - Access is granted BY the owner TO any address (doctor, attorney, auditor, family).\\r\\n///      - Grants can be scoped to specific record IDs (empty array = all records).\\r\\n///      - Grants carry a tier (read-only vs write) and an optional expiry.\\r\\n///      - Every access event is logged immutably on-chain.\\r\\n///      - The admin can register \\\"verified providers\\\" (doctors, law firms) but\\r\\n///        the owner decides who gets access \\u2014 admin cannot override this.\\r\\ncontract AccessController {\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Enums\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @dev Tiers are ordered by privilege level (lower index = less access).\\r\\n    enum AccessTier {\\r\\n        EMERGENCY_READ,  // 0 \\u2014 view public emergency card only (no encrypted records)\\r\\n        RECORD_READ,     // 1 \\u2014 read specific or all encrypted records\\r\\n        FULL_READ,       // 2 \\u2014 read all records + version history + metadata\\r\\n        PROVIDER_WRITE   // 3 \\u2014 read + add new versions / clinical/legal annotations\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Data structures\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    struct AccessGrant {\\r\\n        AccessTier tier;\\r\\n        uint256    grantedAt;\\r\\n        /// @dev expiresAt == 0 means the grant is permanent until explicitly revoked.\\r\\n        uint256    expiresAt;\\r\\n        /// @dev allowedRecordIds: empty array means access to ALL records.\\r\\n        ///      Populated array restricts to only those specific record IDs.\\r\\n        uint256[]  allowedRecordIds;\\r\\n        bool       active;\\r\\n    }\\r\\n\\r\\n    struct AccessLog {\\r\\n        address accessor;\\r\\n        uint256 recordId;\\r\\n        uint256 version;\\r\\n        uint256 timestamp;\\r\\n        /// @dev Free-form action string: \\\"READ\\\", \\\"DOWNLOAD\\\", \\\"ADD_NOTE\\\", \\\"SHARE\\\", etc.\\r\\n        string  action;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // State\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// patient/owner \\u2192 accessor \\u2192 grant\\r\\n    mapping(address => mapping(address => AccessGrant)) private grants;\\r\\n    /// patient/owner \\u2192 immutable access log array\\r\\n    mapping(address => AccessLog[]) private accessLogs;\\r\\n    /// verified providers registered by admin (optional \\u2014 owner can grant to any address)\\r\\n    mapping(address => bool) public registeredProviders;\\r\\n    address public admin;\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Events\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    event AccessGranted(\\r\\n        address indexed patient,\\r\\n        address indexed accessor,\\r\\n        AccessTier      tier,\\r\\n        uint256         expiresAt\\r\\n    );\\r\\n    event AccessRevoked(\\r\\n        address indexed patient,\\r\\n        address indexed accessor\\r\\n    );\\r\\n    event AccessLogged(\\r\\n        address indexed patient,\\r\\n        address indexed accessor,\\r\\n        uint256         recordId,\\r\\n        string          action\\r\\n    );\\r\\n    event ProviderRegistered(address indexed provider);\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Modifiers\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    modifier onlyAdmin() {\\r\\n        require(msg.sender == admin, \\\"AccessController: not admin\\\");\\r\\n        _;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Constructor\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    constructor() {\\r\\n        admin = msg.sender;\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Admin functions\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Register a healthcare provider / law firm / verified accessor.\\r\\n    /// @dev Registration does NOT grant them access to any patient \\u2014 it only\\r\\n    ///      marks them as a verified entity that patients can discover and choose.\\r\\n    function registerProvider(address provider) external onlyAdmin {\\r\\n        require(provider != address(0), \\\"AccessController: zero address\\\");\\r\\n        registeredProviders[provider] = true;\\r\\n        emit ProviderRegistered(provider);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Grant / Revoke (called by the data owner)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Grant access to any address for a configurable tier and duration.\\r\\n    /// @param accessor        The address receiving access (doctor, attorney, auditor).\\r\\n    /// @param tier            Privilege level (see AccessTier enum).\\r\\n    /// @param durationSeconds How long the grant is valid. 0 = permanent.\\r\\n    /// @param recordIds       Specific record IDs to allow. Empty = all records.\\r\\n    function grantAccess(\\r\\n        address          accessor,\\r\\n        AccessTier       tier,\\r\\n        uint256          durationSeconds,\\r\\n        uint256[] calldata recordIds\\r\\n    ) external {\\r\\n        require(accessor != address(0), \\\"AccessController: zero address\\\");\\r\\n        require(accessor != msg.sender,  \\\"AccessController: cannot grant to self\\\");\\r\\n        uint256 expiry = durationSeconds == 0\\r\\n            ? 0\\r\\n            : block.timestamp + durationSeconds;\\r\\n        grants[msg.sender][accessor] = AccessGrant({\\r\\n            tier:             tier,\\r\\n            grantedAt:        block.timestamp,\\r\\n            expiresAt:        expiry,\\r\\n            allowedRecordIds: recordIds,\\r\\n            active:           true\\r\\n        });\\r\\n        emit AccessGranted(msg.sender, accessor, tier, expiry);\\r\\n    }\\r\\n\\r\\n    /// @notice Revoke an existing grant immediately.\\r\\n    function revokeAccess(address accessor) external {\\r\\n        require(\\r\\n            grants[msg.sender][accessor].active,\\r\\n            \\\"AccessController: no active grant to revoke\\\"\\r\\n        );\\r\\n        grants[msg.sender][accessor].active = false;\\r\\n        emit AccessRevoked(msg.sender, accessor);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Access check (read-only, called by frontend before fetching files)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Check whether `accessor` is currently allowed to access `recordId`\\r\\n    ///         belonging to `patient`.\\r\\n    /// @return allowed  True if access is currently valid.\\r\\n    /// @return tier     The access tier granted (only meaningful when allowed == true).\\r\\n    function checkAccess(\\r\\n        address patient,\\r\\n        address accessor,\\r\\n        uint256 recordId\\r\\n    ) external view returns (bool allowed, AccessTier tier) {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n\\r\\n        // Check grant is active\\r\\n        if (!g.active) return (false, AccessTier.EMERGENCY_READ);\\r\\n\\r\\n        // Check expiry\\r\\n        if (g.expiresAt != 0 && block.timestamp > g.expiresAt)\\r\\n            return (false, AccessTier.EMERGENCY_READ);\\r\\n\\r\\n        // Check record-level restriction\\r\\n        if (g.allowedRecordIds.length > 0) {\\r\\n            bool found = false;\\r\\n            for (uint256 i = 0; i < g.allowedRecordIds.length; i++) {\\r\\n                if (g.allowedRecordIds[i] == recordId) {\\r\\n                    found = true;\\r\\n                    break;\\r\\n                }\\r\\n            }\\r\\n            if (!found) return (false, AccessTier.EMERGENCY_READ);\\r\\n        }\\r\\n\\r\\n        return (true, g.tier);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Audit log (called by frontend / provider after accessing a record)\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    /// @notice Append an access event to the patient's immutable audit log.\\r\\n    /// @param patient   The owner whose record was accessed.\\r\\n    /// @param recordId  Which record was accessed.\\r\\n    /// @param version   Which version was accessed.\\r\\n    /// @param action    String descriptor: \\\"READ\\\", \\\"DOWNLOAD\\\", \\\"ADD_NOTE\\\", etc.\\r\\n    function logAccess(\\r\\n        address patient,\\r\\n        uint256 recordId,\\r\\n        uint256 version,\\r\\n        string calldata action\\r\\n    ) external {\\r\\n        // Allow patient to log their own actions too (e.g., self-download)\\r\\n        require(\\r\\n            msg.sender == patient || grants[patient][msg.sender].active,\\r\\n            \\\"AccessController: not authorized to log for this patient\\\"\\r\\n        );\\r\\n        accessLogs[patient].push(AccessLog({\\r\\n            accessor:  msg.sender,\\r\\n            recordId:  recordId,\\r\\n            version:   version,\\r\\n            timestamp: block.timestamp,\\r\\n            action:    action\\r\\n        }));\\r\\n        emit AccessLogged(patient, msg.sender, recordId, action);\\r\\n    }\\r\\n\\r\\n    // -------------------------------------------------------------------------\\r\\n    // Views\\r\\n    // -------------------------------------------------------------------------\\r\\n\\r\\n    function getAccessLogs(address patient)\\r\\n        external\\r\\n        view\\r\\n        returns (AccessLog[] memory)\\r\\n    {\\r\\n        return accessLogs[patient];\\r\\n    }\\r\\n\\r\\n    function getGrant(\\r\\n        address patient,\\r\\n        address accessor\\r\\n    )\\r\\n        external\\r\\n        view\\r\\n        returns (\\r\\n            AccessTier tier,\\r\\n            uint256    grantedAt,\\r\\n            uint256    expiresAt,\\r\\n            bool       active\\r\\n        )\\r\\n    {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n        return (g.tier, g.grantedAt, g.expiresAt, g.active);\\r\\n    }\\r\\n\\r\\n    /// @notice Returns true if a grant exists and has not yet expired.\\r\\n    ///         Does NOT check record-level restrictions.\\r\\n    function isActiveAccessor(address patient, address accessor)\\r\\n        external\\r\\n        view\\r\\n        returns (bool)\\r\\n    {\\r\\n        AccessGrant storage g = grants[patient][accessor];\\r\\n        if (!g.active) return false;\\r\\n        if (g.expiresAt != 0 && block.timestamp > g.expiresAt) return false;\\r\\n        return true;\\r\\n    }\\r\\n}\\r\\n\",\"keccak256\":\"0x9d7be32aa6479f192aa5e148dbebce3afe2efd96863a01cab3871c5b382c88f4\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50600380546001600160a01b03191633179055611039806100326000396000f3fe608060405234801561001057600080fd5b506004361061009e5760003560e01c8063877054fc11610066578063877054fc14610177578063c1c01b691461018a578063e7747ccb146101ad578063e93879ae146101d0578063f851a440146101e357600080fd5b80630e260016146100a35780631bbfbb57146100b85780636b1fe97f146100e25780636d1319eb1461010257806385e6853114610164575b600080fd5b6100b66100b1366004610b13565b61020e565b005b6100cb6100c6366004610b35565b61030f565b6040516100d9929190610ba9565b60405180910390f35b6100f56100f0366004610b13565b6103f2565b6040516100d99190610bbf565b610154610110366004610c97565b6001600160a01b03918216600090815260208181526040808320939094168252919091522080546001820154600283015460049093015460ff928316949193921690565b6040516100d99493929190610cca565b6100b6610172366004610b13565b61052e565b6100b6610185366004610cf5565b61060d565b61019d610198366004610c97565b61082e565b60405190151581526020016100d9565b61019d6101bb366004610b13565b60026020526000908152604090205460ff1681565b6100b66101de366004610d99565b61089a565b6003546101f6906001600160a01b031681565b6040516001600160a01b0390911681526020016100d9565b6003546001600160a01b0316331461026d5760405162461bcd60e51b815260206004820152601b60248201527f416363657373436f6e74726f6c6c65723a206e6f742061646d696e000000000060448201526064015b60405180910390fd5b6001600160a01b0381166102c35760405162461bcd60e51b815260206004820152601e60248201527f416363657373436f6e74726f6c6c65723a207a65726f206164647265737300006044820152606401610264565b6001600160a01b038116600081815260026020526040808220805460ff19166001179055517f70abce74777b3838ae60a33a6b9a87d9d25532668fe4fea548554c55868579c09190a250565b6001600160a01b038084166000908152602081815260408083209386168352929052908120600481015482919060ff166103505760008092509250506103ea565b6002810154158015906103665750806002015442115b156103785760008092509250506103ea565b6003810154156103df576000805b60038301548110156103c957858360030182815481106103a8576103a8610e1a565b9060005260206000200154036103c157600191506103c9565b600101610386565b50806103dd576000809350935050506103ea565b505b546001925060ff1690505b935093915050565b6001600160a01b0381166000908152600160209081526040808320805482518185028101850190935280835260609492939192909184015b828210156105235760008481526020908190206040805160a0810182526005860290920180546001600160a01b031683526001810154938301939093526002830154908201526003820154606082015260048201805491929160808401919061049290610e30565b80601f01602080910402602001604051908101604052809291908181526020018280546104be90610e30565b801561050b5780601f106104e05761010080835404028352916020019161050b565b820191906000526020600020905b8154815290600101906020018083116104ee57829003601f168201915b5050505050815250508152602001906001019061042a565b505050509050919050565b336000908152602081815260408083206001600160a01b038516845290915290206004015460ff166105b65760405162461bcd60e51b815260206004820152602b60248201527f416363657373436f6e74726f6c6c65723a206e6f20616374697665206772616e60448201526a7420746f207265766f6b6560a81b6064820152608401610264565b336000818152602081815260408083206001600160a01b0386168085529252808320600401805460ff19169055519092917f825c8be24eb0df19500f63e86c29e7d0d951e73056b889b891d85e40938d9b6e91a350565b6001600160a01b0385166106635760405162461bcd60e51b815260206004820152601e60248201527f416363657373436f6e74726f6c6c65723a207a65726f206164647265737300006044820152606401610264565b336001600160a01b038616036106ca5760405162461bcd60e51b815260206004820152602660248201527f416363657373436f6e74726f6c6c65723a2063616e6e6f74206772616e742074604482015265379039b2b63360d11b6064820152608401610264565b600083156106e1576106dc8442610e6a565b6106e4565b60005b90506040518060a0016040528086600381111561070357610703610b71565b8152602001428152602001828152602001848480806020026020016040519081016040528093929190818152602001838360200280828437600092018290525093855250506001602093840181905233835282845260408084206001600160a01b038d16855290945292909120835181549193909250839160ff19169083600381111561079257610792610b71565b0217905550602082810151600183015560408301516002830155606083015180516107c39260038501920190610a97565b50608091909101516004909101805460ff19169115159190911790556040516001600160a01b0387169033907f3b04af5dc95353bc596c48500f93fc47e7dd3696d02fc82d07d281b6bf810adc9061081e9089908690610e8b565b60405180910390a3505050505050565b6001600160a01b038083166000908152602081815260408083209385168352929052908120600481015460ff16610869576000915050610894565b60028101541580159061087f5750806002015442115b1561088e576000915050610894565b60019150505b92915050565b336001600160a01b03861614806108d557506001600160a01b03851660009081526020818152604080832033845290915290206004015460ff165b6109475760405162461bcd60e51b815260206004820152603860248201527f416363657373436f6e74726f6c6c65723a206e6f7420617574686f72697a656460448201527f20746f206c6f6720666f7220746869732070617469656e7400000000000000006064820152608401610264565b60016000866001600160a01b03166001600160a01b031681526020019081526020016000206040518060a00160405280336001600160a01b0316815260200186815260200185815260200142815260200184848080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920182905250939094525050835460018082018655948252602091829020845160059092020180546001600160a01b0319166001600160a01b03909216919091178155908301519381019390935550604081015160028301556060810151600383015560808101519091906004820190610a3e9082610f0d565b505050336001600160a01b0316856001600160a01b03167f567475655f3faa9952d2db268e0c05eaa57ed119fb80d506e124ddd53e22bbab868585604051610a8893929190610fcd565b60405180910390a35050505050565b828054828255906000526020600020908101928215610ad2579160200282015b82811115610ad2578251825591602001919060010190610ab7565b50610ade929150610ae2565b5090565b5b80821115610ade5760008155600101610ae3565b80356001600160a01b0381168114610b0e57600080fd5b919050565b600060208284031215610b2557600080fd5b610b2e82610af7565b9392505050565b600080600060608486031215610b4a57600080fd5b610b5384610af7565b9250610b6160208501610af7565b9150604084013590509250925092565b634e487b7160e01b600052602160045260246000fd5b60048110610ba557634e487b7160e01b600052602160045260246000fd5b9052565b821515815260408101610b2e6020830184610b87565b600060208083018184528085518083526040925060408601915060408160051b8701018488016000805b84811015610c8857898403603f19018652825180516001600160a01b03168552888101518986015287810151888601526060808201519086015260809081015160a091860182905280519186018290529083905b80821015610c5b578282018b015187830160c00152908a0190610c3d565b86810160c0908101869052988b0198601f909101601f191690960190950194505091870191600101610be9565b50919998505050505050505050565b60008060408385031215610caa57600080fd5b610cb383610af7565b9150610cc160208401610af7565b90509250929050565b60808101610cd88287610b87565b846020830152836040830152821515606083015295945050505050565b600080600080600060808688031215610d0d57600080fd5b610d1686610af7565b9450602086013560048110610d2a57600080fd5b935060408601359250606086013567ffffffffffffffff80821115610d4e57600080fd5b818801915088601f830112610d6257600080fd5b813581811115610d7157600080fd5b8960208260051b8501011115610d8657600080fd5b9699959850939650602001949392505050565b600080600080600060808688031215610db157600080fd5b610dba86610af7565b94506020860135935060408601359250606086013567ffffffffffffffff80821115610de557600080fd5b818801915088601f830112610df957600080fd5b813581811115610e0857600080fd5b896020828501011115610d8657600080fd5b634e487b7160e01b600052603260045260246000fd5b600181811c90821680610e4457607f821691505b602082108103610e6457634e487b7160e01b600052602260045260246000fd5b50919050565b8082018082111561089457634e487b7160e01b600052601160045260246000fd5b60408101610e998285610b87565b8260208301529392505050565b634e487b7160e01b600052604160045260246000fd5b601f821115610f08576000816000526020600020601f850160051c81016020861015610ee55750805b601f850160051c820191505b81811015610f0457828155600101610ef1565b5050505b505050565b815167ffffffffffffffff811115610f2757610f27610ea6565b610f3b81610f358454610e30565b84610ebc565b602080601f831160018114610f705760008415610f585750858301515b600019600386901b1c1916600185901b178555610f04565b600085815260208120601f198616915b82811015610f9f57888601518255948401946001909101908401610f80565b5085821015610fbd5787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b83815260406020820152816040820152818360608301376000818301606090810191909152601f909201601f191601019291505056fea2646970667358221220b672bc86ef39a20f069682458c28c2bca495c11830b034beff97a023fc6506ea64736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061009e5760003560e01c8063877054fc11610066578063877054fc14610177578063c1c01b691461018a578063e7747ccb146101ad578063e93879ae146101d0578063f851a440146101e357600080fd5b80630e260016146100a35780631bbfbb57146100b85780636b1fe97f146100e25780636d1319eb1461010257806385e6853114610164575b600080fd5b6100b66100b1366004610b13565b61020e565b005b6100cb6100c6366004610b35565b61030f565b6040516100d9929190610ba9565b60405180910390f35b6100f56100f0366004610b13565b6103f2565b6040516100d99190610bbf565b610154610110366004610c97565b6001600160a01b03918216600090815260208181526040808320939094168252919091522080546001820154600283015460049093015460ff928316949193921690565b6040516100d99493929190610cca565b6100b6610172366004610b13565b61052e565b6100b6610185366004610cf5565b61060d565b61019d610198366004610c97565b61082e565b60405190151581526020016100d9565b61019d6101bb366004610b13565b60026020526000908152604090205460ff1681565b6100b66101de366004610d99565b61089a565b6003546101f6906001600160a01b031681565b6040516001600160a01b0390911681526020016100d9565b6003546001600160a01b0316331461026d5760405162461bcd60e51b815260206004820152601b60248201527f416363657373436f6e74726f6c6c65723a206e6f742061646d696e000000000060448201526064015b60405180910390fd5b6001600160a01b0381166102c35760405162461bcd60e51b815260206004820152601e60248201527f416363657373436f6e74726f6c6c65723a207a65726f206164647265737300006044820152606401610264565b6001600160a01b038116600081815260026020526040808220805460ff19166001179055517f70abce74777b3838ae60a33a6b9a87d9d25532668fe4fea548554c55868579c09190a250565b6001600160a01b038084166000908152602081815260408083209386168352929052908120600481015482919060ff166103505760008092509250506103ea565b6002810154158015906103665750806002015442115b156103785760008092509250506103ea565b6003810154156103df576000805b60038301548110156103c957858360030182815481106103a8576103a8610e1a565b9060005260206000200154036103c157600191506103c9565b600101610386565b50806103dd576000809350935050506103ea565b505b546001925060ff1690505b935093915050565b6001600160a01b0381166000908152600160209081526040808320805482518185028101850190935280835260609492939192909184015b828210156105235760008481526020908190206040805160a0810182526005860290920180546001600160a01b031683526001810154938301939093526002830154908201526003820154606082015260048201805491929160808401919061049290610e30565b80601f01602080910402602001604051908101604052809291908181526020018280546104be90610e30565b801561050b5780601f106104e05761010080835404028352916020019161050b565b820191906000526020600020905b8154815290600101906020018083116104ee57829003601f168201915b5050505050815250508152602001906001019061042a565b505050509050919050565b336000908152602081815260408083206001600160a01b038516845290915290206004015460ff166105b65760405162461bcd60e51b815260206004820152602b60248201527f416363657373436f6e74726f6c6c65723a206e6f20616374697665206772616e60448201526a7420746f207265766f6b6560a81b6064820152608401610264565b336000818152602081815260408083206001600160a01b0386168085529252808320600401805460ff19169055519092917f825c8be24eb0df19500f63e86c29e7d0d951e73056b889b891d85e40938d9b6e91a350565b6001600160a01b0385166106635760405162461bcd60e51b815260206004820152601e60248201527f416363657373436f6e74726f6c6c65723a207a65726f206164647265737300006044820152606401610264565b336001600160a01b038616036106ca5760405162461bcd60e51b815260206004820152602660248201527f416363657373436f6e74726f6c6c65723a2063616e6e6f74206772616e742074604482015265379039b2b63360d11b6064820152608401610264565b600083156106e1576106dc8442610e6a565b6106e4565b60005b90506040518060a0016040528086600381111561070357610703610b71565b8152602001428152602001828152602001848480806020026020016040519081016040528093929190818152602001838360200280828437600092018290525093855250506001602093840181905233835282845260408084206001600160a01b038d16855290945292909120835181549193909250839160ff19169083600381111561079257610792610b71565b0217905550602082810151600183015560408301516002830155606083015180516107c39260038501920190610a97565b50608091909101516004909101805460ff19169115159190911790556040516001600160a01b0387169033907f3b04af5dc95353bc596c48500f93fc47e7dd3696d02fc82d07d281b6bf810adc9061081e9089908690610e8b565b60405180910390a3505050505050565b6001600160a01b038083166000908152602081815260408083209385168352929052908120600481015460ff16610869576000915050610894565b60028101541580159061087f5750806002015442115b1561088e576000915050610894565b60019150505b92915050565b336001600160a01b03861614806108d557506001600160a01b03851660009081526020818152604080832033845290915290206004015460ff165b6109475760405162461bcd60e51b815260206004820152603860248201527f416363657373436f6e74726f6c6c65723a206e6f7420617574686f72697a656460448201527f20746f206c6f6720666f7220746869732070617469656e7400000000000000006064820152608401610264565b60016000866001600160a01b03166001600160a01b031681526020019081526020016000206040518060a00160405280336001600160a01b0316815260200186815260200185815260200142815260200184848080601f0160208091040260200160405190810160405280939291908181526020018383808284376000920182905250939094525050835460018082018655948252602091829020845160059092020180546001600160a01b0319166001600160a01b03909216919091178155908301519381019390935550604081015160028301556060810151600383015560808101519091906004820190610a3e9082610f0d565b505050336001600160a01b0316856001600160a01b03167f567475655f3faa9952d2db268e0c05eaa57ed119fb80d506e124ddd53e22bbab868585604051610a8893929190610fcd565b60405180910390a35050505050565b828054828255906000526020600020908101928215610ad2579160200282015b82811115610ad2578251825591602001919060010190610ab7565b50610ade929150610ae2565b5090565b5b80821115610ade5760008155600101610ae3565b80356001600160a01b0381168114610b0e57600080fd5b919050565b600060208284031215610b2557600080fd5b610b2e82610af7565b9392505050565b600080600060608486031215610b4a57600080fd5b610b5384610af7565b9250610b6160208501610af7565b9150604084013590509250925092565b634e487b7160e01b600052602160045260246000fd5b60048110610ba557634e487b7160e01b600052602160045260246000fd5b9052565b821515815260408101610b2e6020830184610b87565b600060208083018184528085518083526040925060408601915060408160051b8701018488016000805b84811015610c8857898403603f19018652825180516001600160a01b03168552888101518986015287810151888601526060808201519086015260809081015160a091860182905280519186018290529083905b80821015610c5b578282018b015187830160c00152908a0190610c3d565b86810160c0908101869052988b0198601f909101601f191690960190950194505091870191600101610be9565b50919998505050505050505050565b60008060408385031215610caa57600080fd5b610cb383610af7565b9150610cc160208401610af7565b90509250929050565b60808101610cd88287610b87565b846020830152836040830152821515606083015295945050505050565b600080600080600060808688031215610d0d57600080fd5b610d1686610af7565b9450602086013560048110610d2a57600080fd5b935060408601359250606086013567ffffffffffffffff80821115610d4e57600080fd5b818801915088601f830112610d6257600080fd5b813581811115610d7157600080fd5b8960208260051b8501011115610d8657600080fd5b9699959850939650602001949392505050565b600080600080600060808688031215610db157600080fd5b610dba86610af7565b94506020860135935060408601359250606086013567ffffffffffffffff80821115610de557600080fd5b818801915088601f830112610df957600080fd5b813581811115610e0857600080fd5b896020828501011115610d8657600080fd5b634e487b7160e01b600052603260045260246000fd5b600181811c90821680610e4457607f821691505b602082108103610e6457634e487b7160e01b600052602260045260246000fd5b50919050565b8082018082111561089457634e487b7160e01b600052601160045260246000fd5b60408101610e998285610b87565b8260208301529392505050565b634e487b7160e01b600052604160045260246000fd5b601f821115610f08576000816000526020600020601f850160051c81016020861015610ee55750805b601f850160051c820191505b81811015610f0457828155600101610ef1565b5050505b505050565b815167ffffffffffffffff811115610f2757610f27610ea6565b610f3b81610f358454610e30565b84610ebc565b602080601f831160018114610f705760008415610f585750858301515b600019600386901b1c1916600185901b178555610f04565b600085815260208120601f198616915b82811015610f9f57888601518255948401946001909101908401610f80565b5085821015610fbd5787850151600019600388901b60f8161c191681555b5050505050600190811b01905550565b83815260406020820152816040820152818360608301376000818301606090810191909152601f909201601f191601019291505056fea2646970667358221220b672bc86ef39a20f069682458c28c2bca495c11830b034beff97a023fc6506ea64736f6c63430008180033",
+  "devdoc": {
+    "details": "This is the most critical contract in the system.      Key design decisions:      - Access is granted BY the owner TO any address (doctor, attorney, auditor, family).      - Grants can be scoped to specific record IDs (empty array = all records).      - Grants carry a tier (read-only vs write) and an optional expiry.      - Every access event is logged immutably on-chain.      - The admin can register \"verified providers\" (doctors, law firms) but        the owner decides who gets access — admin cannot override this.",
+    "kind": "dev",
+    "methods": {
+      "checkAccess(address,address,uint256)": {
+        "returns": {
+          "allowed": " True if access is currently valid.",
+          "tier": "    The access tier granted (only meaningful when allowed == true)."
+        }
+      },
+      "grantAccess(address,uint8,uint256,uint256[])": {
+        "params": {
+          "accessor": "The address receiving access (doctor, attorney, auditor).",
+          "durationSeconds": "How long the grant is valid. 0 = permanent.",
+          "recordIds": "Specific record IDs to allow. Empty = all records.",
+          "tier": "Privilege level (see AccessTier enum)."
+        }
+      },
+      "logAccess(address,uint256,uint256,string)": {
+        "params": {
+          "action": "String descriptor: \"READ\", \"DOWNLOAD\", \"ADD_NOTE\", etc.",
+          "patient": "The owner whose record was accessed.",
+          "recordId": "Which record was accessed.",
+          "version": "Which version was accessed."
+        }
+      },
+      "registerProvider(address)": {
+        "details": "Registration does NOT grant them access to any patient — it only      marks them as a verified entity that patients can discover and choose."
+      }
+    },
+    "title": "AccessController",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "checkAccess(address,address,uint256)": {
+        "notice": "Check whether `accessor` is currently allowed to access `recordId`         belonging to `patient`."
+      },
+      "grantAccess(address,uint8,uint256,uint256[])": {
+        "notice": "Grant access to any address for a configurable tier and duration."
+      },
+      "isActiveAccessor(address,address)": {
+        "notice": "Returns true if a grant exists and has not yet expired.         Does NOT check record-level restrictions."
+      },
+      "logAccess(address,uint256,uint256,string)": {
+        "notice": "Append an access event to the patient's immutable audit log."
+      },
+      "registerProvider(address)": {
+        "notice": "Register a healthcare provider / law firm / verified accessor."
+      },
+      "registeredProviders(address)": {
+        "notice": "verified providers registered by admin (optional — owner can grant to any address)"
+      },
+      "revokeAccess(address)": {
+        "notice": "Revoke an existing grant immediately."
+      }
+    },
+    "notice": "Fine-grained, time-limited, per-record access control with immutable audit log.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 43,
+        "contract": "contracts/AccessController.sol:AccessController",
+        "label": "grants",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_mapping(t_address,t_mapping(t_address,t_struct(AccessGrant)23_storage))"
+      },
+      {
+        "astId": 50,
+        "contract": "contracts/AccessController.sol:AccessController",
+        "label": "accessLogs",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_mapping(t_address,t_array(t_struct(AccessLog)35_storage)dyn_storage)"
+      },
+      {
+        "astId": 55,
+        "contract": "contracts/AccessController.sol:AccessController",
+        "label": "registeredProviders",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_mapping(t_address,t_bool)"
+      },
+      {
+        "astId": 57,
+        "contract": "contracts/AccessController.sol:AccessController",
+        "label": "admin",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_array(t_struct(AccessLog)35_storage)dyn_storage": {
+        "base": "t_struct(AccessLog)35_storage",
+        "encoding": "dynamic_array",
+        "label": "struct AccessController.AccessLog[]",
+        "numberOfBytes": "32"
+      },
+      "t_array(t_uint256)dyn_storage": {
+        "base": "t_uint256",
+        "encoding": "dynamic_array",
+        "label": "uint256[]",
+        "numberOfBytes": "32"
+      },
+      "t_bool": {
+        "encoding": "inplace",
+        "label": "bool",
+        "numberOfBytes": "1"
+      },
+      "t_enum(AccessTier)8": {
+        "encoding": "inplace",
+        "label": "enum AccessController.AccessTier",
+        "numberOfBytes": "1"
+      },
+      "t_mapping(t_address,t_array(t_struct(AccessLog)35_storage)dyn_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct AccessController.AccessLog[])",
+        "numberOfBytes": "32",
+        "value": "t_array(t_struct(AccessLog)35_storage)dyn_storage"
+      },
+      "t_mapping(t_address,t_bool)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => bool)",
+        "numberOfBytes": "32",
+        "value": "t_bool"
+      },
+      "t_mapping(t_address,t_mapping(t_address,t_struct(AccessGrant)23_storage))": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => mapping(address => struct AccessController.AccessGrant))",
+        "numberOfBytes": "32",
+        "value": "t_mapping(t_address,t_struct(AccessGrant)23_storage)"
+      },
+      "t_mapping(t_address,t_struct(AccessGrant)23_storage)": {
+        "encoding": "mapping",
+        "key": "t_address",
+        "label": "mapping(address => struct AccessController.AccessGrant)",
+        "numberOfBytes": "32",
+        "value": "t_struct(AccessGrant)23_storage"
+      },
+      "t_string_storage": {
+        "encoding": "bytes",
+        "label": "string",
+        "numberOfBytes": "32"
+      },
+      "t_struct(AccessGrant)23_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessController.AccessGrant",
+        "members": [
+          {
+            "astId": 11,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "tier",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_enum(AccessTier)8"
+          },
+          {
+            "astId": 13,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "grantedAt",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 16,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "expiresAt",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 20,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "allowedRecordIds",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_array(t_uint256)dyn_storage"
+          },
+          {
+            "astId": 22,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "active",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_bool"
+          }
+        ],
+        "numberOfBytes": "160"
+      },
+      "t_struct(AccessLog)35_storage": {
+        "encoding": "inplace",
+        "label": "struct AccessController.AccessLog",
+        "members": [
+          {
+            "astId": 25,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "accessor",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address"
+          },
+          {
+            "astId": 27,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "recordId",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 29,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "version",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 31,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "timestamp",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256"
+          },
+          {
+            "astId": 34,
+            "contract": "contracts/AccessController.sol:AccessController",
+            "label": "action",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_string_storage"
+          }
+        ],
+        "numberOfBytes": "160"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}
