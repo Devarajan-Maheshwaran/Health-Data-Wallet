@@ -4,42 +4,55 @@ const nextConfig = {
   transpilePackages: [
     '@rainbow-me/rainbowkit',
   ],
-  // Exclude from server-side bundle
-  serverExternalPackages: ['@xenova/transformers', 'onnxruntime-node'],
+  experimental: {
+    // Next.js 14 key for server-side external packages
+    serverComponentsExternalPackages: ['@xenova/transformers', 'onnxruntime-node'],
+  },
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
       path: false,
       crypto: false,
-    }
+    };
 
-    // Exclude from client-side bundle using function form
+    // Stub missing optional peer deps that cause warnings but aren't needed
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'pino-pretty': false,
+      '@react-native-async-storage/async-storage': false,
+    };
+
+    // Exclude @xenova/transformers from client bundle
     const originalExternals = config.externals || [];
     config.externals = [
       ...(Array.isArray(originalExternals) ? originalExternals : [originalExternals]),
-      function({ request }, callback) {
-        if (request === '@xenova/transformers' || request === 'onnxruntime-node') {
+      function ({ request }, callback) {
+        if (
+          request === '@xenova/transformers' ||
+          request === 'onnxruntime-node'
+        ) {
           return callback(null, 'commonjs ' + request);
         }
         callback();
       },
     ];
 
-    // Ignore .node binary files
+    // Ignore .node native binaries
     config.module.rules.push({
       test: /\.node$/,
       use: 'ignore-loader',
-    })
+    });
 
     if (!isServer) {
       config.experiments = {
         ...config.experiments,
         asyncWebAssembly: true,
         layers: true,
-      }
+      };
     }
-    return config
+
+    return config;
   },
   headers: async () => [
     {
@@ -50,6 +63,6 @@ const nextConfig = {
       ],
     },
   ],
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

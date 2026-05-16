@@ -22,7 +22,8 @@ export function DashboardPage() {
     query: { enabled: !!address },
   });
 
-  const count = Number(recordCount ?? 0n);
+  // Use BigInt() constructor instead of literal 0n for broader TS target compatibility
+  const count = Number(recordCount ?? BigInt(0));
 
   return (
     <AppShell>
