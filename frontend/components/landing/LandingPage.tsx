@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Shield, Lock, Zap, QrCode, Brain, Clock, History, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { useRouter } from 'next/navigation';
 
 const painPoints = [
   { icon: '🏥', title: 'Hospitals Own Your Data', desc: 'Your records are locked in siloed hospital systems you cannot access or export.' },
@@ -25,6 +26,8 @@ const steps = [
 ];
 
 export function LandingPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-surface bg-grid-pattern">
       {/* Navbar */}
@@ -50,15 +53,18 @@ export function LandingPage() {
             MedVault encrypts your medical records in your browser, stores them on decentralised storage, and lets you grant or revoke access to any doctor — via your crypto wallet.
           </p>
           <ConnectButton.Custom>
-            {({ openConnectModal, connected }) => (
-              <button
-                onClick={openConnectModal}
-                className="inline-flex items-center gap-2 bg-primary text-surface font-bold px-8 py-4 rounded-xl text-lg glow-primary hover:bg-sky-400 transition-all"
-              >
-                {connected ? 'Go to Dashboard' : 'Connect Wallet & Get Started'}
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            )}
+            {({ openConnectModal, account, mounted }) => {
+              const connected = mounted && !!account;
+              return (
+                <button
+                  onClick={connected ? () => router.push('/dashboard') : openConnectModal}
+                  className="inline-flex items-center gap-2 bg-primary text-surface font-bold px-8 py-4 rounded-xl text-lg glow-primary hover:bg-sky-400 transition-all"
+                >
+                  {connected ? 'Go to Dashboard' : 'Connect Wallet & Get Started'}
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              );
+            }}
           </ConnectButton.Custom>
         </motion.div>
       </section>
