@@ -4,12 +4,6 @@ const nextConfig = {
   transpilePackages: [
     '@rainbow-me/rainbowkit',
   ],
-  // Exclude heavy packages from server-side bundle
-  serverExternalPackages: [
-    '@bnb-chain/greenfield-js-sdk',
-    '@tensorflow/tfjs',
-    '@xenova/transformers',
-  ],
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -17,7 +11,6 @@ const nextConfig = {
       path: false,
       crypto: false,
     }
-    // Only enable WASM on client - prevents server blocking compile
     if (!isServer) {
       config.experiments = {
         ...config.experiments,
