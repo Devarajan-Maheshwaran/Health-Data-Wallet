@@ -69,10 +69,9 @@ export async function parsePrescription(
     const entities = await extractEntities(text);
     drugEntities = [
       ...new Set(
-        entities
-          .filter(e => ['DRUG', 'CHEMICAL', 'B-DRUG', 'I-DRUG', 'B-CHEMICAL', 'I-CHEMICAL'].includes(e.entity_group ?? e.entity ?? ''))
-          .map(e => (e.word ?? '').replace(/^##/, '').trim().toLowerCase())
-          .filter(w => w.length > 3)
+        entities.drugs
+          .map((d: string) => d.trim().toLowerCase())
+          .filter((w: string) => w.length > 3)
       ),
     ];
   } catch {

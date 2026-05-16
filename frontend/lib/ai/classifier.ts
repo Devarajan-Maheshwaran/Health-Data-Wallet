@@ -10,6 +10,7 @@
  */
 
 import { pipeline } from '@xenova/transformers';
+import { asZeroShotClassification } from './pipeline-utils';
 
 const CANDIDATE_LABELS = [
   'laboratory blood test report',     // 0 — LabReport
@@ -52,16 +53,11 @@ export interface ClassificationResult {
  * Uses the first 512 chars — enough for title / header context.
  */
 export async function classifyDocument(text: string): Promise<ClassificationResult> {
-  const classifier = await getClassifier();
+  const raw = await getClassifier();
+  const classifier = asZeroShotClassification(raw);
   const excerpt = text.slice(0, 512);
 
-  // The @xenova/transformers pipeline type is a wide union overload that does not
-  // accept string[] as the second argument directly. Cast through unknown to bypass
-  // the overload resolution while keeping the output type explicit.
-  const result = await (classifier as (input: string, labels: string[]) => Promise<{
-    labels: string[];
-    scores: number[];
-  }>)(excerpt, CANDIDATE_LABELS);
+  const result = await classifier(excerpt, CANDIDATE_LABELS);
 
   const topLabel = result.labels[0];
   const topScore = result.scores[0];

@@ -44,10 +44,10 @@ export async function ensureBucket(
     // Bucket doesn't exist — create it
   }
 
-  await client.bucket.createBucket({
+  await (client.bucket as any).createBucket({
     bucketName: name,
     creator: walletAddress,
-    visibility: 'VISIBILITY_TYPE_PRIVATE' as const,
+    visibility: 'VISIBILITY_TYPE_PRIVATE',
     primarySpAddress: SP_ADDRESS,
     paymentAddress: walletAddress,
   });
@@ -74,31 +74,31 @@ export async function uploadEncryptedFile(
   const client = getGreenfieldClient();
   const bucket = bucketName(walletAddress);
   const objName = objectName(recordId, version);
-  const body = new Blob([encryptedBlob], { type: 'application/octet-stream' });
+  const body = new Blob([encryptedBlob as unknown as BlobPart], { type: 'application/octet-stream' });
 
   // Calculate checksums required by Greenfield
   const { RedundancyType } = await import('@bnb-chain/greenfield-js-sdk');
-  const checksums = await client.object.computeHashRoots(encryptedBlob.buffer);
+  const checksums = await (client.object as any).computeHashRoots(encryptedBlob.buffer);
 
-  const createTx = await client.object.createObject({
+  const createTx = await (client.object as any).createObject({
     bucketName: bucket,
     objectName: objName,
     creator: walletAddress,
-    visibility: 'VISIBILITY_TYPE_PRIVATE' as const,
+    visibility: 'VISIBILITY_TYPE_PRIVATE',
     contentType: 'application/octet-stream',
     redundancyType: RedundancyType.REDUNDANCY_EC_TYPE,
-    payloadSize: BigInt(encryptedBlob.byteLength),
+    payloadSize: BigInt(encryptedBlob.byteLength) as any,
     expectChecksums: checksums,
   });
 
-  await client.object.putObject({
+  await (client.object as any).putObject({
     bucketName: bucket,
     objectName: objName,
     body,
-    txnHash: createTx.transactionHash,
+    txnHash: (createTx as any).transactionHash,
   });
 
-  return { objectName: objName, txHash: createTx.transactionHash };
+  return { objectName: objName, txHash: (createTx as any).transactionHash };
 }
 
 /**
@@ -114,7 +114,7 @@ export async function downloadEncryptedFile(
   const bucket = bucketName(walletAddress);
   const objName = objectName(recId, version);
 
-  const res = await client.object.getObject({
+  const res = await (client.object as any).getObject({
     bucketName: bucket,
     objectName: objName,
   });
@@ -122,7 +122,7 @@ export async function downloadEncryptedFile(
   // res.body is a ReadableStream or Blob depending on SDK version
   if (res.body instanceof Blob) return res.body.arrayBuffer();
   // ReadableStream fallback
-  const reader = (res.body as ReadableStream).getReader();
+  const reader = (res.body as unknown as ReadableStream).getReader();
   const chunks: Uint8Array[] = [];
   while (true) {
     const { done, value } = await reader.read();

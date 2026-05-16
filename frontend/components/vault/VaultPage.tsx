@@ -19,8 +19,8 @@ import { AIProgress } from './AIProgress';
 import { EntityCard } from './EntityCard';
 import { DOC_TYPES } from '@/lib/contracts';
 import {
-  Upload, FileText, Loader2, CheckCircle,
-  AlertCircle, RotateCcw, ShieldCheck, ChevronDown,
+  Upload, FileText, Loader2, CircleCheck,
+  CircleAlert, RotateCcw, ShieldCheck, ChevronDown,
 } from 'lucide-react';
 
 const STAGE_LABELS: Record<string, string> = {
@@ -142,7 +142,7 @@ export function VaultPage() {
 
             {hasAIResult && !isDone && !isUploadPhase && (
               <div className="flex flex-col items-center gap-2">
-                <CheckCircle className="h-8 w-8 text-green-400" />
+                <CircleCheck className="h-8 w-8 text-green-400" />
                 <span className="text-sm text-green-300">Analysis complete — confirm below</span>
               </div>
             )}
@@ -224,7 +224,7 @@ export function VaultPage() {
           {/* ── Error ───────────────────────────────────────────────── */}
           {isError && error && (
             <div className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3">
-              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <CircleAlert className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-red-300">{error}</p>
               </div>
@@ -238,7 +238,7 @@ export function VaultPage() {
           {isDone && lastResult && (
             <div className="space-y-4 rounded-2xl border border-green-500/20 bg-green-500/5 p-5">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-400" />
+                <CircleCheck className="h-5 w-5 text-green-400" />
                 <p className="text-sm font-semibold text-green-300">Uploaded successfully</p>
               </div>
               <div className="space-y-1 text-xs">

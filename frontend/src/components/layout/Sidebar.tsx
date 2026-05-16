@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { useAppStore } from '@/lib/store/useAppStore'
+import { cn } from '@/src/lib/utils'
+import { useAppStore } from '@/src/lib/store/useAppStore'
 
 const NAV_ITEMS = [
   { href: '/dashboard',  label: 'Dashboard',       icon: '🏠' },
@@ -16,7 +16,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const pathname     = usePathname()
-  const sidebarOpen  = useAppStore((s) => s.sidebarOpen)
+  const sidebarOpen  = useAppStore((s: any) => s.sidebarOpen)
 
   return (
     <aside

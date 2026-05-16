@@ -10,7 +10,7 @@
  */
 
 import { useState }              from 'react';
-import { PlusCircle, RefreshCw } from 'lucide-react';
+import { CirclePlus, RefreshCw } from 'lucide-react';
 import { useMedication }         from '@/hooks/useMedication';
 import { DailyTimeline }         from './DailyTimeline';
 import { SafetyRadar }           from './SafetyRadar';
@@ -48,7 +48,7 @@ export function MedicationPage() {
             </button>
             <button onClick={() => setDrawerOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-600">
-              <PlusCircle className="h-4 w-4" /> Add Medication
+              <CirclePlus className="h-4 w-4" /> Add Medication
             </button>
           </div>
         </div>

@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, HelpCircle, Pill } from 'lucide-react';
+import { CircleCheckBig, CircleX, CircleHelp, Pill } from 'lucide-react';
 import type { TimelineSlot } from '@/hooks/useMedication';
 import type { IntakeStatus } from '@/lib/medication';
 import { SLOT_TIMES }         from '@/lib/medication';
@@ -19,9 +19,9 @@ interface Props {
 }
 
 const STATUS_ICONS: Record<IntakeStatus, React.ReactNode> = {
-  taken:   <CheckCircle2 className="h-4 w-4 text-green-400" />,
-  skipped: <XCircle      className="h-4 w-4 text-red-400"   />,
-  unknown: <HelpCircle   className="h-4 w-4 text-slate-500" />,
+  taken:   <CircleCheckBig className="h-4 w-4 text-green-400" />,
+  skipped: <CircleX        className="h-4 w-4 text-red-400"   />,
+  unknown: <CircleHelp     className="h-4 w-4 text-slate-500" />,
 };
 
 function PillCard({ slot, onLog }: { slot: TimelineSlot; onLog: Props['onLog'] }) {

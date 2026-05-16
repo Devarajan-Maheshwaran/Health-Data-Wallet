@@ -83,7 +83,7 @@ export async function deletePlan(id: string): Promise<void> {
 
 export async function togglePlanActive(id: string): Promise<void> {
   await update(`${PLAN_PREFIX}${id}`, (plan: MedicationPlan | undefined) => {
-    if (!plan) return plan;
+    if (!plan) return plan as unknown as MedicationPlan;
     return { ...plan, active: !plan.active };
   });
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect } from 'react'
 import { useAccount, useSignMessage, useChainId } from 'wagmi'
 import { SiweMessage } from 'siwe'
-import { useAppStore } from '@/lib/store/useAppStore'
+import { useAppStore } from '@/src/lib/store/useAppStore'
 import { useQueryClient } from '@tanstack/react-query'
 
 export function useSiweAuth() {

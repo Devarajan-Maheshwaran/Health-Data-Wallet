@@ -19,7 +19,6 @@ async function getBioNERPipeline() {
       'token-classification',
       BIOMEDICAL_NER_MODEL,
       {
-        aggregation_strategy: 'simple',
         progress_callback: () => {},
       }
     );

@@ -24,7 +24,7 @@ export async function deriveAESKey(walletAddress: string, signMessage: (msg: str
   // Import as HKDF key material
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    rawBytes,
+    rawBytes as Uint8Array<ArrayBuffer>,
     'HKDF',
     false,
     ['deriveKey']
@@ -65,7 +65,7 @@ export async function decryptFile(
   aesKey: CryptoKey,
   mimeType: string
 ): Promise<File> {
-  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, ciphertext);
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv as Uint8Array<ArrayBuffer> }, aesKey, ciphertext);
   return new File([plaintext], 'decrypted', { type: mimeType });
 }
 

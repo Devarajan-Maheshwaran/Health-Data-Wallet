@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Providers } from '@/components/providers/Providers'
-import { Toaster } from '@/components/ui/toaster'
+import { Providers } from '@/src/components/providers/Providers'
+import { Toaster } from '@/src/components/ui/toaster'
 
 export const metadata: Metadata = {
   title: 'MedVault — Self-Sovereign Health Data',

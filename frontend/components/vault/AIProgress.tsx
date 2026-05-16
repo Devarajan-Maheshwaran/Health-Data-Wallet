@@ -6,7 +6,7 @@
  * Shows which step is active and a progress bar for NER chunk processing.
  */
 
-import { Brain, FileSearch, Tag, Zap, CheckCircle, AlertCircle } from 'lucide-react';
+import { Brain, FileSearch, Tag, Zap, CircleCheck, CircleAlert } from 'lucide-react';
 import type { AIProgress as AIProgressType, AIStep } from '@/hooks/useDocumentAI';
 
 const STEPS: { id: AIStep; label: string; icon: React.ElementType; desc: string }[] = [
@@ -73,8 +73,8 @@ export function AIProgress({ progress }: Props) {
                 isActive ? 'text-sky-400 animate-pulse' :
                 'text-slate-600'
               }`}>
-                {isError   ? <AlertCircle className="h-4 w-4" /> :
-                 isDone    ? <CheckCircle className="h-4 w-4" /> :
+                {isError   ? <CircleAlert className="h-4 w-4" /> :
+                 isDone    ? <CircleCheck className="h-4 w-4" /> :
                              <Icon        className="h-4 w-4" />}
               </div>
               <div className="min-w-0 flex-1">
@@ -107,13 +107,13 @@ export function AIProgress({ progress }: Props) {
 
       {step === 'done' && (
         <p className="flex items-center gap-2 text-sm text-green-400">
-          <CheckCircle className="h-4 w-4" /> Analysis complete
+          <CircleCheck className="h-4 w-4" /> Analysis complete
         </p>
       )}
 
       {step === 'error' && (
         <p className="flex items-center gap-2 text-sm text-red-400">
-          <AlertCircle className="h-4 w-4" /> AI pipeline failed
+          <CircleAlert className="h-4 w-4" /> AI pipeline failed
         </p>
       )}
     </div>

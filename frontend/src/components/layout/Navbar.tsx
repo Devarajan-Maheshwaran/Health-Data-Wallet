@@ -2,9 +2,9 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount } from 'wagmi'
-import { useSiweAuth } from '@/hooks/useSiweAuth'
-import { Button } from '@/components/ui/button'
-import { shortenAddress } from '@/lib/utils'
+import { useSiweAuth } from '@/src/hooks/useSiweAuth'
+import { Button } from '@/src/components/ui/button'
+import { shortenAddress } from '@/src/lib/utils'
 import Link from 'next/link'
 
 export function Navbar() {

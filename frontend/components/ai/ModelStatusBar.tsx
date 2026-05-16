@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { CircleCheck, Loader2 } from 'lucide-react';
 import { useAIStore }           from '@/lib/store';
 
 const MODELS = [
@@ -21,7 +21,7 @@ export function ModelStatusBar() {
             <span key={key} title={desc} className={`flex items-center gap-1.5 text-xs ${
               loaded ? 'text-green-400' : 'text-slate-500'
             }`}>
-              {loaded ? <CheckCircle className="h-3 w-3" /> : <Loader2 className="h-3 w-3 animate-spin" />}
+              {loaded ? <CircleCheck className="h-3 w-3" /> : <Loader2 className="h-3 w-3 animate-spin" />}
               {label}
             </span>
           );
