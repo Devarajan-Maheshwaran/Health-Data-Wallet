@@ -4,9 +4,7 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit'
 import {
   metaMaskWallet,
   coinbaseWallet,
-  walletConnectWallet,
   trustWallet,
-  rainbowWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 
 const projectId =
@@ -17,10 +15,6 @@ const connectors = connectorsForWallets(
     {
       groupName: 'Recommended',
       wallets: [metaMaskWallet, trustWallet, coinbaseWallet],
-    },
-    {
-      groupName: 'Other',
-      wallets: [walletConnectWallet, rainbowWallet],
     },
   ],
   { appName: 'MedVault', projectId }
@@ -34,5 +28,5 @@ export const wagmiConfig = createConfig({
       'https://data-seed-prebsc-1-s1.bnbchain.org:8545'
     ),
   },
-  ssr: true,
+  // ssr: true removed — causes server+client double-bundle (10min compile)
 })
