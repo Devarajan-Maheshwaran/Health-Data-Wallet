@@ -3,9 +3,10 @@ import type { Config } from 'tailwindcss'
 const config: Config = {
   darkMode: ['class'],
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -23,6 +24,8 @@ const config: Config = {
           card:    'rgba(255,255,255,0.05)',
           border:  'rgba(255,255,255,0.08)',
         },
+        textPrimary: '#F8FAFC',
+        textSecondary: '#94A3B8',
         success: '#10B981',
         warning: '#F59E0B',
         danger:  '#EF4444',

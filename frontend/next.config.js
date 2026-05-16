@@ -12,12 +12,15 @@ const nextConfig = {
       crypto: false,
     }
 
-    // Exclude onnxruntime native bindings from webpack bundling
-    config.externals = [
-      ...(config.externals || []),
-      'onnxruntime-node',
-      '@xenova/transformers',
-    ]
+    // Exclude onnxruntime and xenova from ALL bundles (server + client)
+    const externals = ['onnxruntime-node', '@xenova/transformers'];
+    if (Array.isArray(config.externals)) {
+      config.externals = [...config.externals, ...externals];
+    } else if (typeof config.externals === 'object') {
+      externals.forEach(pkg => { config.externals[pkg] = pkg; });
+    } else {
+      config.externals = externals;
+    }
 
     // Ignore .node binary files
     config.module.rules.push({
