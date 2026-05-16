@@ -11,6 +11,20 @@ const nextConfig = {
       path: false,
       crypto: false,
     }
+
+    // Exclude onnxruntime native bindings from webpack bundling
+    config.externals = [
+      ...(config.externals || []),
+      'onnxruntime-node',
+      '@xenova/transformers',
+    ]
+
+    // Ignore .node binary files
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'ignore-loader',
+    })
+
     if (!isServer) {
       config.experiments = {
         ...config.experiments,
