@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 /**
  * MedicationPage.tsx — Phase 6
  * Main page for the Medication Adherence & Safety Copilot.
  *
  * Layout (left→right on desktop, stacked on mobile):
- *  LEFT  — DailyTimeline (today’s schedule + quick-log)
+ *  LEFT  — DailyTimeline (today's schedule + quick-log)
  *  RIGHT — SafetyRadar, AdherenceCard, VisitPackGenerator
  */
 
@@ -59,7 +59,7 @@ export function MedicationPage() {
           {/* LEFT — Daily Timeline */}
           <section className="space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Today’s Schedule — {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+              Today's Schedule — {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </h2>
             <DailyTimeline slots={todaySlots} onLog={logDose} loading={loading} />
 
