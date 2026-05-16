@@ -14,11 +14,24 @@ export const HEALTH_RECORD_STORE_ADDRESS =
 export const ACCESS_CONTROLLER_ADDRESS =
   (process.env.NEXT_PUBLIC_ACCESS_CONTROLLER_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 
+// ─── CONTRACT_ADDRESSES convenience map ──────────────────────────────────────
+export const CONTRACT_ADDRESSES = {
+  patientRegistry:   PATIENT_REGISTRY_ADDRESS,
+  healthRecordStore: HEALTH_RECORD_STORE_ADDRESS,
+  accessController:  ACCESS_CONTROLLER_ADDRESS,
+} as const;
+
+// ─── Access Tiers ─────────────────────────────────────────────────────────────
+export const ACCESS_TIERS = {
+  NONE:      0,
+  READ:      1,
+  FULL:      2,
+  EMERGENCY: 3,
+} as const;
+
+export type AccessTier = typeof ACCESS_TIERS[keyof typeof ACCESS_TIERS];
+
 // ─── Document Type enum (mirrors Solidity) ────────────────────────────────────
-/**
- * Maps numeric DocumentType (0–11) to a human-readable label.
- * Must stay in sync with HealthRecordStore.sol DocumentType enum.
- */
 export const DOC_TYPES: Record<number, string> = {
    0: 'Lab Report',
    1: 'Prescription',
