@@ -1,10 +1,8 @@
 /**
  * contracts.ts
  * ABI definitions + addresses + helper maps for all three MedVault contracts.
- * Addresses are read from .env — set them after deploying to testnet.
  */
 
-// ─── Addresses (from .env) ────────────────────────────────────────────────────
 export const PATIENT_REGISTRY_ADDRESS =
   (process.env.NEXT_PUBLIC_PATIENT_REGISTRY_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 
@@ -14,24 +12,31 @@ export const HEALTH_RECORD_STORE_ADDRESS =
 export const ACCESS_CONTROLLER_ADDRESS =
   (process.env.NEXT_PUBLIC_ACCESS_CONTROLLER_ADDRESS ?? '0x0000000000000000000000000000000000000000') as `0x${string}`;
 
-// ─── CONTRACT_ADDRESSES convenience map ──────────────────────────────────────
+// Both PascalCase and camelCase for compatibility
 export const CONTRACT_ADDRESSES = {
   patientRegistry:   PATIENT_REGISTRY_ADDRESS,
   healthRecordStore: HEALTH_RECORD_STORE_ADDRESS,
   accessController:  ACCESS_CONTROLLER_ADDRESS,
+  PatientRegistry:   PATIENT_REGISTRY_ADDRESS,
+  HealthRecordStore: HEALTH_RECORD_STORE_ADDRESS,
+  AccessController:  ACCESS_CONTROLLER_ADDRESS,
 } as const;
 
-// ─── Access Tiers ─────────────────────────────────────────────────────────────
-export const ACCESS_TIERS = {
+// Array form for use in .map()
+export const ACCESS_TIERS = [
+  { value: 1, label: 'Read Only' },
+  { value: 2, label: 'Full Access' },
+  { value: 3, label: 'Emergency Access' },
+];
+
+// Numeric constants
+export const ACCESS_TIER = {
   NONE:      0,
   READ:      1,
   FULL:      2,
   EMERGENCY: 3,
 } as const;
 
-export type AccessTier = typeof ACCESS_TIERS[keyof typeof ACCESS_TIERS];
-
-// ─── Document Type enum (mirrors Solidity) ────────────────────────────────────
 export const DOC_TYPES: Record<number, string> = {
    0: 'Lab Report',
    1: 'Prescription',
@@ -47,7 +52,6 @@ export const DOC_TYPES: Record<number, string> = {
   11: 'Other',
 };
 
-// ─── PatientRegistry ABI ─────────────────────────────────────────────────────
 export const PATIENT_REGISTRY_ABI = [
   {
     name: 'register',
@@ -94,7 +98,6 @@ export const PATIENT_REGISTRY_ABI = [
   },
 ] as const;
 
-// ─── HealthRecordStore ABI ────────────────────────────────────────────────────
 export const HEALTH_RECORD_STORE_ABI = [
   {
     name: 'addRecord',
@@ -144,7 +147,6 @@ export const HEALTH_RECORD_STORE_ABI = [
   },
 ] as const;
 
-// ─── AccessController ABI ─────────────────────────────────────────────────────
 export const ACCESS_CONTROLLER_ABI = [
   {
     name: 'grantAccess',
