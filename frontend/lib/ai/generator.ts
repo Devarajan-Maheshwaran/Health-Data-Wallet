@@ -7,6 +7,7 @@
 
 import { pipeline } from '@xenova/transformers';
 import type { StoredChunk } from './embeddings';
+import { asText2TextGeneration } from './pipeline-utils';
 
 let generatorPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
 
@@ -54,12 +55,13 @@ export async function generateAnswer(
   prompt: string,
   opts: GenerateOptions = {}
 ): Promise<string> {
-  const gen    = await getGenerator();
+  const raw = await getGenerator();
+  const gen = asText2TextGeneration(raw);
   const result = await gen(prompt, {
     max_new_tokens: opts.maxNewTokens ?? 180,
     temperature:    opts.temperature  ?? 0.3,
     do_sample:      false,
-  }) as Array<{ generated_text: string }>;
+  });
   return result?.[0]?.generated_text?.trim() ?? 'Unable to generate an answer.';
 }
 

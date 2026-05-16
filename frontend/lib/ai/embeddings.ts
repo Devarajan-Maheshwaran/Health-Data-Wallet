@@ -6,6 +6,7 @@
 
 import { pipeline } from '@xenova/transformers';
 import { get, set, del, keys } from 'idb-keyval';
+import { asFeatureExtraction } from './pipeline-utils';
 
 export type EmbeddingVector = number[];
 
@@ -33,7 +34,8 @@ export async function getEmbedder() {
 }
 
 export async function embed(text: string): Promise<EmbeddingVector> {
-  const embedder = await getEmbedder();
+  const raw    = await getEmbedder();
+  const embedder = asFeatureExtraction(raw);
   const output   = await embedder(text, { pooling: 'mean', normalize: true });
   return Array.from(output.data as Float32Array);
 }
