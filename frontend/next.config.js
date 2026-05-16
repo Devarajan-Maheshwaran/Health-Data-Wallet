@@ -3,19 +3,27 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
     '@rainbow-me/rainbowkit',
-    '@bnb-chain/greenfield-js-sdk',
   ],
-  webpack: (config) => {
+  // Exclude heavy packages from server-side bundle
+  serverExternalPackages: [
+    '@bnb-chain/greenfield-js-sdk',
+    '@tensorflow/tfjs',
+    '@xenova/transformers',
+  ],
+  webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
       path: false,
       crypto: false,
     }
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: true,
-      layers: true,
+    // Only enable WASM on client - prevents server blocking compile
+    if (!isServer) {
+      config.experiments = {
+        ...config.experiments,
+        asyncWebAssembly: true,
+        layers: true,
+      }
     }
     return config
   },
