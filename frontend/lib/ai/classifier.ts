@@ -55,10 +55,13 @@ export async function classifyDocument(text: string): Promise<ClassificationResu
   const classifier = await getClassifier();
   const excerpt = text.slice(0, 512);
 
-  const result = await classifier(excerpt, CANDIDATE_LABELS) as {
+  // The @xenova/transformers pipeline type is a wide union overload that does not
+  // accept string[] as the second argument directly. Cast through unknown to bypass
+  // the overload resolution while keeping the output type explicit.
+  const result = await (classifier as (input: string, labels: string[]) => Promise<{
     labels: string[];
     scores: number[];
-  };
+  }>)(excerpt, CANDIDATE_LABELS);
 
   const topLabel = result.labels[0];
   const topScore = result.scores[0];
