@@ -28,7 +28,7 @@
 }
 
 @layer base {
-  * { @apply border-border; }
+  * { @apply border-surface-border; }
   body {
     @apply bg-surface text-textPrimary;
     background-color: #0A0F1E;
