@@ -4,6 +4,8 @@ const nextConfig = {
   transpilePackages: [
     '@rainbow-me/rainbowkit',
   ],
+  // Exclude from server-side bundle
+  serverExternalPackages: ['@xenova/transformers', 'onnxruntime-node'],
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -12,15 +14,17 @@ const nextConfig = {
       crypto: false,
     }
 
-    // Exclude onnxruntime and xenova from ALL bundles (server + client)
-    const externals = ['onnxruntime-node', '@xenova/transformers'];
-    if (Array.isArray(config.externals)) {
-      config.externals = [...config.externals, ...externals];
-    } else if (typeof config.externals === 'object') {
-      externals.forEach(pkg => { config.externals[pkg] = pkg; });
-    } else {
-      config.externals = externals;
-    }
+    // Exclude from client-side bundle using function form
+    const originalExternals = config.externals || [];
+    config.externals = [
+      ...(Array.isArray(originalExternals) ? originalExternals : [originalExternals]),
+      function({ request }, callback) {
+        if (request === '@xenova/transformers' || request === 'onnxruntime-node') {
+          return callback(null, 'commonjs ' + request);
+        }
+        callback();
+      },
+    ];
 
     // Ignore .node binary files
     config.module.rules.push({
