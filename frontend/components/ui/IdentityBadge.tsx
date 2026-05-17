@@ -32,10 +32,9 @@ export function IdentityBadge({ address, showToggle = true }: IdentityBadgeProps
     
     contacts[cleanAddr] = {
       wallet_address: cleanAddr,
-      display_name: isKnown ? displayName : `Contact ${address.slice(0, 6)}`,
-      role: 'doctor',
-      hospital: 'General Hospital',
-      relationship: 'doctor'
+      display_name: `Contact ${address.slice(0, 6)}`,
+      role: 'unknown',
+      relationship: 'other'
     };
     
     localStorage.setItem('medvault_local_contacts', JSON.stringify(contacts));

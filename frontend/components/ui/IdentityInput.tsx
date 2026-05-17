@@ -29,7 +29,22 @@ export function IdentityInput({ value, onChange, placeholder = '0x... or search 
       return; 
     }
 
-    if (!supabase) return;
+    if (!supabase) {
+      // Fallback: search local profile cache
+      try {
+        const localProfiles = JSON.parse(localStorage.getItem('medvault_local_profiles') || '{}');
+        const matches = Object.values(localProfiles).filter((p: any) =>
+          p.display_name?.toLowerCase().includes(value.toLowerCase())
+        ).slice(0, 5) as any[];
+        setSuggestions(matches.map((p: any) => ({
+          wallet: p.wallet_address,
+          nickname: p.display_name,
+          role: p.role,
+          specialisation: p.specialisation,
+        })));
+      } catch {}
+      return;
+    }
 
     // Search contact_book for this user by nickname
     supabase

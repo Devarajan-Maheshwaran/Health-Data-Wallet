@@ -27,6 +27,12 @@ export function useIdentity(address: string | undefined) {
     if (!key || cache[key]) return;
     setLoading(true);
 
+    if (key.length < 10) {
+      setIdentity(key, { displayName: key, role: 'unknown', isKnown: false });
+      setLoading(false);
+      return;
+    }
+
     if (!supabase) {
       setIdentity(key, {
         displayName: shortenAddress(key),

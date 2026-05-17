@@ -21,7 +21,7 @@ import { IdentityBadge } from '@/components/ui/IdentityBadge';
 interface SharedRecord {
   id: number;
   title: string;
-  patientName: string;
+  patientAddress: string;
   tier: string;
   expiresAt: string;
 }
@@ -68,7 +68,7 @@ export function DashboardPage() {
         {
           id: 1,
           title: 'Fictional_Diabetes_Medical_Report.pdf',
-          patientName: 'Arvind Raman',
+          patientAddress: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
           tier: 'Record Read',
           expiresAt: '24 May 2026'
         }
@@ -165,7 +165,10 @@ export function DashboardPage() {
                             <span className="text-[10px] text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded-full">Active</span>
                           </div>
                           <h3 className="text-sm font-bold text-white mt-2 font-mono line-clamp-1">{rec.title}</h3>
-                          <p className="text-[11px] text-slate-400 font-medium mt-1">Shared by: <span className="text-slate-300 font-semibold">{rec.patientName}</span></p>
+                          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-400 font-medium">
+                            <span>Shared by:</span>
+                            <IdentityBadge address={rec.patientAddress} showToggle={true} />
+                          </div>
                         </div>
                         <div className="border-t border-white/5 pt-3 flex items-center justify-between">
                           <span className="text-[10px] text-slate-500 font-mono">Expires {rec.expiresAt}</span>
@@ -267,7 +270,7 @@ export function DashboardPage() {
                     {count > 0 && (
                       <div className="flex items-center justify-between bg-sky-500/5 border border-sky-500/10 rounded-xl p-3 text-[10px] text-sky-400 font-sans font-semibold">
                         <span>Active Dynamic Grant</span>
-                        <span>Dr. Ethan Clarke</span>
+                        <IdentityBadge address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e" showToggle={true} />
                       </div>
                     )}
                   </div>

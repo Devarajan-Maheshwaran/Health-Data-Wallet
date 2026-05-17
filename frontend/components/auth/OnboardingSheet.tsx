@@ -86,7 +86,7 @@ export function OnboardingSheet() {
           blood_group: blood || null,
         });
       } catch (err) {
-        console.warn('Could not sync onboarding to Supabase directly, fallback cache used.', err);
+        console.error('[MedVault] Supabase profiles insert failed:', err);
       }
     }
 

@@ -39,6 +39,16 @@ const PRESETS = [
   { label: 'Permanent', value: 0 },
 ];
 
+function GranoteeName({ address }: { address: string }) {
+  const { displayName, isKnown } = useIdentity(address || undefined);
+  if (!address) return <span className="font-mono text-white/30">0x...</span>;
+  return (
+    <span className="font-mono text-white font-bold">
+      {isKnown ? displayName : `${address.slice(0, 8)}...${address.slice(-6)}`}
+    </span>
+  );
+}
+
 export function AccessPage() {
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
@@ -480,7 +490,7 @@ export function AccessPage() {
                       <Sparkles className="w-3 h-3 text-sky-400 animate-spin" /> Authorization Preview
                     </div>
                     <p>
-                      You are about to authorize <span className="font-mono text-white font-bold">{granteeAddress ? `${granteeAddress.slice(0, 8)}...${granteeAddress.slice(-6)}` : '0x...'}</span> with{' '}
+                      You are about to authorize <GranoteeName address={granteeAddress} /> with{' '}
                       <strong className="text-white">{ACCESS_TIER_DETAILS.find(t => t.value === selectedTier)?.label}</strong> capabilities.{' '}
                       {scope === 'specific' && selectedRecords.length > 0 ? (
                         <span>Restricted to {selectedRecords.length} records.</span>
@@ -694,7 +704,7 @@ export function AccessPage() {
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <IdentityBadge address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e" showToggle={false} />
+                        <IdentityBadge address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e" showToggle={true} />
                         <span className="font-bold text-sky-400 uppercase font-mono text-[10px] tracking-wider">READ</span>
                         <span className="text-slate-400 font-mono text-[10px]">Record #1 (Fictional_Diabetes_Medical_Report.pdf)</span>
                       </div>
@@ -720,7 +730,7 @@ export function AccessPage() {
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-2 text-xs">
-                        <IdentityBadge address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e" showToggle={false} />
+                        <IdentityBadge address="0x742d35Cc6634C0532925a3b844Bc454e4438f44e" showToggle={true} />
                         <span className="font-bold text-sky-400 uppercase font-mono text-[10px] tracking-wider">DECRYPT_KEY_QUERY</span>
                         <span className="text-slate-400 font-mono text-[10px]">Record #2 (Blood_Chemistry_May_2026.pdf)</span>
                       </div>
