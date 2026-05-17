@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import QRCode from 'qrcode.react';
-import { QrCode, Download, Eye, Plus, Trash2, Shield } from 'lucide-react';
+import { QrCode, Download, Eye, Plus, Trash2 } from 'lucide-react';
 import { supabase, setSupabaseWallet } from '@/lib/supabase';
 
 interface EmergencyContact {
@@ -70,19 +70,24 @@ export function EmergencyPage() {
 
     if (supabase) {
       setSupabaseWallet(address).then(() => {
-        supabase.from('profiles').select('emergency_card').eq('wallet_address', cleanAddr).maybeSingle()
+        supabase
+          .from('profiles')
+          .select('emergency_card, blood_group, emergency_contacts')
+          .eq('wallet_address', cleanAddr)
+          .maybeSingle()
           .then(({ data, error }: any) => {
-            if (data?.emergency_card && !error) {
-              const card = data.emergency_card;
+            if (data && !error) {
+              const card = data.emergency_card ?? {};
               setProfile({
-                bloodType: card.bloodType ?? '',
+                bloodType: data.blood_group ?? card.bloodType ?? '',
                 allergies: card.allergies ?? '',
                 currentMeds: card.currentMeds ?? '',
                 conditions: card.conditions ?? '',
                 treatingDoctor: card.treatingDoctor ?? '',
               });
-              if (card.emergencyContacts && card.emergencyContacts.length > 0) {
-                setEmergencyContacts(card.emergencyContacts.map((c: any) => ({
+              const contacts = data.emergency_contacts ?? card.emergencyContacts ?? [];
+              if (contacts.length > 0) {
+                setEmergencyContacts(contacts.map((c: any) => ({
                   id: c.id || crypto.randomUUID(),
                   ...c
                 })));
@@ -92,12 +97,8 @@ export function EmergencyPage() {
               loadLocal();
             }
           })
-          .catch(() => {
-            loadLocal();
-          });
-      }).catch(() => {
-        loadLocal();
-      });
+          .catch(() => loadLocal());
+      }).catch(() => loadLocal());
     } else {
       loadLocal();
     }
@@ -123,11 +124,11 @@ export function EmergencyPage() {
   const save = async () => {
     if (!address) return;
 
-    // Filter out empty emergency contacts
     const validContacts = emergencyContacts
       .filter(c => c.name.trim() && c.phone.trim())
       .map(({ id, ...rest }) => rest);
 
+    // Full card JSONB for backward compat
     const cardData = {
       bloodType: profile.bloodType,
       allergies: profile.allergies,
@@ -135,21 +136,26 @@ export function EmergencyPage() {
       conditions: profile.conditions,
       treatingDoctor: profile.treatingDoctor,
       emergencyContacts: validContacts,
-      savedAt: new Date().toISOString()
+      savedAt: new Date().toISOString(),
     };
 
-    // Save to local storage
+    // Save to localStorage as backup
     localStorage.setItem(`medvault_emergency_${address.toLowerCase()}`, JSON.stringify(cardData));
 
-    // Save to Supabase
+    // Save to Supabase — write BOTH top-level columns AND the JSONB card
+    // blood_group and emergency_contacts are top-level columns read by the public QR page
     if (supabase) {
       try {
         await setSupabaseWallet(address);
-        await supabase.from('profiles')
-          .upsert({ 
-            wallet_address: address.toLowerCase(), 
-            emergency_card: cardData 
-          });
+        const { error } = await supabase.from('profiles').upsert({
+          wallet_address: address.toLowerCase(),
+          emergency_card: cardData,
+          blood_group: profile.bloodType || null,
+          emergency_contacts: validContacts,
+        });
+        if (error) {
+          console.error('[MedVault] Supabase save error:', error.message);
+        }
       } catch (err) {
         console.error('[MedVault] Supabase emergency card save failed:', err);
       }
@@ -326,7 +332,6 @@ export function EmergencyPage() {
                 </div>
               ) : null)}
             </div>
-
             {validContacts.length > 0 && (
               <div className="border-t border-white/10 pt-4 space-y-2">
                 <span className="text-slate-500 text-xs uppercase tracking-wider font-semibold">Emergency Contacts Preview</span>
