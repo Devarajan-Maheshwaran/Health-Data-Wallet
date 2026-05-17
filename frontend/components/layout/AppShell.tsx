@@ -1,4 +1,5 @@
 import { useUserStore } from '@/lib/store';
+import { OnboardingSheet } from '@/components/auth/OnboardingSheet';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useUserStore();
@@ -9,6 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      <OnboardingSheet />
     </div>
   );
 }

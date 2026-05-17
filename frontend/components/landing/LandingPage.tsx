@@ -115,22 +115,45 @@ export function LandingPage() {
           <p className="text-sm text-white/35 max-w-2xl mx-auto mb-10">
             Running on BNB Greenfield Testnet. Connect a wallet with testnet BNB to get started. No real funds or real medical data required for testing.
           </p>
-          <ConnectButton.Custom>
-            {({ openConnectModal, account, mounted }) => {
-              const isConnected = mounted && !!account;
-              return (
-                <button
-                  onClick={isConnected ? () => router.push('/dashboard') : openConnectModal}
-                  className="inline-flex items-center gap-2 bg-primary text-surface font-bold px-8 py-4 rounded-xl text-lg glow-primary hover:bg-sky-400 transition-all"
-                >
-                  {isConnected ? 'Open Dashboard' : 'Connect Wallet to Get Started'}
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              );
-            }}
-          </ConnectButton.Custom>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <ConnectButton.Custom>
+              {({ openConnectModal, account, mounted }) => {
+                const isConnected = mounted && !!account;
+                return (
+                  <button
+                    onClick={isConnected ? () => router.push('/dashboard') : openConnectModal}
+                    className="inline-flex items-center gap-2 bg-primary text-surface font-bold px-8 py-4 rounded-xl text-lg glow-primary hover:bg-sky-400 transition-all"
+                  >
+                    {isConnected ? 'Open Dashboard' : 'Connect Wallet'}
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                );
+              }}
+            </ConnectButton.Custom>
+            
+            <button
+              onClick={() => {
+                // Pre-load full Arvind Raman sample profile context for hackathon judges
+                localStorage.setItem('medvault_username', 'Arvind Raman');
+                localStorage.setItem('medvault_role', 'patient');
+                localStorage.setItem('medvault_phone', '+91-90000-00000');
+                localStorage.setItem('medvault_email', 'arvind@gmail.com');
+                
+                // Pre-load active mock records
+                const cleanAddr = '0x0000000000000000000000000000000000000000'; // Fallback address when disconnected
+                const granteesKey = `medvault_grantees_${cleanAddr}`;
+                localStorage.setItem(granteesKey, JSON.stringify(['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']));
+                
+                window.dispatchEvent(new Event('medvault_profile_updated'));
+                router.push('/dashboard');
+              }}
+              className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:border-white/20 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all"
+            >
+              Try Demo Mode
+            </button>
+          </div>
           <p className="mt-4 text-xs text-white/30">
-            Requires MetaMask or any WalletConnect wallet. Free to use on testnet.
+            Requires MetaMask or any WalletConnect wallet for live transactions. Demo Mode is instantly readable.
           </p>
         </motion.div>
       </section>

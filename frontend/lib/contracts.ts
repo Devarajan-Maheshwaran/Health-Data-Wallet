@@ -179,12 +179,71 @@ export const ACCESS_CONTROLLER_ABI = [
     outputs: [{ name: '', type: 'bool' }],
   },
   {
+    name: 'getAccessLogs',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'patient', type: 'address' }],
+    outputs: [
+      {
+        components: [
+          { name: 'accessor', type: 'address' },
+          { name: 'recordId', type: 'uint256' },
+          { name: 'version',  type: 'uint256' },
+          { name: 'timestamp', type: 'uint256' },
+          { name: 'action',   type: 'string'  }
+        ],
+        name: '',
+        type: 'tuple[]'
+      }
+    ]
+  },
+  {
+    name: 'getGrant',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'patient',  type: 'address' },
+      { name: 'accessor', type: 'address' }
+    ],
+    outputs: [
+      { name: 'tier',      type: 'uint8'   },
+      { name: 'grantedAt', type: 'uint256' },
+      { name: 'expiresAt', type: 'uint256' },
+      { name: 'active',    type: 'bool'    }
+    ]
+  },
+  {
+    name: 'isActiveAccessor',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'patient',  type: 'address' },
+      { name: 'accessor', type: 'address' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  },
+  {
+    name: 'checkAccess',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'patient',  type: 'address' },
+      { name: 'accessor', type: 'address' },
+      { name: 'recordId', type: 'uint256' }
+    ],
+    outputs: [
+      { name: 'allowed', type: 'bool'  },
+      { name: 'tier',    type: 'uint8' }
+    ]
+  },
+  {
     name: 'AccessGranted',
     type: 'event',
     inputs: [
       { name: 'patient', type: 'address', indexed: true },
-      { name: 'grantee', type: 'address', indexed: true },
+      { name: 'accessor', type: 'address', indexed: true },
       { name: 'tier',    type: 'uint8',   indexed: false },
+      { name: 'expiresAt', type: 'uint256', indexed: false }
     ],
   },
   {
@@ -192,7 +251,7 @@ export const ACCESS_CONTROLLER_ABI = [
     type: 'event',
     inputs: [
       { name: 'patient', type: 'address', indexed: true },
-      { name: 'grantee', type: 'address', indexed: true },
+      { name: 'accessor', type: 'address', indexed: true }
     ],
   },
 ] as const;

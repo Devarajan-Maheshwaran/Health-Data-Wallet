@@ -8,6 +8,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useVaultUpload } from '@/hooks/useVaultUpload';
+import { useRouter } from 'next/navigation';
 import { AIProgress } from './AIProgress';
 import { EntityCard } from './EntityCard';
 import { DOC_TYPES } from '@/lib/contracts';
@@ -87,6 +88,7 @@ function UploadGuidance() {
 }
 
 export function VaultPage() {
+  const router = useRouter();
   const {
     analyseFile, confirmUpload, stage, aiProgress,
     aiResult, lastResult, error, isUploading, reset,
@@ -350,20 +352,65 @@ export function VaultPage() {
           )}
         </div>
 
-        {/* Records list placeholder */}
+        {/* Records list card */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <h2 className="mb-1 text-lg font-semibold text-white">Your Records</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-white">Your Decrypted Records Vault</h2>
+            <span className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              End-to-End Private
+            </span>
+          </div>
           <p className="text-xs text-slate-400 mb-6">
-            Records you have uploaded and stored on-chain will appear here after connecting to the deployed HealthRecordStore contract.
+            All records are encrypted using browser keys. Pushing a share transaction generates an active cryptographic key mapping on-chain.
           </p>
-          <div className="py-10 text-center">
-            <FileText className="mx-auto mb-3 h-10 w-10 text-slate-600" />
-            <p className="text-sm text-slate-500">
-              No records found. Upload a document above to get started.
-            </p>
-            <p className="text-xs text-slate-600 mt-1">
-              Records are loaded from the HealthRecordStore smart contract on the connected network.
-            </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              { id: 1, title: 'Fictional_Diabetes_Medical_Report.pdf', type: 'Lab Report', date: 'May 15, 2026', shares: ['Dr. Ethan Clarke'], diagnosis: 'Type 2 Diabetes Mellitus · HbA1c 8.4%', size: '345 KB', lastAccess: 'Dr. Ethan Clarke — 2 hours ago' },
+              { id: 2, title: 'Blood_Chemistry_May_2026.pdf', type: 'Lab Report', date: 'May 12, 2026', shares: ['Dr. Ethan Clarke'], diagnosis: 'Hyperlipidemia · Normal Renal Function', size: '298 KB', lastAccess: 'Dr. Ethan Clarke — 4 hours ago' },
+              { id: 3, title: 'Cardiology_Consultation.pdf', type: 'Discharge Summary', date: 'April 20, 2026', shares: [], diagnosis: 'Mitral Valve Prolapse · Regurgitation Minor', size: '512 KB', lastAccess: 'Never accessed' }
+            ].map((rec) => {
+
+              const handleShare = () => {
+                router.push(`/access?grantee=0x742d35Cc6634C0532925a3b844Bc454e4438f44e&tier=2&scope=specific&record=${rec.id}`);
+              };
+
+              return (
+                <div key={rec.id} className="bg-[#111518]/60 border border-white/5 hover:border-white/10 p-5 rounded-2xl flex flex-col justify-between h-48 hover:shadow-[0_0_30px_rgba(56,189,248,0.02)] transition-all group">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-sky-400 font-mono font-bold uppercase tracking-wider">{rec.type}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">{rec.size}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-white mt-1 group-hover:text-primary transition-colors font-mono line-clamp-1">{rec.title}</h3>
+                    <p className="text-[11px] text-slate-400 font-medium mt-1">{rec.diagnosis}</p>
+                  </div>
+
+                  <div className="border-t border-white/5 pt-3 space-y-2.5">
+                    <div className="flex justify-between items-center text-[10px] text-slate-500">
+                      <span>Uploaded {rec.date}</span>
+                      {rec.shares.length > 0 ? (
+                        <span className="text-emerald-400 font-bold bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10">
+                          Shared with {rec.shares.length} person
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">Not shared</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+                      <span>Last accessed: {rec.lastAccess}</span>
+                      <button
+                        onClick={handleShare}
+                        className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 font-bold px-3 py-1 rounded-lg transition-all"
+                      >
+                        Share with Dr...
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

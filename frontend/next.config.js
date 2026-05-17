@@ -11,7 +11,12 @@ const nextConfig = {
     '@bnb-chain/greenfield-js-sdk',
     'pdfjs-dist'
   ],
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Disable disk caching to prevent ENOSPC errors on space-constrained systems
+    if (config.cache && !dev) {
+      config.cache = false;
+    }
+
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
