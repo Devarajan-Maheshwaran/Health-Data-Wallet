@@ -37,9 +37,7 @@ export function EmergencyPage() {
   const [preview, setPreview] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
-  const qrUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/emergency/${address}` 
-    : `https://medvault.vercel.app/emergency/${address}`;
+  const qrUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://medvault.vercel.app')}/emergency/${address?.toLowerCase()}`;
 
   useEffect(() => {
     if (!address) return;
