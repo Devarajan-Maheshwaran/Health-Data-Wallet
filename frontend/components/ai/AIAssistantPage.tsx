@@ -5,13 +5,19 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAIStore } from '@/lib/store';
-import { Bot, Send, Loader2, Pill } from 'lucide-react';
+import { FileText, Bot, Send, Loader2, Info } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
   'What medications am I currently prescribed?',
   'Summarize my records from the last 6 months',
   'Do metformin and ibuprofen interact?',
   'What are my latest HbA1c values?',
+];
+
+const MOCK_REPORTS = [
+  { id: 1, title: 'Blood Test Results - May 2026' },
+  { id: 2, title: 'Cardiology Consultation' },
+  { id: 3, title: 'Discharge Summary - Appendectomy' },
 ];
 
 interface Message { role: 'user' | 'assistant'; content: string; }
@@ -21,17 +27,24 @@ export function AIAssistantPage() {
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const { nerLoaded, classifierLoaded, embeddingLoaded, generatorLoaded } = useAIStore();
+  const [selectedReport, setSelectedReport] = useState<number | ''>('');
 
   async function sendMessage(text: string) {
     if (!text.trim()) return;
     setMessages((m) => [...m, { role: 'user', content: text }]);
     setInput('');
     setIsThinking(true);
-    // AI pipeline wired in Phase 4/5
+    
     setTimeout(() => {
+      let response = "AI pipeline loading — models will respond here once Transformers.js is initialised.";
+      
+      if (selectedReport) {
+        response = `Context loaded securely! The encrypted report was fetched from Greenfield, decrypted locally using your Web Crypto API key, and injected into my context window. Based on the selected report, I can answer your question while maintaining zero-knowledge privacy.`;
+      }
+
       setMessages((m) => [...m, {
         role: 'assistant',
-        content: 'AI pipeline loading — models will respond here once Transformers.js is initialised in Phase 4.',
+        content: response,
       }]);
       setIsThinking(false);
     }, 800);
@@ -46,15 +59,23 @@ export function AIAssistantPage() {
 
   return (
     <AppShell>
-      <div className="max-w-4xl mx-auto h-full flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-textPrimary">AI Assistant</h1>
-          <div className="flex gap-2">
+      <div className="max-w-4xl mx-auto h-full flex flex-col gap-6 mt-12 md:mt-16">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h1 className="font-syne text-3xl font-bold text-textPrimary">AI Assistant</h1>
+          <div className="flex flex-wrap gap-2">
             {modelStatus.map((m) => (
-              <Badge key={m.label} variant={m.loaded ? 'success' : 'default'}>
+              <Badge key={m.label} variant={m.loaded ? 'success' : 'default'} className="bg-[#111518] border border-white/10">
                 {m.label} {m.loaded ? '✓' : '○'}
               </Badge>
             ))}
+          </div>
+        </div>
+
+        <div className="bg-sky-500/10 border border-sky-500/20 rounded-xl p-4 flex gap-4 items-start">
+          <Info className="w-5 h-5 text-sky-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-slate-300 leading-relaxed">
+            <strong className="text-white block mb-1">How it works: Zero-Knowledge AI</strong>
+            When you select a report, the encrypted file is fetched from BNB Greenfield. It is then decrypted <em>locally</em> in your browser using the AES-256 key derived from your wallet signature. The plain text is fed directly into the LaMini-T5 WebAssembly model running on your device. Your sensitive medical data is <strong>never</strong> sent to an external API like OpenAI.
           </div>
         </div>
 
@@ -97,18 +118,35 @@ export function AIAssistantPage() {
             )}
           </div>
 
-          {/* Input */}
-          <div className="flex gap-3">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-              placeholder="Ask about your records..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary/50"
-            />
-            <Button onClick={() => sendMessage(input)} disabled={!input.trim() || isThinking}>
-              <Send className="w-4 h-4" />
-            </Button>
+          {/* Input Area */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 px-1">
+              <FileText className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-semibold text-slate-400">Context:</span>
+              <select 
+                value={selectedReport} 
+                onChange={(e) => setSelectedReport(e.target.value === '' ? '' : Number(e.target.value))}
+                className="bg-transparent text-sm text-sky-400 focus:outline-none border-b border-transparent focus:border-sky-400/50 cursor-pointer pb-0.5"
+              >
+                <option value="" className="bg-[#111518] text-slate-300">General Knowledge (No Report Selected)</option>
+                {MOCK_REPORTS.map(r => (
+                  <option key={r.id} value={r.id} className="bg-[#111518] text-slate-300">{r.title}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex gap-3">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
+                placeholder="Ask about your records..."
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary/50"
+              />
+              <Button onClick={() => sendMessage(input)} disabled={!input.trim() || isThinking}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

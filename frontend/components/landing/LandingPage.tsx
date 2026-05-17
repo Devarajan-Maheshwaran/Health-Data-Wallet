@@ -12,47 +12,47 @@ import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 import BlurText from '@/components/ui/BlurText';
 import BorderGlow from '@/components/ui/BorderGlow';
 import LogoLoop from '@/components/ui/LogoLoop';
-import { SiBinance, SiEthereum, SiSupabase } from 'react-icons/si';
+import { SiBinance, SiSupabase } from 'react-icons/si';
 import { useRouter } from 'next/navigation';
 
 const painPoints = [
   {
     icon: Database,
-    title: 'Your Records Are Locked Away',
-    desc: 'Hospitals and clinics store your medical history in proprietary systems you have no direct access to. Getting a copy requires formal requests, fees, and weeks of waiting.',
+    title: 'Records Are Locked Away',
+    desc: 'Hospitals store your history in proprietary systems. Getting a copy requires fees and weeks of waiting.',
   },
   {
     icon: ServerCrash,
-    title: 'Data Silos Break Care Continuity',
-    desc: 'Every time you see a new specialist, they start from scratch. Lab results, imaging, and prescription history never follow you automatically from one provider to the next.',
+    title: 'Data Silos Break Care',
+    desc: 'New specialists start from scratch. Lab results and prescriptions never follow you automatically.',
   },
   {
     icon: Ambulance,
     title: 'Emergencies Expose the Gap',
-    desc: 'In a critical situation, first responders cannot access your blood type, allergies, or active medications. This information gap costs lives every year.',
+    desc: 'First responders cannot access your blood type or allergies in critical situations, costing lives.',
   },
 ];
 
 const features = [
   {
     icon: Brain,
-    title: 'AI Analysis Runs Entirely In Your Browser',
-    desc: 'Named Entity Recognition (NER), medical Q&A, and drug interaction checks all execute locally on your device using WebAssembly. No text from your records is ever sent to any external server or API.',
+    title: 'Local AI Analysis',
+    desc: 'Medical Q&A and NER execute locally on your device. No data is ever sent to an external server.',
   },
   {
     icon: QrCode,
-    title: 'Emergency QR Code — Instant Critical Data',
-    desc: 'Generate a scannable QR code that encodes your blood type, active allergies, and current medications. First responders can access this in seconds, even without a smartphone connection to your wallet.',
+    title: 'Emergency QR Code',
+    desc: 'Generate a scannable QR code for critical data. First responders can access this in seconds.',
   },
   {
     icon: Clock,
-    title: 'Time-Limited, Revocable Access Grants',
-    desc: 'Share your records with a cardiologist for exactly 72 hours. A smart contract enforces the expiry automatically — no manual revocation required. You can also revoke access immediately at any time.',
+    title: 'Time-Limited Access',
+    desc: 'Share records for exactly 72 hours. A smart contract enforces the expiry automatically.',
   },
   {
     icon: History,
-    title: 'Immutable Version History On-Chain',
-    desc: 'Every upload and update is recorded on the BNB Greenfield blockchain with a timestamp and content hash. Nothing is silently overwritten. You have a full audit trail of every change to your health records.',
+    title: 'Immutable Version History',
+    desc: 'Every upload is recorded on Greenfield with a hash. You have a full audit trail of every change.',
   },
 ];
 
@@ -88,7 +88,6 @@ const techStack = [
   { label: 'BNB Greenfield', detail: 'Decentralised object storage — your encrypted files live on-chain, not on any company server.' },
   { label: 'Solidity Smart Contract', detail: 'HealthRecordStore contract handles ownership, access control, and version history.' },
   { label: 'Transformers.js (WASM)', detail: 'In-browser AI models via WebAssembly — MiniLM for embeddings, BERT-NER for entities, Flan-T5 for Q&A.' },
-  { label: 'RainbowKit + wagmi', detail: 'Wallet connection and on-chain reads/writes through a clean, typed React interface.' },
   { label: 'AES-256-GCM Encryption', detail: 'Client-side encryption before any data leaves your browser. Decryption requires your wallet signature.' },
 ];
 
@@ -173,13 +172,15 @@ export function LandingPage() {
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {painPoints.map((p, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <SpotlightCard className="h-full">
-                <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit relative z-10">
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
+              <SpotlightCard className="h-full flex flex-col">
+                <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit relative z-10 flex-shrink-0">
                   <p.icon className="w-5 h-5 text-sky-400" />
                 </div>
-                <h3 className="font-syne text-white text-sm md:text-base font-semibold mb-2 relative z-10">{p.title}</h3>
-                <p className="text-white/50 text-xs md:text-sm leading-relaxed relative z-10">{p.desc}</p>
+                <div className="relative z-10 flex flex-col flex-1">
+                  <h3 className="font-syne text-white text-sm md:text-base font-semibold mb-2">{p.title}</h3>
+                  <p className="text-white/50 text-xs md:text-sm leading-relaxed">{p.desc}</p>
+                </div>
               </SpotlightCard>
             </motion.div>
           ))}
@@ -206,11 +207,11 @@ export function LandingPage() {
             return (
             <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
               <BorderGlow glowColor={cfg.glowColor} colors={cfg.colors} className="w-full h-full">
-                <SpotlightCard className="flex items-start gap-4 h-full border-0 overflow-hidden">
+                <SpotlightCard className="flex flex-col items-start gap-4 h-full border-0 overflow-hidden">
                   <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary/10 relative z-10">
                     <f.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="relative z-10 flex-1 min-w-0">
+                  <div className="relative z-10 flex-1 min-w-0 flex flex-col">
                     <div className="font-syne text-white font-semibold mb-1.5 text-sm md:text-base break-words">{f.title}</div>
                     <div className="text-white/50 text-xs md:text-sm leading-relaxed break-words">{f.desc}</div>
                   </div>
@@ -233,7 +234,6 @@ export function LandingPage() {
               logos={[
                 { node: <div className="flex items-center gap-2"><SiBinance className="text-[#38bdf8]" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
                 { node: <div className="flex items-center gap-2"><SiSupabase className="text-[#0ea5e9]" /> Supabase</div>, title: 'Supabase' },
-                { node: <div className="flex items-center gap-2"><SiEthereum className="text-[#bae6fd]" /> Ethereum</div>, title: 'Ethereum' },
                 { node: <div className="flex items-center gap-2 font-bold text-lg text-slate-100">RainbowKit</div>, title: 'RainbowKit' },
               ]}
               speed={30}

@@ -68,7 +68,7 @@ export function DashboardPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: 'Upload Record',   href: '/vault',     color: 'border-primary/30 text-primary' },
-                { label: 'Emergency QR',    href: '/emergency', color: 'border-warning/30 text-warning' },
+                { label: 'Emergency QR',    href: '/emergency-qr', color: 'border-warning/30 text-warning' },
                 { label: 'Drug Checker',    href: '/ai',        color: 'border-success/30 text-success' },
                 { label: 'Manage Access',   href: '/access',    color: 'border-white/20 text-white/70' },
               ].map((a) => (
