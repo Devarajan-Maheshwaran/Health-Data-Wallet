@@ -1,8 +1,12 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
+  Home,
   LayoutDashboard,
   FolderHeart,
   Bot,
@@ -13,6 +17,7 @@ import {
 } from 'lucide-react';
 
 const navItems = [
+  { icon: Home, label: 'Home', href: '/' },
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: FolderHeart, label: 'Vault', href: '/vault' },
   { icon: Bot, label: 'AI', href: '/ai' },
@@ -24,6 +29,18 @@ const navItems = [
 export function FloatingNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isConnected && pathname !== '/') {
+      router.push('/');
+    }
+  }, [isConnected, pathname, router, mounted]);
 
   return (
     <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
@@ -61,6 +78,14 @@ export function FloatingNav() {
           <Github className="w-4 h-4" />
           <span>GitHub</span>
         </a>
+        <div className="w-px h-6 bg-white/10 mx-2" />
+        <div className="pointer-events-auto scale-90 origin-right">
+          <ConnectButton 
+            chainStatus="icon" 
+            showBalance={false} 
+            accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }} 
+          />
+        </div>
       </nav>
     </div>
   );
