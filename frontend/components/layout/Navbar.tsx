@@ -1,58 +1,44 @@
 'use client';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { ShieldCheck, LayoutDashboard, FolderLock, Users, Bot, QrCode, Building2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/vault',     label: 'Vault',     icon: FolderLock },
-  { href: '/access',   label: 'Access',    icon: Users },
-  { href: '/ai',       label: 'AI',        icon: Bot },
-  { href: '/emergency',label: 'Emergency', icon: QrCode },
-  { href: '/provider', label: 'Provider',  icon: Building2 },
-];
+import { Shield } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
 
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/10 bg-[#0A0F1E]/80 backdrop-blur-md">
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 text-white">
-          <ShieldCheck className="h-6 w-6 text-sky-400" />
-          <span className="font-bold tracking-tight">MedVault</span>
-        </Link>
+  const navLinks = [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/vault',     label: 'Vault' },
+    { href: '/ai',        label: 'AI Assistant' },
+    { href: '/access',    label: 'Access Control' },
+    { href: '/emergency', label: 'Emergency QR' },
+  ];
 
-        {/* Nav links */}
-        <div className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+  return (
+    <header className="fixed top-0 w-full z-50 glass border-b border-white/5 px-4 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-6">
+        <Link href="/" className="flex items-center gap-2 text-base font-bold text-primary">
+          <Shield className="w-5 h-5" />
+          MedVault
+        </Link>
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className={cn(
-                'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                 pathname === href
-                  ? 'bg-sky-500/20 text-sky-400'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
-              )}
+                  ? 'bg-white/10 text-white font-medium'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
             >
-              <Icon className="h-4 w-4" />
               {label}
             </Link>
           ))}
-        </div>
-
-        {/* Wallet connect */}
-        <ConnectButton
-          showBalance={false}
-          chainStatus="icon"
-          accountStatus="avatar"
-        />
+        </nav>
       </div>
-    </nav>
+      <ConnectButton showBalance={false} />
+    </header>
   );
 }
