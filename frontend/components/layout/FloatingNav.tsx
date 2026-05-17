@@ -22,7 +22,7 @@ const navItems = [
   { icon: FolderHeart, label: 'Vault', href: '/vault' },
   { icon: Bot, label: 'AI', href: '/ai' },
   { icon: ShieldCheck, label: 'Access', href: '/access' },
-  { icon: QrCode, label: 'Emergency', href: '/emergency-qr' },
+  { icon: QrCode, label: 'Emergency', href: '/emergency' },
   { icon: FileText, label: 'Docs', href: '/docs' },
 ];
 
