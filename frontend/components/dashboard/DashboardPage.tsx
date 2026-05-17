@@ -16,6 +16,7 @@ import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 import BorderGlow from '@/components/ui/BorderGlow';
 import { useIdentity } from '@/lib/hooks/useIdentity';
 import { supabase } from '@/lib/supabase';
+import { IdentityBadge } from '@/components/ui/IdentityBadge';
 
 interface SharedRecord {
   id: number;
@@ -87,17 +88,21 @@ export function DashboardPage() {
         
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
               Welcome, <span className="text-primary font-syne">{displayName}</span>
               {role === 'doctor' && <span className="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20 px-2.5 py-0.5 rounded-full font-sans font-semibold">Doctor Portal</span>}
             </h1>
-            <p className="text-slate-400 text-xs mt-1 font-mono break-all leading-normal">
-              {address ? `Identity Wallet: ${address}` : 'Wallet not connected'}
+            <div className="flex flex-wrap items-center gap-2 text-slate-400 text-xs">
+              <span className="font-mono">Identity Wallet:</span>
+              <IdentityBadge address={address} showToggle={true} />
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium max-w-2xl leading-relaxed mt-1.5 bg-white/5 border border-white/10 rounded-xl p-3">
+              <strong>How to Use:</strong> Your central self-sovereign hub. Monitor total medical files securely stored on BNB Chain, track overall storage consumption, and view time-bound medical sharing logs. If you are registered as a patient, you can quickly upload new records or configure your emergency card. If you are registered as a doctor, you will see a list of records patients have actively shared with you.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {role === 'patient' && (
               <Button onClick={() => router.push('/vault')} className="flex items-center gap-2 font-bold">
                 <Upload className="w-4 h-4" />

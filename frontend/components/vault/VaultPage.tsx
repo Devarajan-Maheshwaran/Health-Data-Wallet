@@ -84,6 +84,51 @@ export function VaultPage() {
   const [showTypeSelect, setShowTypeSelect] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Lab Report' | 'Prescription' | 'Discharge Summary' | 'Other'>('All');
 
+  // Load real records dynamically from IndexedDB
+  const [realRecords, setRealRecords] = useState<any[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
+
+  const fetchRecords = useCallback(async () => {
+    try {
+      setLoadingRecords(true);
+      const { loadAllChunks } = await import('@/lib/ai/embeddings');
+      const chunks = await loadAllChunks();
+      
+      const recordMap = new Map<number, any>();
+      for (const chunk of chunks) {
+        if (!recordMap.has(chunk.recordId)) {
+          const typeLabel = DOC_TYPES[chunk.docType] || 'Other';
+          const dateLabel = new Date(chunk.recordId).toLocaleDateString('en-GB', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+          });
+
+          recordMap.set(chunk.recordId, {
+            id: chunk.recordId,
+            title: chunk.title,
+            type: typeLabel,
+            date: dateLabel,
+            shares: [],
+            diagnosis: chunk.text.slice(0, 80) + '...',
+            size: `${(chunk.text.length / 102.4).toFixed(2)} KB`,
+            lastAccess: 'Never accessed'
+          });
+        }
+      }
+      
+      setRealRecords(Array.from(recordMap.values()));
+    } catch (err) {
+      console.error('Failed to load real records:', err);
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRecords();
+  }, [fetchRecords, stage]);
+
   // Local Toast notification state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'loading' | null }>({
     message: '',
@@ -167,17 +212,10 @@ export function VaultPage() {
   const effectiveDocType = overrideType ?? aiResult?.docType ?? 11;
   const docTypeLabel = DOC_TYPES[effectiveDocType] ?? 'Other';
 
-  // Sample static records mapping realistically
-  const ALL_RECORDS = [
-    { id: 1, title: 'Fictional_Diabetes_Medical_Report.pdf', type: 'Lab Report', date: '17 May 2026', shares: ['Dr. Ethan Clarke'], diagnosis: 'Type 2 Diabetes Mellitus · HbA1c 8.4%', size: '6.25 KB', lastAccess: 'Dr. Ethan Clarke — 2 hours ago' },
-    { id: 2, title: 'Blood_Chemistry_May_2026.pdf', type: 'Lab Report', date: '12 May 2026', shares: ['Dr. Ethan Clarke'], diagnosis: 'Hyperlipidemia · Normal Renal Function', size: '12.4 KB', lastAccess: 'Dr. Ethan Clarke — 4 hours ago' },
-    { id: 3, title: 'Cardiology_Consultation.pdf', type: 'Discharge Summary', date: '20 Apr 2026', shares: [], diagnosis: 'Mitral Valve Prolapse · Regurgitation Minor', size: '24.1 KB', lastAccess: 'Never accessed' }
-  ];
-
   // Filters the list dynamically based on sidebar choice
   const filteredRecords = selectedFilter === 'All'
-    ? ALL_RECORDS
-    : ALL_RECORDS.filter(r => r.type === selectedFilter || (selectedFilter === 'Other' && !['Lab Report', 'Prescription', 'Discharge Summary'].includes(r.type)));
+    ? realRecords
+    : realRecords.filter(r => r.type === selectedFilter || (selectedFilter === 'Other' && !['Lab Report', 'Prescription', 'Discharge Summary'].includes(r.type)));
 
   return (
     <AppShell>
@@ -187,8 +225,8 @@ export function VaultPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
           <div>
             <h1 className="font-syne text-3xl font-black text-white">Records Vault</h1>
-            <p className="text-slate-400 text-sm mt-1.5 leading-relaxed">
-              Upload medical reports, prescriptions, or clinical summaries. Encrypted end-to-end under your absolute control.
+            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-sans max-w-2xl bg-white/5 border border-white/10 rounded-xl p-3">
+              <strong>How to Use:</strong> Drag and drop medical PDFs or image scans into the processing terminal below. MedVault uses local browser-based deep models (MiniLM & Zero-Shot Classifiers) to parse and index entity data securely on your device. Once processing completes, click 'Encrypt & Upload' to seal your record cryptographically using AES-GCM and store it on BNB Greenfield, recording the ownership hash on the opBNB smart contract.
             </p>
           </div>
         </div>
@@ -437,7 +475,13 @@ export function VaultPage() {
 
                 {/* Grid List of records (Right, 70%) */}
                 <div className="flex-1 space-y-4">
-                  {filteredRecords.length === 0 ? (
+                  {loadingRecords ? (
+                    <div className="space-y-3">
+                      {[1, 2].map((n) => (
+                        <div key={n} className="h-24 w-full bg-white/5 border border-white/10 rounded-2xl animate-pulse" />
+                      ))}
+                    </div>
+                  ) : filteredRecords.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 border border-dashed border-white/5 rounded-2xl">
                       <FileText className="w-8 h-8 mx-auto text-slate-600 mb-2" />
                       <p className="text-xs">No matching files in this category.</p>

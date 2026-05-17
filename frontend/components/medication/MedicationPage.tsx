@@ -32,10 +32,13 @@ export function MedicationPage() {
       <div className="mx-auto max-w-6xl px-4 py-8">
 
         {/* Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div>
+        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
+          <div className="space-y-2">
             <h1 className="text-2xl font-bold text-white">Medication Copilot</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-sans max-w-2xl bg-white/5 border border-white/10 rounded-xl p-3">
+              <strong>How to Use:</strong> Track your active medications, schedule doses, and run local drug interaction safety checks. Click 'Add Medication' to define a plan or paste a plain-text clinical note to parse medication schedules automatically. Log your daily doses on the timeline to generate medical visit adherence packs. The Safety Radar will automatically highlight high-risk drug-drug interaction warnings.
+            </p>
+            <p className="text-xs text-slate-500">
               {plans.filter(p => p.active).length} active medication{plans.filter(p => p.active).length !== 1 ? 's' : ''}
               {' · '}
               {todaySlots.filter(s => s.status === 'taken').length}/{todaySlots.length} doses logged today

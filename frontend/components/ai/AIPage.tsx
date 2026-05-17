@@ -25,19 +25,23 @@ const SUGGESTED = [
 function HowItWorksBanner() {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 px-4 py-3 mb-4">
+    <div className="rounded-xl border border-sky-500/20 bg-[#111518]/90 p-4 mb-4 backdrop-blur-md">
+      <div className="text-xs text-slate-400 mb-3 leading-relaxed">
+        <strong>How to Use:</strong> Start by uploading your medical records in the Vault page to index their contents. Once indexed, type any query below to interact with your secure local health assistant (e.g. asking for medications, HbA1c history, or checking for drug interactions). All answers are generated locally in your browser with 100% data confidentiality.
+      </div>
+      <div className="w-full h-px bg-white/5 my-2.5" />
       <button
         className="flex w-full items-center justify-between text-left"
         onClick={() => setExpanded(v => !v)}
       >
         <div className="flex items-center gap-2">
           <Info className="h-4 w-4 text-sky-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-sky-300">How does the AI Assistant work?</span>
+          <span className="text-xs font-semibold text-sky-300">How does the secure on-device AI system work?</span>
         </div>
-        <span className="text-xs text-slate-400">{expanded ? 'Hide' : 'Show details'}</span>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{expanded ? 'Hide Details' : 'View System Details'}</span>
       </button>
       {expanded && (
-        <div className="mt-3 space-y-3 text-sm text-slate-300">
+        <div className="mt-3 space-y-3 text-xs text-slate-300">
           <div className="flex gap-3">
             <Download className="h-4 w-4 text-sky-400 flex-shrink-0 mt-0.5" />
             <p>

@@ -51,7 +51,9 @@ export function EmergencyPage() {
     <div className="min-h-screen bg-[#0A0F1E] px-4 pt-24 pb-12">
       <div className="mx-auto max-w-4xl">
         <h1 className="mb-2 text-2xl font-bold text-white">Emergency Profile</h1>
-        <p className="mb-8 text-slate-400">This card is public and unencrypted — only put what you want first responders to see.</p>
+        <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-sans max-w-2xl bg-white/5 border border-white/10 rounded-xl p-3 mb-6">
+          <strong>How to Use:</strong> Fill out your critical, unencrypted medical information (such as blood type, severe allergies, and emergency contact) that you want first responders to see during a medical emergency. Click 'Save & Upload' to register it on BNB Chain. Print or save the generated QR Code: anyone scanning this QR code will immediately access your emergency card without needing authorization.
+        </p>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Form */}

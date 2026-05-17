@@ -260,8 +260,8 @@ export function AccessPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-6">
           <div>
             <h1 className="font-syne text-3xl font-black text-white">Access Control</h1>
-            <p className="text-slate-400 text-sm mt-1.5 leading-relaxed">
-              All permissions are enforced by the <code className="text-sky-400 font-mono">AccessController</code> smart contract on opBNB Testnet — not by this application.
+            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-sans max-w-2xl bg-white/5 border border-white/10 rounded-xl p-3">
+              <strong>How to Use:</strong> Grant secure, time-bound medical record decryption rights to verified healthcare providers by typing their nickname or wallet address. Choose specific files to share, set a duration preset (e.g. 7 days or Permanent), and sign the on-chain permission grant with your wallet. You can instantly revoke any active grants at any time.
             </p>
           </div>
           

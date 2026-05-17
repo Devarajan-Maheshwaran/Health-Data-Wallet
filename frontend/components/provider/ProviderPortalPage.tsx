@@ -22,10 +22,15 @@ export function ProviderPortalPage() {
 
   return (
     <AppShell>
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex items-center gap-3">
-          <Stethoscope className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold text-textPrimary">Provider Portal</h1>
+      <div className="max-w-4xl mx-auto space-y-8 mt-6">
+        <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+          <Stethoscope className="w-8 h-8 text-primary shrink-0" />
+          <div>
+            <h1 className="text-3xl font-bold text-textPrimary">Provider Portal</h1>
+            <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-sans max-w-2xl bg-white/5 border border-white/10 rounded-xl p-3">
+              <strong>How to Use:</strong> Used exclusively by registered clinical medical providers. Enter a patient's self-sovereign wallet address to verify if you currently possess active decryption keys under the opBNB on-chain ledger. You can submit an access request to petition the patient for new time-bound decryption permissions.
+            </p>
+          </div>
         </div>
 
         <Card>

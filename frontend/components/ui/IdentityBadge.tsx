@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useIdentity } from '@/lib/hooks/useIdentity';
-import { ArrowLeftRight, Plus, Check, Shield } from 'lucide-react';
+import { Eye, EyeOff, Plus, Check, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface IdentityBadgeProps {
@@ -47,25 +47,25 @@ export function IdentityBadge({ address, showToggle = true }: IdentityBadgeProps
 
   return (
     <div 
-      className="relative inline-block"
+      className="relative inline-block text-left"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div className="flex items-center gap-2 bg-white/5 border border-white/10 hover:border-sky-500/20 rounded-full px-3 py-1.5 transition-all text-xs text-white/90">
+      <div className="flex items-center gap-2 bg-[#111518]/90 border border-white/10 hover:border-sky-500/30 rounded-full px-3 py-1.5 transition-all text-xs text-white/90 shadow-lg">
         
         {/* Avatar */}
         <img 
           src={avatarUrl} 
           alt="avatar" 
-          className="w-4 h-4 rounded-full bg-white/10 shrink-0" 
+          className="w-4 h-4 rounded-full bg-white/10 shrink-0 object-cover" 
         />
         
         {/* Name / Address flip animation */}
-        <span className="font-semibold select-none flex items-center gap-1">
+        <span className="font-semibold select-none flex items-center gap-1 font-mono">
           {showAddress ? (
-            <span className="font-mono text-sky-400">{address.slice(0, 6)}...{address.slice(-4)}</span>
+            <span className="text-sky-400 font-bold">{address.slice(0, 6)}...{address.slice(-4)}</span>
           ) : (
-            <span>
+            <span className="font-sans font-bold">
               {isKnown && <span className="mr-1">{roleEmoji}</span>}
               {displayName}
             </span>
@@ -73,14 +73,14 @@ export function IdentityBadge({ address, showToggle = true }: IdentityBadgeProps
         </span>
 
         {/* Action icons */}
-        <div className="flex items-center gap-1.5 ml-1">
+        <div className="flex items-center gap-1.5 ml-1 border-l border-white/10 pl-1.5">
           {showToggle && (
             <button 
               onClick={handleToggle}
-              className="text-slate-400 hover:text-white transition-colors p-0.5 rounded-full hover:bg-white/10"
-              title="Toggle Address / Name"
+              className="text-slate-400 hover:text-sky-400 transition-colors p-0.5 rounded-full hover:bg-white/10"
+              title={showAddress ? "Show Display Name" : "Reveal Wallet Address"}
             >
-              <ArrowLeftRight className="w-3 h-3" />
+              {showAddress ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
           )}
 
@@ -90,7 +90,7 @@ export function IdentityBadge({ address, showToggle = true }: IdentityBadgeProps
               className="text-slate-400 hover:text-emerald-400 transition-colors p-0.5 rounded-full hover:bg-white/10"
               title="Add to Contacts"
             >
-              {addedContact ? <Check className="w-3 h-3 text-emerald-400" /> : <Plus className="w-3 h-3" />}
+              {addedContact ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Plus className="w-3.5 h-3.5" />}
             </button>
           )}
         </div>
