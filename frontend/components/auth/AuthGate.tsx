@@ -4,35 +4,35 @@ import { useAccount } from 'wagmi';
 import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-// All routes that must NEVER redirect — no wallet needed
+// Routes that never redirect — no wallet needed
 const PUBLIC_ROUTES = ['/', '/docs'];
 
-// Pattern for emergency QR scan pages — always public, no wallet required
-const EMERGENCY_PATTERN = /^\/emergency\/0x[a-fA-F0-9]{10,}/i;
+// Emergency QR scan pages — ALWAYS public, zero wallet required, never redirect
+// Matches /emergency/0x... with any casing and any length address
+const EMERGENCY_PATTERN = /^\/emergency\//i;
 
 export function AuthGate() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const pathname = usePathname();
   const checkedRef = useRef<string | null>(null);
+  // Wait for full hydration before ANY redirect — prevents race condition
   const [mounted, setMounted] = useState(false);
 
-  // Wait for full client-side hydration before doing ANY redirect logic.
-  // This prevents the race condition where pathname is wrong on first render.
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    // CRITICAL: Do nothing until fully hydrated
+    // Never do anything until fully hydrated on client
     if (!mounted) return;
 
-    // CRITICAL: Emergency QR pages are ALWAYS public — never redirect, never block
+    // ALWAYS allow emergency QR pages — no wallet, no redirect, ever
     if (EMERGENCY_PATTERN.test(pathname)) return;
 
-    // Public routes — always allowed
+    // Always allow public routes
     if (PUBLIC_ROUTES.includes(pathname)) {
-      // But if connected + on homepage + has profile → redirect to dashboard
+      // If connected on homepage and profile exists → go to dashboard
       if (isConnected && address && pathname === '/') {
         const cleanAddr = address.toLowerCase();
         if (checkedRef.current === cleanAddr) return;
@@ -79,7 +79,7 @@ export function AuthGate() {
       return;
     }
 
-    // Protected route + not connected → send home
+    // Protected route + wallet not connected → send home
     if (!isConnected) {
       router.replace('/');
     }
