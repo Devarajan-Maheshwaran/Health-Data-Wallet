@@ -5,6 +5,10 @@
 --       exclusively in the user's browser IndexedDB and never sent to any server.
 --       Cross-device access is handled via wallet re-authentication (SIWE) +
 --       re-download and re-index from BNB Greenfield on login.
+--
+-- IDEMPOTENT: Safe to re-run. Tables, indexes, and policies use IF NOT EXISTS.
+-- Policies use DROP IF EXISTS before CREATE to avoid duplicate-policy errors.
+
 
 -- ============================================================
 -- Providers registry
@@ -22,6 +26,7 @@ CREATE TABLE IF NOT EXISTS providers (
 
 CREATE INDEX IF NOT EXISTS idx_providers_wallet ON providers(wallet_address);
 
+
 -- ============================================================
 -- Access requests (off-chain coordination layer)
 -- ============================================================
@@ -38,9 +43,10 @@ CREATE TABLE IF NOT EXISTS access_requests (
     resolved_at         TIMESTAMPTZ
 );
 
-CREATE INDEX IF NOT EXISTS idx_access_requests_patient ON access_requests(patient_address);
-CREATE INDEX IF NOT EXISTS idx_access_requests_requester ON access_requests(requester_address);
-CREATE INDEX IF NOT EXISTS idx_access_requests_status ON access_requests(status);
+CREATE INDEX IF NOT EXISTS idx_access_requests_patient    ON access_requests(patient_address);
+CREATE INDEX IF NOT EXISTS idx_access_requests_requester  ON access_requests(requester_address);
+CREATE INDEX IF NOT EXISTS idx_access_requests_status     ON access_requests(status);
+
 
 -- ============================================================
 -- Notifications
@@ -55,7 +61,8 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipient_address);
-CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(recipient_address, read);
+CREATE INDEX IF NOT EXISTS idx_notifications_read      ON notifications(recipient_address, read);
+
 
 -- ============================================================
 -- Row Level Security
@@ -64,10 +71,25 @@ ALTER TABLE providers       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE access_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications   ENABLE ROW LEVEL SECURITY;
 
--- Providers: anyone can read verified providers
+
+-- ============================================================
+-- RLS Policies
+-- All API routes use the service_role key which bypasses RLS.
+-- These policies cover direct Data API / anon key access.
+-- DROP IF EXISTS makes this script safe to re-run.
+-- ============================================================
+
+-- Providers: anyone can read verified providers (public directory)
+DROP POLICY IF EXISTS "public read verified providers" ON providers;
 CREATE POLICY "public read verified providers" ON providers
     FOR SELECT USING (verified = true);
 
--- Notifications: API-layer auth is primary gating
+-- Access requests: open policy — API-layer (service_role) is the real gating
+DROP POLICY IF EXISTS "allow all access_requests" ON access_requests;
+CREATE POLICY "allow all access_requests" ON access_requests
+    FOR ALL USING (true) WITH CHECK (true);
+
+-- Notifications: open policy — API-layer (service_role) is the real gating
+DROP POLICY IF EXISTS "own notifications" ON notifications;
 CREATE POLICY "own notifications" ON notifications
     FOR ALL USING (true);
