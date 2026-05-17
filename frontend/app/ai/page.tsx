@@ -1,6 +1,6 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
-const AIPage = dynamic(
+const AIPage = nextDynamic(
   () => import('@/components/ai/AIPage').then((m) => m.AIPage),
   { ssr: false }
 );

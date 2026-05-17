@@ -4,9 +4,8 @@
  * Vectors are stored in IndexedDB keyed by `${recordId}:${chunkIndex}`.
  */
 
-import { pipeline } from '@xenova/transformers';
 import { get, set, del, keys } from 'idb-keyval';
-import { asFeatureExtraction } from './pipeline-utils';
+import { asFeatureExtraction, getTransformers } from './pipeline-utils';
 
 export type EmbeddingVector = number[];
 
@@ -20,10 +19,11 @@ export interface StoredChunk {
   title:      string;
 }
 
-let embedPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
+let embedPipeline: any = null;
 
 export async function getEmbedder() {
   if (!embedPipeline) {
+    const { pipeline } = await getTransformers();
     embedPipeline = await pipeline(
       'feature-extraction',
       'Xenova/all-MiniLM-L6-v2',

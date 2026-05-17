@@ -9,8 +9,7 @@
  * 9=SurgicalNote, 10=PathologyReport, 11=Other
  */
 
-import { pipeline } from '@xenova/transformers';
-import { asZeroShotClassification } from './pipeline-utils';
+import { asZeroShotClassification, getTransformers } from './pipeline-utils';
 
 const CANDIDATE_LABELS = [
   'laboratory blood test report',     // 0 — LabReport
@@ -29,10 +28,11 @@ const CANDIDATE_LABELS = [
 
 export type DocumentType = 0|1|2|3|4|5|6|7|8|9|10|11;
 
-let classifierPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
+let classifierPipeline: any = null;
 
 async function getClassifier() {
   if (!classifierPipeline) {
+    const { pipeline } = await getTransformers();
     classifierPipeline = await pipeline(
       'zero-shot-classification',
       'Xenova/nli-deberta-v3-small',

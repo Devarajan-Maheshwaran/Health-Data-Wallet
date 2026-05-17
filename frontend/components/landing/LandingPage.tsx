@@ -7,6 +7,13 @@ import {
   Ambulance, Database, Key, FileCheck, Users, Eye,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { AuroraBackground } from '@/components/reactbits/AuroraBackground';
+import { ShinyText } from '@/components/reactbits/ShinyText';
+import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
+import BlurText from '@/components/ui/BlurText';
+import BorderGlow from '@/components/ui/BorderGlow';
+import LogoLoop from '@/components/ui/LogoLoop';
+import { SiBinance, SiEthereum, SiSupabase } from 'react-icons/si';
 import { useRouter } from 'next/navigation';
 
 const painPoints = [
@@ -90,20 +97,9 @@ export function LandingPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-surface bg-grid-pattern">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 glass border-b border-white/5 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xl font-bold text-primary">
-          <Shield className="w-6 h-6" />
-          MedVault
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden md:block text-xs text-slate-400 border border-white/10 rounded-full px-3 py-1">
-            BNB Greenfield Testnet
-          </span>
-          <ConnectButton showBalance={false} />
-        </div>
-      </nav>
+    <AuroraBackground>
+      <div className="min-h-screen relative z-10">
+
 
       {/* Hero */}
       <section className="pt-40 pb-24 px-6 text-center max-w-4xl mx-auto">
@@ -113,8 +109,8 @@ export function LandingPage() {
             Zero external APIs. All AI runs locally. Fully open source.
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-textPrimary leading-tight mb-6">
-            Your health records,<br />
-            <span className="text-primary">under your control.</span>
+            <BlurText text="Own Your Medical Data" animateBy="words" direction="top" className="justify-center" />
+            <ShinyText text="under your control." className="text-5xl md:text-7xl font-black mt-2" />
           </h1>
           <p className="text-xl text-white/60 max-w-2xl mx-auto mb-4">
             MedVault is a decentralised health data wallet. Upload medical documents, have AI extract and classify them in your browser, then store the encrypted files on the blockchain. Share access with doctors using time-limited smart contract permissions.
@@ -180,13 +176,13 @@ export function LandingPage() {
         <div className="grid md:grid-cols-3 gap-6">
           {painPoints.map((p, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <Card className="h-full">
-                <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit">
+              <SpotlightCard className="h-full">
+                <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit relative z-10">
                   <p.icon className="w-5 h-5 text-sky-400" />
                 </div>
-                <h3 className="text-white font-semibold mb-2">{p.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{p.desc}</p>
-              </Card>
+                <h3 className="text-white font-semibold mb-2 relative z-10">{p.title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed relative z-10">{p.desc}</p>
+              </SpotlightCard>
             </motion.div>
           ))}
         </div>
@@ -201,29 +197,53 @@ export function LandingPage() {
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
-          {features.map((f, i) => (
-            <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}>
-              <Card className="flex items-start gap-4 h-full">
-                <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary/10">
-                  <f.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <div className="text-white font-semibold mb-1.5">{f.title}</div>
-                  <div className="text-white/50 text-sm leading-relaxed">{f.desc}</div>
-                </div>
-              </Card>
+          {features.map((f, i) => {
+            const glowConfigs = [
+              { glowColor: "180 70 60", colors: ['#4f98a3','#01696f','#0f3638'] },
+              { glowColor: "270 70 70", colors: ['#7a39bb','#5f2699','#431673'] },
+              { glowColor: "0 80 70", colors: ['#a12c7b','#7d1e5e','#561740'] },
+              { glowColor: "200 80 60", colors: ['#006494','#0b5177','#0b3751'] }
+            ];
+            const cfg = glowConfigs[i];
+            return (
+            <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
+              <BorderGlow glowColor={cfg.glowColor} colors={cfg.colors} className="w-full h-full">
+                <SpotlightCard className="flex items-start gap-4 h-full border-0">
+                  <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary/10 relative z-10">
+                    <f.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="text-white font-semibold mb-1.5">{f.title}</div>
+                    <div className="text-white/50 text-sm leading-relaxed">{f.desc}</div>
+                  </div>
+                </SpotlightCard>
+              </BorderGlow>
             </motion.div>
-          ))}
+          )})}
         </div>
       </section>
 
       {/* Tech stack */}
       <section className="py-16 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Built on open technology</h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-2">Powered by modern tech</h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto mb-8">
             No proprietary backends. Every component is auditable, self-hostable, and decentralised by design.
           </p>
+          <div className="flex justify-center w-full mb-12">
+            <LogoLoop
+              logos={[
+                { node: <div className="flex items-center gap-2"><SiBinance className="text-[#F3BA2F]" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
+                { node: <div className="flex items-center gap-2"><SiSupabase className="text-[#3ECF8E]" /> Supabase</div>, title: 'Supabase' },
+                { node: <div className="flex items-center gap-2"><SiEthereum className="text-[#627EEA]" /> Ethereum</div>, title: 'Ethereum' },
+                { node: <div className="flex items-center gap-2 font-bold text-lg">🌈 RainbowKit</div>, title: 'RainbowKit' },
+              ]}
+              speed={30}
+              gap={64}
+              fadeOut={true}
+              fadeOutColor="#0b0f12"
+            />
+          </div>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {techStack.map((t, i) => (
@@ -258,5 +278,6 @@ export function LandingPage() {
         <ConnectButton />
       </section>
     </div>
+    </AuroraBackground>
   );
 }

@@ -5,14 +5,14 @@
  * Runs 100% in-browser via Transformers.js WASM.
  */
 
-import { pipeline } from '@xenova/transformers';
 import type { StoredChunk } from './embeddings';
-import { asText2TextGeneration } from './pipeline-utils';
+import { asText2TextGeneration, getTransformers } from './pipeline-utils';
 
-let generatorPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
+let generatorPipeline: any = null;
 
 export async function getGenerator() {
   if (!generatorPipeline) {
+    const { pipeline } = await getTransformers();
     generatorPipeline = await pipeline(
       'text2text-generation',
       'Xenova/LaMini-Flan-T5-248M',

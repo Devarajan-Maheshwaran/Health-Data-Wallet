@@ -1,6 +1,6 @@
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
 
-const VaultPage = dynamic(
+const VaultPage = nextDynamic(
   () => import('@/components/vault/VaultPage').then((m) => m.VaultPage),
   { ssr: false }
 );

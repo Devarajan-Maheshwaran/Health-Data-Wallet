@@ -4,15 +4,13 @@ const nextConfig = {
   transpilePackages: [
     '@rainbow-me/rainbowkit',
   ],
-  experimental: {
-    // Next.js 14 key for server-side external packages
-    serverComponentsExternalPackages: [
-      '@xenova/transformers', 
-      'onnxruntime-node', 
-      '@bnb-chain/greenfield-js-sdk',
-      'pdfjs-dist'
-    ],
-  },
+  // Next.js 14 key for server-side external packages
+  serverExternalPackages: [
+    '@xenova/transformers', 
+    'onnxruntime-node', 
+    '@bnb-chain/greenfield-js-sdk',
+    'pdfjs-dist'
+  ],
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -43,6 +41,11 @@ const nextConfig = {
         asyncWebAssembly: true,
         layers: true,
       };
+      
+      // Alias node-only modules to prevent browser bundling
+      config.resolve.alias['@xenova/transformers'] = false;
+      config.resolve.alias['pdfjs-dist'] = false;
+      config.resolve.alias['@bnb-chain/greenfield-js-sdk'] = false;
     }
 
     return config;

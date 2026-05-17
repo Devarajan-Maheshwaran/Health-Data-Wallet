@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { Navbar } from '@/components/layout/Navbar';
+import Grainient from '@/components/ui/Grainient';
+import AppDock from '@/components/ui/AppDock';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,9 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-[#0A0F1E] text-white antialiased`}>
+        <Grainient />
         <Providers>
-          <Navbar />
-          <main>{children}</main>
+          <main className="pb-24">{children}</main>
+          <AppDock />
         </Providers>
       </body>
     </html>

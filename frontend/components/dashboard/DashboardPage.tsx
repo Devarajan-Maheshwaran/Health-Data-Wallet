@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { CONTRACT_ADDRESSES, HEALTH_RECORD_STORE_ABI, DOC_TYPES } from '@/lib/contracts';
 import { useRouter } from 'next/navigation';
 import { FlaskConical, FileText, ImageIcon, Pill, Shield, Upload } from 'lucide-react';
+import { ShinyText } from '@/components/reactbits/ShinyText';
+import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 
 const docTypeIcons = [FlaskConical, Pill, ImageIcon, FileText, Shield, Shield, FileText, FileText, FileText, FileText, FileText, FileText];
 
@@ -31,7 +33,9 @@ export function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-textPrimary">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-textPrimary">
+              <ShinyText text="Dashboard" className="text-3xl font-bold" />
+            </h1>
             <p className="text-white/50 text-sm mt-1">
               {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Not connected'}
             </p>
@@ -50,10 +54,10 @@ export function DashboardPage() {
             { label: 'Pending Requests', value: '—', color: 'text-warning' },
             { label: 'AI Queries', value: '—', color: 'text-white/70' },
           ].map((s) => (
-            <Card key={s.label} className="text-center">
+            <SpotlightCard key={s.label} className="text-center p-6">
               <div className={`text-4xl font-black mb-1 ${s.color}`}>{s.value}</div>
               <div className="text-white/50 text-xs">{s.label}</div>
-            </Card>
+            </SpotlightCard>
           ))}
         </div>
 

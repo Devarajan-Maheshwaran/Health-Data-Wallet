@@ -4,10 +4,9 @@
  * Model: Xenova/bert-base-NER (fallback until d4data ONNX is available)
  */
 
-import { pipeline } from '@xenova/transformers';
-import { asTokenClassification } from './pipeline-utils';
+import { asTokenClassification, getTransformers } from './pipeline-utils';
 
-let nerPipeline: Awaited<ReturnType<typeof pipeline>> | null = null;
+let nerPipeline: any = null;
 
 const BIOMEDICAL_NER_MODEL = 'Xenova/bert-base-NER';
 // Swap below once d4data/biomedical-ner-all ONNX conversion is available:
@@ -15,6 +14,7 @@ const BIOMEDICAL_NER_MODEL = 'Xenova/bert-base-NER';
 
 async function getBioNERPipeline() {
   if (!nerPipeline) {
+    const { pipeline } = await getTransformers();
     nerPipeline = await pipeline(
       'token-classification',
       BIOMEDICAL_NER_MODEL,

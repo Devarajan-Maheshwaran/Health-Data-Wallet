@@ -11,7 +11,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
   // Dynamic import so Next.js doesn't try to bundle the WASM at build time
   const pdfjsLib = await import('pdfjs-dist');
   // Point worker at the CDN copy so it's not bundled
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;

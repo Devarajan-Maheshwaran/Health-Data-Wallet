@@ -10,13 +10,19 @@
  * ALL pipeline calls across the codebase should go through these helpers.
  */
 
-import { pipeline, env } from '@xenova/transformers';
-
 // Tell transformers.js we are running in the browser and shouldn't use local fs
-env.allowLocalModels = false;
-env.useBrowserCache = true;
+let configured = false;
+export async function getTransformers() {
+  const t = await import('@xenova/transformers');
+  if (!configured) {
+    t.env.allowLocalModels = false;
+    t.env.useBrowserCache = true;
+    configured = true;
+  }
+  return t;
+}
 
-type AnyPipeline = Awaited<ReturnType<typeof pipeline>>;
+type AnyPipeline = any;
 
 // ── Feature Extraction (embeddings) ─────────────────────────────────────────
 
