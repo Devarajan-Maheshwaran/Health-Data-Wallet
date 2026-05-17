@@ -15,3 +15,16 @@ export const supabase = url && anon ? createClient(url, anon) : null as any;
 
 /** Server-side admin client (bypasses RLS — only use in API routes) */
 export const supabaseAdmin = url && service ? createClient(url, service) : null as any;
+
+// Set the wallet as the RLS context after every wallet connect
+export async function setSupabaseWallet(address: string) {
+  if (!supabase) return;
+  try {
+    await supabase.rpc('set_config', {
+      setting: 'app.wallet',
+      value: address.toLowerCase(),
+    });
+  } catch (e) {
+    console.warn('Failed to set Supabase wallet RPC context', e);
+  }
+}

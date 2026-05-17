@@ -11,7 +11,6 @@ const syne = Syne({ subsets: ['latin'], variable: '--font-syne' });
 export const metadata: Metadata = {
   title: 'MedVault — Self-Sovereign Health Data',
   description: 'Your health data, your wallet, your control. Encrypted decentralised health records powered by BNB Chain.',
-  icons: { icon: '/favicon.ico' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

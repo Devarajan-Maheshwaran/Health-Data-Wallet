@@ -19,7 +19,11 @@ import {
   Search,
   Eye,
   TrendingDown,
-  Info
+  Info,
+  Activity,
+  QrCode,
+  Wallet,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BorderGlow from '@/components/ui/BorderGlow';
@@ -303,6 +307,115 @@ export default function DocsPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* SECTION 4.5: HOW A REAL PATIENT USES MEDVAULT */}
+        <div className="mb-20">
+          <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs text-primary mb-6 border border-primary/20 bg-primary/5">
+            <Activity className="w-4 h-4" />
+            Real-World Workflow
+          </div>
+          <h2 className="font-syne text-2xl md:text-3xl font-black text-white mb-2">
+            What Using MedVault Actually Looks Like
+          </h2>
+          <p className="text-slate-400 mb-10 leading-relaxed">
+            No system accounts, no institution approvals, no waiting. Just a wallet and your files.
+          </p>
+
+          {/* Workflow Steps */}
+          <div className="space-y-4 mb-12">
+            {[
+              {
+                step: '01',
+                icon: Wallet,
+                title: 'Connect Your Wallet — You Are In',
+                desc: 'Open MedVault and connect MetaMask or any WalletConnect wallet. Enter your name, role, and optionally your blood group and phone number. That is your entire onboarding. No email. No OTP. No hospital registration required. Your wallet address is your identity.',
+                tag: 'One-Time Setup'
+              },
+              {
+                step: '02',
+                icon: Lock,
+                title: 'Upload a Record — It Never Leaves Your Control',
+                desc: 'Drag your lab report, prescription, or scan into the Vault. MedVault encrypts it in your browser using AES-256-GCM — the raw file never touches any server in plaintext. The AI reads the content locally and extracts your diagnoses, medications, and test values. The encrypted blob is stored on BNB Greenfield with its record ID written on-chain.',
+                tag: 'Patient Action'
+              },
+              {
+                step: '03',
+                icon: ShieldCheck,
+                title: 'Share With Your Doctor — On Your Terms',
+                desc: 'Before your appointment, open Access Control and type your doctor\'s name or paste their wallet address. Choose which records they can see, set Record Read access, and pick a duration — say 7 days. Sign the transaction. Your doctor now has a time-limited cryptographic grant. When the 7 days are up, access shuts off automatically — no action needed from either side.',
+                tag: 'Patient Action'
+              },
+              {
+                step: '04',
+                icon: Eye,
+                title: 'Your Doctor Views the Record',
+                desc: 'Your doctor connects their own wallet to MedVault. The dashboard shows them the records you have shared, clearly labelled with your name and the expiry date. They click View — the system checks the AccessController contract, confirms the grant is live, fetches the encrypted file, decrypts it, and logs the access event permanently on-chain. You can see "Dr. Ethan Clarke — READ — 3 minutes ago" in your audit log.',
+                tag: 'Doctor Action'
+              },
+              {
+                step: '05',
+                icon: QrCode,
+                title: 'Your Emergency Card — Always Ready',
+                desc: 'Open the Emergency QR page and choose what appears on your card. The AI suggests fields from your uploaded records — blood group, conditions, medications, allergies, emergency contact. You approve each one individually. Save the QR as your phone lock screen wallpaper and print a wallet-sized card. If you are ever unconscious in an ER, the nurse scans the QR from your locked phone. A plain webpage loads instantly — no login, no app — with exactly the information that keeps you safe.',
+                tag: 'Passive Protection'
+              }
+            ].map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.08 }}
+                className="flex gap-5 bg-white/5 border border-white/10 hover:border-primary/20 rounded-2xl p-6 transition-all group"
+              >
+                <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <item.icon className="w-5 h-5 text-primary" />
+                  </div>
+                  {idx < 4 && <div className="w-px flex-1 bg-white/10 group-hover:bg-primary/20 transition-colors min-h-[24px]" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
+                    <span className="font-syne text-xs font-bold text-primary tracking-wider uppercase bg-primary/10 px-2 py-0.5 rounded">
+                      Step {item.step}
+                    </span>
+                    <span className="text-xs text-slate-500 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <h4 className="font-syne font-bold text-white text-base mb-1.5">{item.title}</h4>
+                  <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* The Emergency QR callout — links to the QR page */}
+          <div className="relative border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5 rounded-3xl p-8 overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <QrCode className="w-40 h-40 text-amber-400" />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="p-3 bg-amber-500/10 rounded-xl flex-shrink-0">
+                <QrCode className="w-7 h-7 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-syne font-bold text-white text-lg mb-1">
+                  The Emergency Card Is Not an Afterthought
+                </h3>
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  Problem 05 above describes the exact scenario — an unconscious patient, a nurse with 60 seconds, and critical data locked inside a hospital EHR system across the city. The Emergency QR is MedVault\'s direct answer. It exposes only what the patient explicitly approved. The encrypted vault remains untouched. The QR can be regenerated at any time to invalidate the old one.
+                </p>
+              </div>
+              <a
+                href="/emergency"
+                className="flex-shrink-0 inline-flex items-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold px-5 py-2.5 rounded-xl hover:bg-amber-500/20 transition-colors whitespace-nowrap text-sm"
+              >
+                Set Up Your Card
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </div>
 

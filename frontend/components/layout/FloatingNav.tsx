@@ -40,13 +40,17 @@ export function FloatingNav() {
 
   useEffect(() => {
     const updateName = () => {
+      if (!isConnected) {
+        setUsername('');
+        return;
+      }
       const stored = localStorage.getItem('medvault_username') || '';
       setUsername(stored);
     };
     updateName();
     window.addEventListener('medvault_profile_updated', updateName);
     return () => window.removeEventListener('medvault_profile_updated', updateName);
-  }, []);
+  }, [isConnected]);
 
   useEffect(() => {
     if (mounted && !isConnected && pathname !== '/') {

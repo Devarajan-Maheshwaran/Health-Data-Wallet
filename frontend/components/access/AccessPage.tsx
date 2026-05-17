@@ -18,7 +18,9 @@ import BorderGlow from '@/components/ui/BorderGlow';
 import { AppShell } from '@/components/layout/AppShell';
 import { IdentityBadge } from '@/components/ui/IdentityBadge';
 import { useIdentity } from '@/lib/hooks/useIdentity';
+import { useSearchParams } from 'next/navigation';
 import { useReadContracts } from 'wagmi';
+import { IdentityInput } from '@/components/ui/IdentityInput';
 
 // Types mapping access tiers to the contract enum value
 // 0: EMERGENCY_READ, 1: RECORD_READ, 2: FULL_READ, 3: PROVIDER_WRITE
@@ -40,6 +42,19 @@ const PRESETS = [
 export function AccessPage() {
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract();
+
+  // Toast notifications
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'loading' | null }>({
+    message: '',
+    type: null,
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'loading') => {
+    setToast({ message, type });
+    if (type !== 'loading') {
+      setTimeout(() => setToast({ message: '', type: null }), 4000);
+    }
+  };
 
   // Onboarding Demo / Seeded list of grantees to prevent blank pages on first connect
   const [granteesList, setGranteesList] = useState<string[]>([]);
@@ -64,6 +79,24 @@ export function AccessPage() {
 
   // Collapsible Audit Logs
   const [showAuditLogs, setShowAuditLogs] = useState(false);
+
+  // Parse search params for quick share prefill
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const grantee = searchParams.get('grantee');
+    const tier = searchParams.get('tier');
+    const scopeParam = searchParams.get('scope');
+    const record = searchParams.get('record');
+
+    if (grantee) {
+      setGranteeAddress(grantee);
+      setActiveTab('grant');
+    }
+    if (tier) setSelectedTier(Number(tier));
+    if (scopeParam === 'specific') setScope('specific');
+    if (record) setSelectedRecords([Number(record)]);
+  }, [searchParams]);
 
   // Fetch count of records from contract to build dynamic checkboxes
   const { data: recordCount } = useReadContract({
@@ -144,6 +177,7 @@ export function AccessPage() {
     e.preventDefault();
     if (!granteeAddress || isGranting) return;
     setIsGranting(true);
+    showToast('Waiting for wallet signature...', 'loading');
 
     try {
       // Contract grant parameters: grantee, tier, durationSeconds, recordIds
@@ -168,20 +202,13 @@ export function AccessPage() {
         setGranteesList(list);
       }
 
-      alert('Transaction signed and permission granted successfully!');
+      showToast('Access granted successfully on BNB Chain!', 'success');
       setGranteeAddress('');
       setSelectedRecords([]);
       setActiveTab('view');
     } catch (err) {
       console.error('Grant Access failed:', err);
-      // Local fallback in case transaction fails but user is testing in Demo mode
-      const storageKey = `medvault_grantees_${address!.toLowerCase()}`;
-      const list = [...granteesList];
-      if (!list.includes(granteeAddress)) {
-        list.push(granteeAddress);
-        localStorage.setItem(storageKey, JSON.stringify(list));
-        setGranteesList(list);
-      }
+      showToast('Transaction signature rejected. No changes were made.', 'error');
       setActiveTab('view');
     }
     setIsGranting(false);
@@ -189,6 +216,7 @@ export function AccessPage() {
 
   const handleRevokeConfirm = async (grantee: string) => {
     setIsRevoking(true);
+    showToast('Waiting for revocation wallet signature...', 'loading');
     try {
       await writeContractAsync({
         address: ACCESS_CONTROLLER_ADDRESS,
@@ -202,13 +230,10 @@ export function AccessPage() {
       localStorage.setItem(storageKey, JSON.stringify(filtered));
       setGranteesList(filtered);
       setRevokingAddress(null);
+      showToast('Access revoked successfully on BNB Chain!', 'success');
     } catch (err) {
       console.error('Revocation failed:', err);
-      // Local fallback for smooth UI demo
-      const storageKey = `medvault_grantees_${address!.toLowerCase()}`;
-      const filtered = granteesList.filter(g => g !== grantee);
-      localStorage.setItem(storageKey, JSON.stringify(filtered));
-      setGranteesList(filtered);
+      showToast('Revocation transaction rejected or failed.', 'error');
       setRevokingAddress(null);
     }
     setIsRevoking(false);
@@ -314,13 +339,10 @@ export function AccessPage() {
                   <div className="relative">
                     <label className="block text-xs font-semibold text-slate-400 mb-1.5">Grantee Wallet Address</label>
                     <div className="flex gap-2">
-                      <input
-                        type="text"
-                        required
-                        placeholder="0x..."
+                      <IdentityInput
                         value={granteeAddress}
-                        onChange={(e) => setGranteeAddress(e.target.value)}
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-primary/50 font-mono"
+                        onChange={setGranteeAddress}
+                        placeholder="0x... or search by provider name"
                       />
                     </div>
                     
@@ -729,6 +751,29 @@ export function AccessPage() {
         </div>
 
       </div>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast.type && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md text-xs font-semibold ${
+              toast.type === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : toast.type === 'error'
+                ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                : 'bg-[#111518]/90 border-white/10 text-sky-400'
+            }`}
+          >
+            {toast.type === 'loading' && (
+              <span className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin shrink-0" />
+            )}
+            <span>{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppShell>
   );
 }

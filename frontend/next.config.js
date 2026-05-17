@@ -4,13 +4,14 @@ const nextConfig = {
   transpilePackages: [
     '@rainbow-me/rainbowkit',
   ],
-  // Next.js 14 key for server-side external packages
-  serverExternalPackages: [
-    '@xenova/transformers', 
-    'onnxruntime-node', 
-    '@bnb-chain/greenfield-js-sdk',
-    'pdfjs-dist'
-  ],
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@xenova/transformers', 
+      'onnxruntime-node', 
+      '@bnb-chain/greenfield-js-sdk',
+      'pdfjs-dist'
+    ],
+  },
   webpack: (config, { isServer, dev }) => {
     // Disable disk caching to prevent ENOSPC errors on space-constrained systems
     if (config.cache && !dev) {

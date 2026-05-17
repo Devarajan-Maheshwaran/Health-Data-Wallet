@@ -2,198 +2,196 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
+import { supabase, setSupabaseWallet } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Shield, Briefcase, Plus, Heart } from 'lucide-react';
 
 export function OnboardingSheet() {
-  const { isConnected, address } = useAccount();
+  const { address, isConnected } = useAccount();
   const [show, setShow] = useState(false);
   
+  // Onboarding Form States
   const [name, setName] = useState('');
-  const [role, setRole] = useState<'patient' | 'doctor' | 'family'>('patient');
-  
-  // Doctor details
+  const [role, setRole] = useState<'patient' | 'doctor'>('patient');
   const [specialisation, setSpecialisation] = useState('');
   const [hospital, setHospital] = useState('');
-  const [medReg, setMedReg] = useState('');
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [blood, setBlood] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (isConnected && address) {
-      const username = localStorage.getItem('medvault_username');
-      if (!username) {
-        setShow(true);
-      } else {
-        setShow(false);
-      }
-    } else {
-      setShow(false);
-    }
+    if (!isConnected || !address || !supabase) return;
+
+    // Set RPC context for RLS policies
+    setSupabaseWallet(address).then(() => {
+      // Check if profile exists in Supabase
+      supabase
+        .from('profiles')
+        .select('wallet_address')
+        .eq('wallet_address', address.toLowerCase())
+        .maybeSingle()
+        .then(({ data, error }: any) => {
+          if (!data || error) {
+            // Check local storage fallback to avoid infinite loops if supabase fails/offline
+            const localProfilesStr = localStorage.getItem('medvault_local_profiles') || '{}';
+            const localProfiles = JSON.parse(localProfilesStr);
+            if (!localProfiles[address.toLowerCase()]) {
+              setShow(true);
+            }
+          }
+        });
+    });
   }, [isConnected, address]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
-    setIsSubmitting(true);
+    if (!name.trim() || !address) return;
+    setSaving(true);
 
-    const cleanAddr = address?.toLowerCase() || '';
+    const cleanAddr = address.toLowerCase();
 
-    // Save profile metadata locally
-    localStorage.setItem('medvault_username', name);
-    localStorage.setItem('medvault_role', role);
-    localStorage.setItem('medvault_specialisation', role === 'doctor' ? specialisation : '');
-    localStorage.setItem('medvault_hospital', role === 'doctor' ? hospital : '');
-    localStorage.setItem('medvault_medreg', role === 'doctor' ? medReg : '');
-
-    // Update in local cache registry of profiles
+    // 1. Write profile to local storage as robust fallback
     const localProfilesStr = localStorage.getItem('medvault_local_profiles') || '{}';
     const localProfiles = JSON.parse(localProfilesStr);
     localProfiles[cleanAddr] = {
       wallet_address: cleanAddr,
-      display_name: name,
-      role: role,
+      display_name: name.trim(),
+      role,
       specialisation: role === 'doctor' ? specialisation : undefined,
       hospital: role === 'doctor' ? hospital : undefined,
-      medical_registration: role === 'doctor' ? medReg : undefined,
+      phone: phone || undefined,
+      blood_group: blood || undefined,
       avatar_seed: cleanAddr
     };
     localStorage.setItem('medvault_local_profiles', JSON.stringify(localProfiles));
+    
+    // Set demographic inputs in standard keys
+    localStorage.setItem('medvault_username', name.trim());
+    localStorage.setItem('medvault_role', role);
+    localStorage.setItem('medvault_phone', phone || '');
+    localStorage.setItem('medvault_email', '');
 
-    // Dispatch reload events across active pages
+    // Dispatch custom event to notify all active pages to update
     window.dispatchEvent(new Event('medvault_profile_updated'));
 
-    // Simulated short block confirmation latency
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShow(false);
-    }, 700);
-  };
+    // 2. Attempt to write profile row to Supabase
+    if (supabase) {
+      try {
+        await supabase.from('profiles').insert({
+          wallet_address: cleanAddr,
+          display_name: name.trim(),
+          role,
+          specialisation: role === 'doctor' ? specialisation : null,
+          hospital: role === 'doctor' ? hospital : null,
+          phone: phone || null,
+          blood_group: blood || null,
+        });
+      } catch (err) {
+        console.warn('Could not sync onboarding to Supabase directly, fallback cache used.', err);
+      }
+    }
+
+    setSaving(false);
+    setShow(false);
+  }
 
   return (
     <AnimatePresence>
       {show && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/70 backdrop-blur-sm p-4">
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="w-full max-w-lg bg-[#0e1216] border border-white/10 rounded-t-3xl md:rounded-3xl p-6 shadow-2xl space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar"
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="w-full max-w-lg bg-[#0e1216] border border-white/10 rounded-t-3xl md:rounded-3xl p-8 shadow-2xl space-y-6 overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar"
           >
-            {/* Onboarding Header */}
-            <div className="text-center relative">
+            <div className="text-center">
               <div className="w-12 h-12 bg-sky-500/10 rounded-2xl flex items-center justify-center text-primary mx-auto mb-3">
-                <Heart className="w-6 h-6 text-sky-400 animate-pulse" />
+                <span className="text-2xl">🩺</span>
               </div>
               <h2 className="font-syne text-2xl font-black text-white leading-tight">Welcome to MedVault</h2>
               <p className="text-slate-400 text-xs mt-1.5 font-mono">
-                Identity Profile for Address: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
+                Identity Profile for Address: <span className="text-sky-400">{address?.slice(0, 10)}...{address?.slice(-4)}</span>
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              {/* Name */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-sky-400" /> Full Name / Display Identity
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Arvind Raman"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-all"
-                />
-              </div>
+            <form onSubmit={handleSave} className="space-y-4">
+              <input
+                required
+                type="text"
+                placeholder="Your full name *"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 text-sm font-medium"
+              />
 
-              {/* Role Select Cards */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-sky-400" /> Role Context
-                </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {[
-                    { key: 'patient', label: 'Patient', desc: 'Secure my files' },
-                    { key: 'doctor', label: 'Doctor', desc: 'Clinical access' },
-                    { key: 'family', label: 'Family', desc: 'Manage access' }
-                  ].map((r) => {
-                    const isSelected = role === r.key;
-                    return (
-                      <button
-                        key={r.key}
-                        type="button"
-                        onClick={() => setRole(r.key as any)}
-                        className={`p-3 rounded-2xl border text-left flex flex-col justify-between h-20 transition-all ${
-                          isSelected ? 'border-primary bg-primary/10 text-white' : 'border-white/5 bg-white/[0.02] text-slate-400 hover:bg-white/5'
-                        }`}
-                      >
-                        <span className="font-bold text-xs leading-none">{r.label}</span>
-                        <span className="text-[10px] text-slate-400 leading-snug">{r.desc}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Doctor Details */}
-              <AnimatePresence>
-                {role === 'doctor' && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-4 border-t border-white/5 pt-4"
+              <div className="grid grid-cols-2 gap-3">
+                {(['patient', 'doctor'] as const).map(r => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`py-3 rounded-xl border text-xs font-bold capitalize transition-all ${
+                      role === r
+                        ? 'border-primary bg-primary/10 text-white'
+                        : 'border-white/5 bg-white/[0.02] text-slate-400 hover:bg-white/5'
+                    }`}
                   >
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
-                        <Briefcase className="w-3.5 h-3.5 text-primary" /> Specialisation
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Diabetologist, Cardiologist"
-                        value={specialisation}
-                        onChange={(e) => setSpecialisation(e.target.value)}
-                        className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-all"
-                      />
-                    </div>
+                    {r === 'patient' ? '🏥 Patient' : '🩺 Provider'}
+                  </button>
+                ))}
+              </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5">Hospital / Affiliation</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Apollo Hospital"
-                        value={hospital}
-                        onChange={(e) => setHospital(e.target.value)}
-                        className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-all"
-                      />
-                    </div>
+              {role === 'doctor' && (
+                <div className="space-y-3">
+                  <input 
+                    required
+                    placeholder="Specialisation *" 
+                    value={specialisation}
+                    onChange={e => setSpecialisation(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 text-sm font-medium" 
+                  />
+                  <input 
+                    required
+                    placeholder="Hospital / Clinic *" 
+                    value={hospital}
+                    onChange={e => setHospital(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 text-sm font-medium" 
+                  />
+                </div>
+              )}
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5">Medical Registration Number</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. MCI-182749"
-                        value={medReg}
-                        onChange={(e) => setMedReg(e.target.value)}
-                        className="w-full text-sm bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/20 focus:outline-none focus:border-primary/50 transition-all"
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <details className="group">
+                <summary className="text-xs text-slate-400 cursor-pointer hover:text-slate-300 transition-colors py-1 select-none font-semibold">
+                  + Add Optional details (phone, blood group)
+                </summary>
+                <div className="mt-3 space-y-3">
+                  <input 
+                    placeholder="Phone Number (e.g. +91 98765 43210)"
+                    value={phone} 
+                    onChange={e => setPhone(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 text-sm" 
+                  />
+                  
+                  <select 
+                    value={blood} 
+                    onChange={e => setBlood(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-300 focus:outline-none focus:border-primary/50 text-sm"
+                  >
+                    <option value="" className="bg-[#0f172a] text-slate-500">Blood group (optional)</option>
+                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(g => (
+                      <option key={g} value={g} className="bg-[#0e1216] text-white">{g}</option>
+                    ))}
+                  </select>
+                </div>
+              </details>
 
               <button
                 type="submit"
-                disabled={isSubmitting || !name.trim()}
-                className="w-full bg-primary text-white font-semibold py-3.5 rounded-2xl hover:bg-sky-400 transition-all text-sm disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg shadow-sky-950/20"
+                disabled={!name.trim() || saving}
+                className="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-sky-400 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-sky-950/20"
               >
-                {isSubmitting ? 'Securing Identity...' : 'Save & Continue →'}
+                {saving ? 'Creating Profile...' : 'Save & Enter MedVault →'}
               </button>
             </form>
           </motion.div>
