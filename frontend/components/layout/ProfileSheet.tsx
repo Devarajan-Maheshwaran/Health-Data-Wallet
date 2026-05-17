@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { supabase } from '@/lib/supabase';
+import { supabase, setSupabaseWallet } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save, User, Stethoscope } from 'lucide-react';
 
@@ -25,20 +25,27 @@ export function ProfileSheet({ open, onClose }: Props) {
 
     // Try Supabase first
     if (supabase) {
-      supabase.from('profiles').select('*').eq('wallet_address', cleanAddr).maybeSingle()
-        .then(({ data }: any) => {
-          if (data) {
-            setName(data.display_name || '');
-            setRole(data.role === 'doctor' ? 'doctor' : 'patient');
-            setSpecialisation(data.specialisation || '');
-            setHospital(data.hospital || '');
-            setPhone(data.phone || '');
-            setBlood(data.blood_group || '');
-            return;
-          }
-          // Fallback: localStorage
-          loadFromLocal(cleanAddr);
-        });
+      setSupabaseWallet(address).then(() => {
+        supabase.from('profiles').select('*').eq('wallet_address', cleanAddr).maybeSingle()
+          .then(({ data }: any) => {
+            if (data) {
+              setName(data.display_name || '');
+              setRole(data.role === 'doctor' ? 'doctor' : 'patient');
+              setSpecialisation(data.specialisation || '');
+              setHospital(data.hospital || '');
+              setPhone(data.phone || '');
+              setBlood(data.blood_group || '');
+              return;
+            }
+            // Fallback: localStorage
+            loadFromLocal(cleanAddr);
+          })
+          .catch(() => {
+            loadFromLocal(cleanAddr);
+          });
+      }).catch(() => {
+        loadFromLocal(cleanAddr);
+      });
     } else {
       loadFromLocal(cleanAddr);
     }
@@ -79,6 +86,7 @@ export function ProfileSheet({ open, onClose }: Props) {
     // Update Supabase
     if (supabase) {
       try {
+        await setSupabaseWallet(address);
         await supabase.from('profiles').upsert({
           wallet_address: cleanAddr,
           display_name: name.trim(),

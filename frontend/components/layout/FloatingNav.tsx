@@ -61,60 +61,62 @@ export function FloatingNav() {
   }, [isConnected, pathname, router, mounted]);
 
   return (
-    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-      <nav className="pointer-events-auto bg-[#111518]/90 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex items-center gap-1 shadow-2xl shadow-sky-900/20 max-w-full overflow-x-auto no-scrollbar">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <button
-              key={item.href}
-              onClick={() => router.push(item.href)}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeNavBubble"
-                  className="absolute inset-0 bg-primary/20 border border-primary/30 rounded-full"
-                  initial={false}
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-              <item.icon className={`w-4 h-4 relative z-10 ${isActive ? 'text-primary' : ''}`} />
-              <span className="relative z-10">{item.label}</span>
-            </button>
-          );
-        })}
-        <div className="w-px h-6 bg-white/10 mx-2" />
-        <a
-          href="https://github.com/Devarajan-Maheshwaran/Health-Data-Wallet"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
-        >
-          <Github className="w-4 h-4" />
-          <span>GitHub</span>
-        </a>
-        <div className="w-px h-6 bg-white/10 mx-2" />
-        {mounted && isConnected && (
-          <button
-            onClick={() => setProfileOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary pointer-events-auto whitespace-nowrap hover:bg-primary/20 transition-all"
+    <>
+      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <nav className="pointer-events-auto bg-[#111518]/90 backdrop-blur-xl border border-white/10 rounded-full p-1.5 flex items-center gap-1 shadow-2xl shadow-sky-900/20 max-w-full overflow-x-auto no-scrollbar">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <button
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                  isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavBubble"
+                    className="absolute inset-0 bg-primary/20 border border-primary/30 rounded-full"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <item.icon className={`w-4 h-4 relative z-10 ${isActive ? 'text-primary' : ''}`} />
+                <span className="relative z-10">{item.label}</span>
+              </button>
+            );
+          })}
+          <div className="w-px h-6 bg-white/10 mx-2" />
+          <a
+            href="https://github.com/Devarajan-Maheshwaran/Health-Data-Wallet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            {username || 'Profile'}
-          </button>
-        )}
-        <div className="pointer-events-auto scale-90 origin-right">
-          <ConnectButton 
-            chainStatus="icon" 
-            showBalance={false} 
-            accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }} 
-          />
-        </div>
-      </nav>
+            <Github className="w-4 h-4" />
+            <span>GitHub</span>
+          </a>
+          <div className="w-px h-6 bg-white/10 mx-2" />
+          {mounted && isConnected && (
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary pointer-events-auto whitespace-nowrap hover:bg-primary/20 transition-all"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              {username || 'Profile'}
+            </button>
+          )}
+          <div className="pointer-events-auto scale-90 origin-right">
+            <ConnectButton 
+              chainStatus="icon" 
+              showBalance={false} 
+              accountStatus={{ smallScreen: 'avatar', largeScreen: 'full' }} 
+            />
+          </div>
+        </nav>
+      </div>
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
-    </div>
+    </>
   );
 }
