@@ -7,7 +7,6 @@ import {
   Ambulance, Database, Key, FileCheck, Users, Eye,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { AuroraBackground } from '@/components/reactbits/AuroraBackground';
 import { ShinyText } from '@/components/reactbits/ShinyText';
 import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 import BlurText from '@/components/ui/BlurText';
@@ -97,22 +96,21 @@ export function LandingPage() {
   const router = useRouter();
 
   return (
-    <AuroraBackground>
-      <div className="min-h-screen relative z-10">
+    <div className="min-h-screen relative z-10">
 
 
       {/* Hero */}
       <section className="pt-40 pb-24 px-6 text-center max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-          <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs text-primary mb-8 border border-primary/20">
+          <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full text-xs text-primary mb-8 border border-primary/20 bg-primary/5">
             <Lock className="w-3 h-3" />
             Zero external APIs. All AI runs locally. Fully open source.
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-textPrimary leading-tight mb-6">
+          <h1 className="font-syne text-4xl md:text-6xl font-black text-textPrimary leading-tight mb-6">
             <BlurText text="Own Your Medical Data" animateBy="words" direction="top" className="justify-center" />
-            <ShinyText text="under your control." className="text-5xl md:text-7xl font-black mt-2" />
+            <ShinyText text="under your control." className="font-syne text-4xl md:text-6xl font-black mt-2" />
           </h1>
-          <p className="text-xl text-white/60 max-w-2xl mx-auto mb-4">
+          <p className="text-lg text-white/60 max-w-2xl mx-auto mb-4">
             MedVault is a decentralised health data wallet. Upload medical documents, have AI extract and classify them in your browser, then store the encrypted files on the blockchain. Share access with doctors using time-limited smart contract permissions.
           </p>
           <p className="text-sm text-white/35 max-w-2xl mx-auto mb-10">
@@ -141,7 +139,7 @@ export function LandingPage() {
       {/* How to use — step by step */}
       <section className="py-16 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-white mb-2">How to use MedVault</h2>
+          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">How to use MedVault</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Follow these steps to upload, secure, and share your medical records. The entire process takes under 5 minutes for a first-time user.
           </p>
@@ -155,10 +153,10 @@ export function LandingPage() {
               transition={{ delay: i * 0.08 }}
               className="flex gap-5 items-start rounded-2xl border border-white/10 bg-white/5 p-5"
             >
-              <div className="flex-shrink-0 text-3xl font-black text-primary/30 w-10 text-right leading-none pt-1">{s.n}</div>
+              <div className="flex-shrink-0 text-2xl md:text-3xl font-black text-primary/30 w-10 text-right leading-none pt-1">{s.n}</div>
               <div>
-                <p className="text-white font-semibold text-base mb-1">{s.label}</p>
-                <p className="text-slate-400 text-sm leading-relaxed">{s.desc}</p>
+                <p className="font-syne text-white font-semibold text-sm md:text-base mb-1">{s.label}</p>
+                <p className="text-slate-400 text-xs md:text-sm leading-relaxed">{s.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -168,7 +166,7 @@ export function LandingPage() {
       {/* Pain points */}
       <section className="py-16 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">The problem with healthcare data today</h2>
+          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">The problem with healthcare data today</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Healthcare systems were not designed with patient data portability in mind. MedVault is built to change that.
           </p>
@@ -180,8 +178,8 @@ export function LandingPage() {
                 <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit relative z-10">
                   <p.icon className="w-5 h-5 text-sky-400" />
                 </div>
-                <h3 className="text-white font-semibold mb-2 relative z-10">{p.title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed relative z-10">{p.desc}</p>
+                <h3 className="font-syne text-white text-sm md:text-base font-semibold mb-2 relative z-10">{p.title}</h3>
+                <p className="text-white/50 text-xs md:text-sm leading-relaxed relative z-10">{p.desc}</p>
               </SpotlightCard>
             </motion.div>
           ))}
@@ -191,7 +189,7 @@ export function LandingPage() {
       {/* Features */}
       <section className="py-16 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Feature highlights</h2>
+          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">Feature highlights</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Every core feature is designed to keep your data private, portable, and exclusively under your control.
           </p>
@@ -199,22 +197,22 @@ export function LandingPage() {
         <div className="grid md:grid-cols-2 gap-6">
           {features.map((f, i) => {
             const glowConfigs = [
-              { glowColor: "180 70 60", colors: ['#4f98a3','#01696f','#0f3638'] },
-              { glowColor: "270 70 70", colors: ['#7a39bb','#5f2699','#431673'] },
-              { glowColor: "0 80 70", colors: ['#a12c7b','#7d1e5e','#561740'] },
-              { glowColor: "200 80 60", colors: ['#006494','#0b5177','#0b3751'] }
+              { glowColor: "200 80 60", colors: ['#38bdf8','#0284c7','#0c4a6e'] },
+              { glowColor: "190 70 60", colors: ['#7dd3fc','#0369a1','#075985'] },
+              { glowColor: "210 80 70", colors: ['#e0f2fe','#0ea5e9','#082f49'] },
+              { glowColor: "200 60 50", colors: ['#bae6fd','#0284c7','#1e3a8a'] }
             ];
             const cfg = glowConfigs[i];
             return (
             <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
               <BorderGlow glowColor={cfg.glowColor} colors={cfg.colors} className="w-full h-full">
-                <SpotlightCard className="flex items-start gap-4 h-full border-0">
+                <SpotlightCard className="flex items-start gap-4 h-full border-0 overflow-hidden">
                   <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary/10 relative z-10">
                     <f.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="relative z-10">
-                    <div className="text-white font-semibold mb-1.5">{f.title}</div>
-                    <div className="text-white/50 text-sm leading-relaxed">{f.desc}</div>
+                  <div className="relative z-10 flex-1 min-w-0">
+                    <div className="font-syne text-white font-semibold mb-1.5 text-sm md:text-base break-words">{f.title}</div>
+                    <div className="text-white/50 text-xs md:text-sm leading-relaxed break-words">{f.desc}</div>
                   </div>
                 </SpotlightCard>
               </BorderGlow>
@@ -226,17 +224,17 @@ export function LandingPage() {
       {/* Tech stack */}
       <section className="py-16 px-6 max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Powered by modern tech</h2>
+          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">Powered by modern tech</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto mb-8">
             No proprietary backends. Every component is auditable, self-hostable, and decentralised by design.
           </p>
           <div className="flex justify-center w-full mb-12">
             <LogoLoop
               logos={[
-                { node: <div className="flex items-center gap-2"><SiBinance className="text-[#F3BA2F]" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
-                { node: <div className="flex items-center gap-2"><SiSupabase className="text-[#3ECF8E]" /> Supabase</div>, title: 'Supabase' },
-                { node: <div className="flex items-center gap-2"><SiEthereum className="text-[#627EEA]" /> Ethereum</div>, title: 'Ethereum' },
-                { node: <div className="flex items-center gap-2 font-bold text-lg">🌈 RainbowKit</div>, title: 'RainbowKit' },
+                { node: <div className="flex items-center gap-2"><SiBinance className="text-[#38bdf8]" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
+                { node: <div className="flex items-center gap-2"><SiSupabase className="text-[#0ea5e9]" /> Supabase</div>, title: 'Supabase' },
+                { node: <div className="flex items-center gap-2"><SiEthereum className="text-[#bae6fd]" /> Ethereum</div>, title: 'Ethereum' },
+                { node: <div className="flex items-center gap-2 font-bold text-lg text-slate-100">RainbowKit</div>, title: 'RainbowKit' },
               ]}
               speed={30}
               gap={64}
@@ -247,9 +245,9 @@ export function LandingPage() {
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {techStack.map((t, i) => (
-            <div key={i} className="rounded-xl border border-white/10 bg-white/5 px-5 py-4">
-              <p className="text-sky-400 font-semibold text-sm mb-1">{t.label}</p>
-              <p className="text-slate-400 text-sm leading-relaxed">{t.detail}</p>
+            <div key={i} className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 overflow-hidden break-words">
+              <p className="font-syne text-sky-400 font-semibold text-sm md:text-base mb-1">{t.label}</p>
+              <p className="text-slate-400 text-xs md:text-sm leading-relaxed">{t.detail}</p>
             </div>
           ))}
         </div>
@@ -272,12 +270,11 @@ export function LandingPage() {
 
       {/* CTA footer */}
       <section className="py-24 px-6 text-center">
-        <h2 className="text-3xl font-bold text-white mb-3">Ready to take back your health data?</h2>
+        <h2 className="font-syne text-2xl md:text-3xl font-bold text-white mb-3">Ready to take back your health data?</h2>
         <p className="text-white/40 mb-2 text-sm">No registration. No password. Your wallet is your account.</p>
         <p className="text-white/25 mb-8 text-xs">Requires a Web3 wallet with BNB Greenfield Testnet configured.</p>
-        <ConnectButton />
+        <div className="flex justify-center"><ConnectButton /></div>
       </section>
     </div>
-    </AuroraBackground>
   );
 }

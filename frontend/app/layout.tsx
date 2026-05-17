@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Syne } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import Grainient from '@/components/ui/Grainient';
-import AppDock from '@/components/ui/AppDock';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const syne = Syne({ subsets: ['latin'], variable: '--font-syne' });
 
 export const metadata: Metadata = {
   title: 'MedVault — Self-Sovereign Health Data',
@@ -16,11 +16,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-[#0A0F1E] text-white antialiased`}>
+      <body className={`${inter.variable} ${syne.variable} font-sans bg-[#0f172a] text-slate-100 antialiased overflow-x-hidden w-full max-w-full`}>
         <Grainient />
         <Providers>
-          <main className="pb-24">{children}</main>
-          <AppDock />
+          {children}
         </Providers>
       </body>
     </html>

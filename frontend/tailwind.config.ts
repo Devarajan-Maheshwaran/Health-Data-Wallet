@@ -10,6 +10,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'sans-serif'],
+        syne: ['var(--font-syne)', 'sans-serif'],
+      },
       colors: {
         primary: {
           DEFAULT: '#0EA5E9',
