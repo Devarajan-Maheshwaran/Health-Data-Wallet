@@ -60,6 +60,30 @@ export default async function EmergencyCardPage({ params }: { params: { address:
               Contact the person directly for medical information.
             </p>
           )}
+
+          {card?.emergencyContacts && card.emergencyContacts.length > 0 && (
+            <div className="mt-4 border-t border-red-800/30 pt-4">
+              <div className="text-red-300/60 text-xs mb-2 uppercase tracking-wider font-bold">
+                Emergency Contacts
+              </div>
+              <div className="space-y-2">
+                {card.emergencyContacts.map((c: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <div className="text-white font-semibold text-sm">{c.name}</div>
+                      <div className="text-red-300/50 text-xs capitalize">{c.relationship}</div>
+                    </div>
+                    <a
+                      href={`tel:${c.phone}`}
+                      className="flex items-center gap-1.5 bg-red-500/20 border border-red-500/30 rounded-lg px-3 py-1.5 text-red-200 text-xs font-bold hover:bg-red-500/30 transition-colors"
+                    >
+                      📞 {c.phone}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 flex items-center justify-center gap-2">

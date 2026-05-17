@@ -4,6 +4,8 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import Grainient from '@/components/ui/Grainient';
 import { FloatingNav } from '@/components/layout/FloatingNav';
+import { OnboardingSheet } from '@/components/auth/OnboardingSheet';
+import { AuthGate } from '@/components/auth/AuthGate';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const syne = Syne({ subsets: ['latin'], variable: '--font-syne' });
@@ -20,6 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Grainient />
         <Providers>
           <FloatingNav />
+          <OnboardingSheet />
+          <AuthGate />
           {children}
         </Providers>
       </body>
