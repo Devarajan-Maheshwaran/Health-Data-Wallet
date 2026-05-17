@@ -33,7 +33,9 @@ interface AIStore {
   classifierLoaded: boolean;
   embeddingLoaded:  boolean;
   generatorLoaded:  boolean;
+  loadingError:     string | null;
   setModelLoaded:   (model: 'ner' | 'classifier' | 'embedding' | 'generator') => void;
+  setLoadingError:  (err: string | null) => void;
 }
 
 export const useAIStore = create<AIStore>((set) => ({
@@ -41,6 +43,7 @@ export const useAIStore = create<AIStore>((set) => ({
   classifierLoaded: false,
   embeddingLoaded:  false,
   generatorLoaded:  false,
+  loadingError:     null,
   // FIX: use spread to avoid partial state overwrite bug
   setModelLoaded: (model) =>
     set(state => ({
@@ -50,4 +53,5 @@ export const useAIStore = create<AIStore>((set) => ({
       embeddingLoaded:  model === 'embedding'  ? true : state.embeddingLoaded,
       generatorLoaded:  model === 'generator'  ? true : state.generatorLoaded,
     })),
+  setLoadingError: (err) => set(state => ({ ...state, loadingError: err })),
 }));

@@ -60,11 +60,11 @@ export function IdentityBadge({ address, showToggle = true }: IdentityBadgeProps
         />
         
         {/* Name / Address flip animation */}
-        <span className="font-semibold select-none flex items-center gap-1 font-mono">
+        <span className="select-none flex items-center gap-1">
           {showAddress ? (
-            <span className="text-sky-400 font-bold">{address.slice(0, 6)}...{address.slice(-4)}</span>
+            <span className="text-white text-xs font-semibold font-mono">{address.slice(0, 6)}...{address.slice(-4)}</span>
           ) : (
-            <span className="font-sans font-bold">
+            <span className="text-white text-xs font-semibold">
               {isKnown && <span className="mr-1">{roleEmoji}</span>}
               {displayName}
             </span>

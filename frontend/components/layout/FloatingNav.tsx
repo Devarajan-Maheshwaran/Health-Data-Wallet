@@ -15,6 +15,7 @@ import {
   FileText,
   Github
 } from 'lucide-react';
+import { ProfileSheet } from './ProfileSheet';
 
 const navItems = [
   { icon: Home, label: 'Home', href: '/' },
@@ -33,6 +34,7 @@ export function FloatingNav() {
   const [mounted, setMounted] = useState(false);
 
   const [username, setUsername] = useState('');
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -95,11 +97,14 @@ export function FloatingNav() {
           <span>GitHub</span>
         </a>
         <div className="w-px h-6 bg-white/10 mx-2" />
-        {mounted && username && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary pointer-events-auto whitespace-nowrap">
+        {mounted && isConnected && (
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary pointer-events-auto whitespace-nowrap hover:bg-primary/20 transition-all"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            {username}
-          </div>
+            {username || 'Profile'}
+          </button>
         )}
         <div className="pointer-events-auto scale-90 origin-right">
           <ConnectButton 
@@ -109,6 +114,7 @@ export function FloatingNav() {
           />
         </div>
       </nav>
+      <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

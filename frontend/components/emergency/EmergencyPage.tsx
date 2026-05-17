@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import QRCode from 'qrcode.react';
 import { QrCode, Download, Eye } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 type EmergencyProfile = {
   bloodType: string;
@@ -27,10 +28,84 @@ export function EmergencyPage() {
 
   const qrUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://medvault.vercel.app'}/emergency/${address}`;
 
+  useEffect(() => {
+    if (!address) return;
+    const cleanAddr = address.toLowerCase();
+
+    const loadLocal = () => {
+      try {
+        const local = localStorage.getItem(`medvault_emergency_${cleanAddr}`);
+        if (local) {
+          const parsed = JSON.parse(local);
+          setProfile({
+            bloodType: parsed.bloodType ?? '',
+            allergies: parsed.allergies ?? '',
+            currentMeds: parsed.currentMeds ?? '',
+            conditions: parsed.conditions ?? '',
+            emergencyContact: parsed.emergencyContact ?? '',
+            treatingDoctor: parsed.treatingDoctor ?? '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to parse local emergency card:', err);
+      }
+    };
+
+    if (supabase) {
+      supabase.from('profiles').select('emergency_card').eq('wallet_address', cleanAddr).maybeSingle()
+        .then(({ data, error }: any) => {
+          if (data?.emergency_card && !error) {
+            const card = data.emergency_card;
+            setProfile({
+              bloodType: card.bloodType ?? '',
+              allergies: card.allergies ?? '',
+              currentMeds: card.currentMeds ?? '',
+              conditions: card.conditions ?? '',
+              emergencyContact: card.emergencyContact ?? '',
+              treatingDoctor: card.treatingDoctor ?? '',
+            });
+          } else {
+            loadLocal();
+          }
+        })
+        .catch(() => {
+          loadLocal();
+        });
+    } else {
+      loadLocal();
+    }
+  }, [address]);
+
   const save = async () => {
-    // Upload profile JSON to IPFS as public card
-    // Then call PatientRegistry.updateEmergencyCard(ipfsHash) on-chain
-    // Wired in Phase 3 — for now mark as saved
+    if (!address) return;
+    const cardData = {
+      bloodType: profile.bloodType,
+      allergies: profile.allergies,
+      currentMeds: profile.currentMeds,
+      conditions: profile.conditions,
+      emergencyContact: profile.emergencyContact,
+      treatingDoctor: profile.treatingDoctor,
+      savedAt: new Date().toISOString()
+    };
+
+    // Save to local storage
+    localStorage.setItem(`medvault_emergency_${address.toLowerCase()}`, JSON.stringify(cardData));
+
+    // Save to Supabase
+    if (supabase) {
+      try {
+        await supabase.from('profiles')
+          .upsert({ 
+            wallet_address: address.toLowerCase(), 
+            display_name: address.toLowerCase(), 
+            emergency_card: cardData 
+          })
+          .eq('wallet_address', address.toLowerCase());
+      } catch (err) {
+        console.error('[MedVault] Supabase emergency card save failed:', err);
+      }
+    }
+
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
