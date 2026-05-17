@@ -1,4 +1,9 @@
-import { MedicationPage } from '@/components/medication/MedicationPage';
+import dynamic from 'next/dynamic';
+
+const MedicationPage = dynamic(
+  () => import('@/components/medication/MedicationPage').then((m) => m.MedicationPage),
+  { ssr: false }
+);
 
 export const dynamic = 'force-dynamic';
 

@@ -10,7 +10,11 @@
  * ALL pipeline calls across the codebase should go through these helpers.
  */
 
-import { pipeline } from '@xenova/transformers';
+import { pipeline, env } from '@xenova/transformers';
+
+// Tell transformers.js we are running in the browser and shouldn't use local fs
+env.allowLocalModels = false;
+env.useBrowserCache = true;
 
 type AnyPipeline = Awaited<ReturnType<typeof pipeline>>;
 

@@ -6,7 +6,12 @@ const nextConfig = {
   ],
   experimental: {
     // Next.js 14 key for server-side external packages
-    serverComponentsExternalPackages: ['@xenova/transformers', 'onnxruntime-node'],
+    serverComponentsExternalPackages: [
+      '@xenova/transformers', 
+      'onnxruntime-node', 
+      '@bnb-chain/greenfield-js-sdk',
+      'pdfjs-dist'
+    ],
   },
   webpack: (config, { isServer }) => {
     config.resolve.fallback = {
@@ -14,6 +19,8 @@ const nextConfig = {
       fs: false,
       path: false,
       crypto: false,
+      stream: false,
+      buffer: require.resolve('buffer/'),
     };
 
     // Stub missing optional peer deps that cause warnings but aren't needed
@@ -21,22 +28,8 @@ const nextConfig = {
       ...config.resolve.alias,
       'pino-pretty': false,
       '@react-native-async-storage/async-storage': false,
+      'onnxruntime-node': false,
     };
-
-    // Exclude @xenova/transformers from client bundle
-    const originalExternals = config.externals || [];
-    config.externals = [
-      ...(Array.isArray(originalExternals) ? originalExternals : [originalExternals]),
-      function ({ request }, callback) {
-        if (
-          request === '@xenova/transformers' ||
-          request === 'onnxruntime-node'
-        ) {
-          return callback(null, 'commonjs ' + request);
-        }
-        callback();
-      },
-    ];
 
     // Ignore .node native binaries
     config.module.rules.push({
@@ -58,8 +51,8 @@ const nextConfig = {
     {
       source: '/(.*)',
       headers: [
-        { key: 'Cross-Origin-Opener-Policy',   value: 'same-origin' },
-        { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+        { key: 'Cross-Origin-Opener-Policy',   value: 'same-origin-allow-popups' },
+        { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
       ],
     },
   ],
