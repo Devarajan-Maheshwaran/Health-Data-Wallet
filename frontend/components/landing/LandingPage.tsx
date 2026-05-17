@@ -12,7 +12,7 @@ import { SpotlightCard } from '@/components/reactbits/SpotlightCard';
 import BlurText from '@/components/ui/BlurText';
 import BorderGlow from '@/components/ui/BorderGlow';
 import LogoLoop from '@/components/ui/LogoLoop';
-import { SiBinance, SiSupabase } from 'react-icons/si';
+import { SiBinance, SiSupabase, SiVercel, SiHuggingface } from 'react-icons/si';
 import { useRouter } from 'next/navigation';
 
 const painPoints = [
@@ -163,78 +163,78 @@ export function LandingPage() {
       </section>
 
       {/* Pain points */}
-      <section className="py-16 px-6 max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">The problem with healthcare data today</h2>
+      <section className="py-16 px-6 max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-2xl font-bold text-white mb-2">The problem with healthcare data today</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Healthcare systems were not designed with patient data portability in mind. MedVault is built to change that.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {painPoints.map((p, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
-              <SpotlightCard className="h-full flex flex-col">
-                <div className="mb-4 p-2.5 rounded-xl bg-sky-500/10 w-fit relative z-10 flex-shrink-0">
-                  <p.icon className="w-5 h-5 text-sky-400" />
-                </div>
-                <div className="relative z-10 flex flex-col flex-1">
-                  <h3 className="font-syne text-white text-sm md:text-base font-semibold mb-2">{p.title}</h3>
-                  <p className="text-white/50 text-xs md:text-sm leading-relaxed">{p.desc}</p>
-                </div>
-              </SpotlightCard>
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 25 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              transition={{ delay: i * 0.1, duration: 0.5 }} 
+              viewport={{ once: true }}
+              className="group relative bg-[#111518]/40 border border-white/5 hover:border-sky-500/20 rounded-2xl p-6 transition-all duration-300 flex flex-col h-full hover:shadow-[0_0_30px_rgba(56,189,248,0.05)]"
+            >
+              <div className="mb-4 p-3 rounded-xl bg-sky-500/10 w-fit group-hover:scale-110 transition-transform duration-300">
+                <p.icon className="w-5 h-5 text-sky-400" />
+              </div>
+              <h3 className="font-syne text-white text-base font-bold mb-2 group-hover:text-sky-400 transition-colors">{p.title}</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">{p.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-16 px-6 max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">Feature highlights</h2>
+      <section className="py-16 px-6 max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="font-syne text-2xl font-bold text-white mb-2">Feature highlights</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
             Every core feature is designed to keep your data private, portable, and exclusively under your control.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-6">
-          {features.map((f, i) => {
-            const glowConfigs = [
-              { glowColor: "200 80 60", colors: ['#38bdf8','#0284c7','#0c4a6e'] },
-              { glowColor: "190 70 60", colors: ['#7dd3fc','#0369a1','#075985'] },
-              { glowColor: "210 80 70", colors: ['#e0f2fe','#0ea5e9','#082f49'] },
-              { glowColor: "200 60 50", colors: ['#bae6fd','#0284c7','#1e3a8a'] }
-            ];
-            const cfg = glowConfigs[i];
-            return (
-            <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} className="h-full">
-              <BorderGlow glowColor={cfg.glowColor} colors={cfg.colors} className="w-full h-full">
-                <SpotlightCard className="flex flex-col items-start gap-4 h-full border-0 overflow-hidden">
-                  <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary/10 relative z-10">
-                    <f.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="relative z-10 flex-1 min-w-0 flex flex-col">
-                    <div className="font-syne text-white font-semibold mb-1.5 text-sm md:text-base break-words">{f.title}</div>
-                    <div className="text-white/50 text-xs md:text-sm leading-relaxed break-words">{f.desc}</div>
-                  </div>
-                </SpotlightCard>
-              </BorderGlow>
+          {features.map((f, i) => (
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 25 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              transition={{ delay: i * 0.1, duration: 0.5 }} 
+              viewport={{ once: true }}
+              className="group relative bg-[#111518]/40 border border-white/5 hover:border-primary/20 rounded-2xl p-6 transition-all duration-300 flex flex-col md:flex-row gap-4 h-full hover:shadow-[0_0_30px_rgba(14,165,233,0.05)]"
+            >
+              <div className="p-3 rounded-xl bg-primary/10 w-fit h-fit group-hover:scale-110 transition-transform duration-300">
+                <f.icon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-syne text-white text-base font-bold mb-2 group-hover:text-primary transition-colors">{f.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
             </motion.div>
-          )})}
+          ))}
         </div>
       </section>
 
       {/* Tech stack */}
-      <section className="py-16 px-6 max-w-5xl mx-auto">
+      <section className="py-16 px-6 max-w-6xl mx-auto">
         <div className="text-center mb-10">
-          <h2 className="font-syne text-xl md:text-2xl font-bold text-white mb-2">Powered by modern tech</h2>
+          <h2 className="font-syne text-2xl font-bold text-white mb-2">Powered by modern tech</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto mb-8">
             No proprietary backends. Every component is auditable, self-hostable, and decentralised by design.
           </p>
           <div className="flex justify-center w-full mb-12">
             <LogoLoop
               logos={[
-                { node: <div className="flex items-center gap-2"><SiBinance className="text-[#38bdf8]" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
-                { node: <div className="flex items-center gap-2"><SiSupabase className="text-[#0ea5e9]" /> Supabase</div>, title: 'Supabase' },
-                { node: <div className="flex items-center gap-2 font-bold text-lg text-slate-100">RainbowKit</div>, title: 'RainbowKit' },
+                { node: <div className="flex items-center gap-2 font-syne font-bold text-white text-base"><SiBinance className="text-[#38bdf8] w-5 h-5" /> BNB Greenfield</div>, title: 'BNB Greenfield' },
+                { node: <div className="flex items-center gap-2 font-syne font-bold text-white text-base"><SiSupabase className="text-[#0ea5e9] w-5 h-5" /> Supabase</div>, title: 'Supabase' },
+                { node: <div className="flex items-center gap-2 font-syne font-bold text-white text-base"><SiVercel className="text-white w-5 h-5" /> Vercel</div>, title: 'Vercel' },
+                { node: <div className="flex items-center gap-2 font-syne font-bold text-white text-base"><SiHuggingface className="text-amber-400 w-5 h-5" /> Hugging Face</div>, title: 'Hugging Face' },
+                { node: <div className="flex items-center gap-2 font-syne font-bold text-slate-100 text-base">RainbowKit</div>, title: 'RainbowKit' },
               ]}
               speed={30}
               gap={64}

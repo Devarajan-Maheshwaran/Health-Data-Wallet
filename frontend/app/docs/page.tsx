@@ -168,7 +168,7 @@ export default function DocsPage() {
           
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { title: ' формат Fragmented Systems', desc: 'You see a new specialist and hand over a printed ECG from 2022. Because their system cannot read that format, they re-run it—wasting ₹3,000 and 2 hours.' },
+              { title: 'Fragmented Systems', desc: 'You see a new specialist and hand over a printed ECG from 2022. Because their system cannot read that format, they re-run it—wasting ₹3,000 and 2 hours.' },
               { title: 'Dangerous Drug Interactions', desc: 'A doctor prescribes a medication, completely unaware of your active prescription because it is buried under 3,000 messages in a WhatsApp chat from 2021.' },
               { title: 'Locked ER Data in Silence', desc: 'You are unconscious in an ER. The medical team has no idea about your penicillin allergy because the data resides inside a hospital EHR system they cannot access.' },
               { title: 'Permanent Loss of Control', desc: 'The moment you send a PDF containing your clinical status, you lose control forever. You cannot set it to expire or audit who sees it.' }

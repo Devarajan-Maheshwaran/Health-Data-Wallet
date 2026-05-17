@@ -32,8 +32,20 @@ export function FloatingNav() {
   const { isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
 
+  const [username, setUsername] = useState('');
+
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const updateName = () => {
+      const stored = localStorage.getItem('medvault_username') || '';
+      setUsername(stored);
+    };
+    updateName();
+    window.addEventListener('medvault_profile_updated', updateName);
+    return () => window.removeEventListener('medvault_profile_updated', updateName);
   }, []);
 
   useEffect(() => {
@@ -79,6 +91,12 @@ export function FloatingNav() {
           <span>GitHub</span>
         </a>
         <div className="w-px h-6 bg-white/10 mx-2" />
+        {mounted && username && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-xs font-semibold text-primary pointer-events-auto whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            {username}
+          </div>
+        )}
         <div className="pointer-events-auto scale-90 origin-right">
           <ConnectButton 
             chainStatus="icon" 
