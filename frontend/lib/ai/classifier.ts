@@ -9,9 +9,10 @@
  * 9=SurgicalNote, 10=PathologyReport, 11=Other
  */
 
-import { asZeroShotClassification, getTransformers } from './pipeline-utils';
+import { asZeroShotClassification, getTransformers, withTimeout } from './pipeline-utils';
+import { reportCLSProgress } from './model-store';
 
-const CANDIDATE_LABELS = [
+export const CANDIDATE_LABELS = [
   'laboratory blood test report',     // 0 — LabReport
   'prescription medication list',     // 1 — Prescription
   'radiology imaging MRI CT scan',    // 2 — Imaging
@@ -28,18 +29,67 @@ const CANDIDATE_LABELS = [
 
 export type DocumentType = 0|1|2|3|4|5|6|7|8|9|10|11;
 
-let classifierPipeline: any = null;
+let _classifierPipeline:  any = null;
+let _classifierPromise:   Promise<any> | null = null;
+let _classifierFromCache: boolean = false;
 
-async function getClassifier() {
-  if (!classifierPipeline) {
+const CLASSIFIER_TIMEOUT_MS = 120_000;
+
+export function classifierIsReady()   { return _classifierPipeline !== null; }
+export function classifierFromCache() { return _classifierFromCache; }
+
+export async function getClassifier(
+  onProgress?: (pct: number, fromCache: boolean) => void
+): Promise<any> {
+  if (_classifierPipeline) {
+    onProgress?.(100, _classifierFromCache);
+    return _classifierPipeline;
+  }
+  if (_classifierPromise) return _classifierPromise;
+
+  _classifierPromise = (async () => {
     const { pipeline } = await getTransformers();
-    classifierPipeline = await pipeline(
+
+    let progressReceived = false;
+
+    const rawPromise = pipeline(
       'zero-shot-classification',
       'Xenova/nli-deberta-v3-small',
-      { progress_callback: () => {} }
+      {
+        progress_callback: (p: any) => {
+          if (p?.status === 'downloading' && p?.total > 0) {
+            progressReceived = true;
+            _classifierFromCache = false;
+            const pct = Math.round((p.loaded / p.total) * 100);
+            reportCLSProgress(pct, false);
+            onProgress?.(pct, false);
+          }
+          if (p?.status === 'ready' || p?.status === 'loaded') {
+            if (!progressReceived) {
+              _classifierFromCache = true;
+              reportCLSProgress(100, true);
+              onProgress?.(100, true);
+            } else {
+              reportCLSProgress(100, false);
+              onProgress?.(100, false);
+            }
+          }
+        },
+      }
     );
-  }
-  return classifierPipeline;
+
+    _classifierPipeline = await withTimeout(
+      rawPromise, CLASSIFIER_TIMEOUT_MS, 'Classifier model download'
+    );
+    return _classifierPipeline;
+  })().catch((err) => {
+    _classifierPipeline  = null;
+    _classifierPromise   = null;
+    _classifierFromCache = false;
+    throw err;
+  });
+
+  return _classifierPromise;
 }
 
 export interface ClassificationResult {

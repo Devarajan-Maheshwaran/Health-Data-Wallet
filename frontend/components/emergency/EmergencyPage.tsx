@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import QRCode from 'qrcode.react';
-import { QrCode, Download, Eye, Plus, Trash2, Shield, Upload } from 'lucide-react';
+import { QrCode, Download, Eye, Plus, Trash2, Shield, Database } from 'lucide-react';
 import { supabase, setSupabaseWallet } from '@/lib/supabase';
 
 interface EmergencyContact {
@@ -11,6 +11,12 @@ interface EmergencyContact {
   name: string;
   phone: string;
   relationship: string;
+}
+
+interface CustomField {
+  id:    string;
+  label: string;
+  value: string;
 }
 
 type EmergencyProfile = {
@@ -33,14 +39,23 @@ export function EmergencyPage() {
     { id: crypto.randomUUID(), name: '', phone: '', relationship: 'family' },
     { id: crypto.randomUUID(), name: '', phone: '', relationship: 'spouse' }
   ]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [saved, setSaved] = useState(false);
   const [preview, setPreview] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
-  // HF Import States
-  const [importing, setImporting] = useState(false);
-  const [importError, setImportError] = useState('');
-  const [importSuccess, setImportSuccess] = useState(false);
+  // Vault import state
+  const [vaultRecords, setVaultRecords] = useState<Array<{
+    id: number;
+    title: string;
+    docType: number;
+    texts: string[];
+  }>>([]);
+  const [showVaultPicker, setShowVaultPicker] = useState(false);
+  const [importingVault, setImportingVault]   = useState(false);
+  const [importMsg, setImportMsg]             = useState<{
+    text: string; ok: boolean
+  } | null>(null);
 
   const qrUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? (typeof window !== 'undefined' ? window.location.origin : 'https://medvault.vercel.app')}/emergency/${address?.toLowerCase()}`;
 
@@ -53,6 +68,9 @@ export function EmergencyPage() {
     profile.currentMeds    ? `Medications: ${profile.currentMeds}`        : null,
     profile.conditions     ? `Conditions: ${profile.conditions}`          : null,
     profile.treatingDoctor ? `Doctor: ${profile.treatingDoctor}`          : null,
+    ...customFields
+      .filter(f => f.label.trim() && f.value.trim())
+      .map(f => `${f.label}: ${f.value}`),
     '',
     emergencyContacts.filter(c => c.name.trim() && c.phone.trim()).length > 0
       ? 'EMERGENCY CONTACTS:' : null,
@@ -85,6 +103,12 @@ export function EmergencyPage() {
               ...c
             })));
           }
+          if (parsed.customFields?.length) {
+            setCustomFields(parsed.customFields.map((f: any) => ({
+              ...f,
+              id: f.id || crypto.randomUUID(),
+            })));
+          }
           setShowQR(true);
         }
       } catch (err) {
@@ -109,6 +133,12 @@ export function EmergencyPage() {
                 setEmergencyContacts(card.emergencyContacts.map((c: any) => ({
                   id: c.id || crypto.randomUUID(),
                   ...c
+                })));
+              }
+              if (card.customFields?.length) {
+                setCustomFields(card.customFields.map((f: any) => ({
+                  ...f,
+                  id: f.id || crypto.randomUUID(),
                 })));
               }
               setShowQR(true);
@@ -144,6 +174,24 @@ export function EmergencyPage() {
     );
   };
 
+  const addCustomField = () =>
+    setCustomFields(prev => [
+      ...prev,
+      { id: crypto.randomUUID(), label: '', value: '' },
+    ]);
+
+  const removeCustomField = (id: string) =>
+    setCustomFields(prev => prev.filter(f => f.id !== id));
+
+  const updateCustomField = (
+    id: string,
+    key: 'label' | 'value',
+    val: string
+  ) =>
+    setCustomFields(prev =>
+      prev.map(f => f.id === id ? { ...f, [key]: val } : f)
+    );
+
   const isValidName = (name: string) => {
     const trimmed = name.trim();
     if (trimmed.length < 2) return false;
@@ -155,47 +203,26 @@ export function EmergencyPage() {
     return digits.length === 10;
   };
 
-  const importFromDocument = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImporting(true);
-    setImportError('');
-    setImportSuccess(false);
-
+  const loadVaultRecords = async () => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/extract-medical', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setImportError(data.error ?? 'Extraction failed. Try a clearer document.');
-        return;
+      const { loadAllChunks } = await import('@/lib/ai/embeddings');
+      const chunks = await loadAllChunks();
+      const map = new Map<number, any>();
+      for (const chunk of chunks) {
+        if (!map.has(chunk.recordId)) {
+          map.set(chunk.recordId, {
+            id:      chunk.recordId,
+            title:   chunk.title,
+            docType: chunk.docType,
+            texts:   [chunk.text],
+          });
+        } else {
+          map.get(chunk.recordId).texts.push(chunk.text);
+        }
       }
-
-      const { extracted } = data;
-
-      setProfile(prev => ({
-        bloodType:      extracted.bloodType      || prev.bloodType,
-        allergies:      extracted.allergies      || prev.allergies,
-        currentMeds:    extracted.currentMeds    || prev.currentMeds,
-        conditions:     extracted.conditions     || prev.conditions,
-        treatingDoctor: extracted.treatingDoctor || prev.treatingDoctor,
-      }));
-
-      setImportSuccess(true);
-      setTimeout(() => setImportSuccess(false), 4000);
+      setVaultRecords(Array.from(map.values()));
     } catch (err) {
-      setImportError('Network error. Please try again.');
-    } finally {
-      setImporting(false);
-      e.target.value = '';
+      console.error('[Emergency] Failed to load vault records:', err);
     }
   };
 
@@ -207,11 +234,14 @@ export function EmergencyPage() {
       .map(({ id, ...rest }) => rest);
 
     const cardData = {
-      bloodType: profile.bloodType,
-      allergies: profile.allergies,
-      currentMeds: profile.currentMeds,
-      conditions: profile.conditions,
+      bloodType:      profile.bloodType,
+      allergies:      profile.allergies,
+      currentMeds:    profile.currentMeds,
+      conditions:     profile.conditions,
       treatingDoctor: profile.treatingDoctor,
+      customFields:   customFields
+        .filter(f => f.label.trim() && f.value.trim())
+        .map(({ id, ...rest }) => rest),
       emergencyContacts: validContacts,
       savedAt: new Date().toISOString(),
     };
@@ -284,6 +314,59 @@ export function EmergencyPage() {
             {field('conditions', 'Chronic Conditions', 'e.g. Type 2 Diabetes, Hypertension')}
             {field('treatingDoctor', 'Treating Doctor', 'Dr. Name — Hospital')}
 
+            {/* ── Custom Fields ─────────────────────────────────────── */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-400">
+                  Additional Medical Fields
+                </label>
+                <button
+                  type="button"
+                  onClick={addCustomField}
+                  className="flex items-center gap-1 text-xs text-primary
+                             hover:text-sky-300 transition-colors font-semibold"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Field
+                </button>
+              </div>
+
+              {customFields.length === 0 && (
+                <p className="text-[11px] text-slate-600 italic">
+                  Click "+ Add Field" to store custom info in your QR
+                  (e.g. HbA1c, Insurance ID, Organ Donor Status, DNR, ICU Notes).
+                </p>
+              )}
+
+              {customFields.map(f => (
+                <div key={f.id} className="flex items-center gap-2">
+                  <input
+                    placeholder="Field name (e.g. HbA1c)"
+                    value={f.label}
+                    onChange={e => updateCustomField(f.id, 'label', e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg
+                               px-3 py-2 text-white placeholder-white/20 text-xs
+                               focus:outline-none focus:border-primary/40"
+                  />
+                  <input
+                    placeholder="Value (e.g. 7.2%)"
+                    value={f.value}
+                    onChange={e => updateCustomField(f.id, 'value', e.target.value)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-lg
+                               px-3 py-2 text-white placeholder-white/20 text-xs
+                               focus:outline-none focus:border-primary/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeCustomField(f.id)}
+                    className="text-rose-400/50 hover:text-rose-400 transition-colors
+                               shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
             {/* Emergency Contacts */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
@@ -355,46 +438,106 @@ export function EmergencyPage() {
               })}
             </div>
 
-            {/* Import from document */}
-            <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-400">
-                📄 Auto-fill from Medical Document
+            {/* ── Import from Vault ─────────────────────────────────────── */}
+            <div className="rounded-xl border border-dashed border-sky-500/20 bg-[#0e172a]/20 p-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                <Database className="h-3.5 w-3.5 text-sky-400" />
+                Auto-fill from Vault Records
               </p>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Upload a medical report (PDF, image, or text) — AI will extract
-                blood type, allergies, medications, conditions and doctor automatically.
+                Select any AI-processed report already in your Vault.
+                Fields are extracted locally from your IndexedDB — nothing
+                leaves your device.
               </p>
-              <label className={`
-                flex items-center justify-center gap-2 w-full
-                rounded-xl border px-4 py-3 text-sm font-semibold cursor-pointer
-                transition-all
-                ${importing
-                  ? 'border-sky-500/40 text-sky-400/60 cursor-wait'
-                  : 'border-sky-500/40 text-sky-400 hover:bg-sky-500/10'
-                }
-              `}>
-                <input
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg,.txt"
-                  className="hidden"
-                  onChange={importFromDocument}
-                  disabled={importing}
-                />
-                {importing ? (
-                  <>
-                    <span className="animate-spin">⏳</span> Extracting with AI...
-                  </>
-                ) : (
-                  <>📤 Upload & Extract Fields</>
-                )}
-              </label>
-              {importSuccess && (
-                <p className="text-xs text-emerald-400 font-semibold">
-                  ✓ Fields auto-filled from document! Review and click Save & Upload.
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!showVaultPicker) await loadVaultRecords();
+                  setShowVaultPicker(v => !v);
+                  setImportMsg(null);
+                }}
+                className="flex items-center gap-2 w-full rounded-xl border
+                           border-sky-500/30 text-sky-400 hover:bg-sky-500/10
+                           px-4 py-2.5 text-xs font-semibold transition-all
+                           justify-center"
+              >
+                <Database className="h-3.5 w-3.5" />
+                {showVaultPicker ? 'Hide Vault Records' : 'Browse My Vault Records'}
+              </button>
+
+              {showVaultPicker && vaultRecords.length === 0 && (
+                <p className="text-[11px] text-slate-500 text-center py-2">
+                  No processed records found. Upload and process at least one
+                  document from the Vault tab first.
                 </p>
               )}
-              {importError && (
-                <p className="text-xs text-rose-400 font-medium">{importError}</p>
+
+              {showVaultPicker && vaultRecords.length > 0 && (
+                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                  {vaultRecords.map(rec => (
+                    <button
+                      key={rec.id}
+                      type="button"
+                      disabled={importingVault}
+                      onClick={async () => {
+                        setImportingVault(true);
+                        setImportMsg(null);
+                        try {
+                          const fullText   = rec.texts.join(' ');
+                          const extracted  = extractFieldsFromText(fullText);
+
+                          setProfile(prev => ({
+                            ...prev,
+                            bloodType:      extracted.bloodType      || prev.bloodType,
+                            allergies:      extracted.allergies      || prev.allergies,
+                            currentMeds:    extracted.currentMeds    || prev.currentMeds,
+                            conditions:     extracted.conditions     || prev.conditions,
+                            treatingDoctor: extracted.treatingDoctor || prev.treatingDoctor,
+                          }));
+
+                          // Also auto-fill any custom fields whose label matches text
+                          setCustomFields(prev =>
+                            prev.map(f => {
+                              const val = extractFieldByLabel(f.label, fullText);
+                              return val ? { ...f, value: val } : f;
+                            })
+                          );
+
+                          setImportMsg({
+                            text: `✓ Fields imported from "${rec.title}"`,
+                            ok:   true,
+                          });
+                          setShowVaultPicker(false);
+                        } catch {
+                          setImportMsg({
+                            text: 'Failed to read this vault record.',
+                            ok:   false,
+                          });
+                        } finally {
+                          setImportingVault(false);
+                        }
+                      }}
+                      className="w-full text-left rounded-xl border border-white/10
+                                 bg-white/5 hover:border-sky-500/30 hover:bg-sky-500/5
+                                 px-3 py-2.5 transition-all group disabled:opacity-50"
+                    >
+                      <p className="text-xs font-bold text-white group-hover:text-sky-300
+                                    transition-colors line-clamp-1">
+                        {rec.title}
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        {rec.texts.length} chunk(s) · processed locally
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {importMsg && (
+                <p className={`text-xs font-semibold ${importMsg.ok
+                  ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {importMsg.text}
+                </p>
               )}
             </div>
 
@@ -461,6 +604,15 @@ export function EmergencyPage() {
                   <span className="text-white font-medium">{v}</span>
                 </div>
               ) : null)}
+              {customFields
+                .filter(f => f.label.trim() && f.value.trim())
+                .map(f => (
+                  <div key={f.id} className="border-b border-white/5 pb-2">
+                    <span className="text-slate-500">{f.label}: </span>
+                    <span className="text-white font-medium">{f.value}</span>
+                  </div>
+                ))
+              }
             </div>
 
             {validContacts.length > 0 && (
@@ -484,4 +636,46 @@ export function EmergencyPage() {
       </div>
     </div>
   );
+}
+
+function extractFieldsFromText(text: string) {
+  const find = (patterns: RegExp[]) => {
+    for (const p of patterns) {
+      const m = text.match(p);
+      if (m?.[1]) return m[1].trim();
+    }
+    return '';
+  };
+  return {
+    bloodType: find([
+      /blood\s*(?:type|group)\s*[:\-]?\s*([ABO]{1,2}[+-]?)/i,
+      /\b(A\+|A-|B\+|B-|AB\+|AB-|O\+|O-)\b/,
+    ]),
+    allergies: find([
+      /allergi(?:es|c\s+to)\s*[:\-]?\s*([^\n.]{3,80})/i,
+      /known\s+allergies?\s*[:\-]?\s*([^\n.]{3,80})/i,
+      /NKDA/i,
+    ]),
+    currentMeds: find([
+      /(?:current\s+)?medications?\s*[:\-]?\s*([^\n]{5,120})/i,
+      /prescribed\s*[:\-]?\s*([^\n]{5,120})/i,
+      /Rx\s*[:\-]?\s*([^\n]{5,120})/i,
+    ]),
+    conditions: find([
+      /(?:chronic\s+)?(?:medical\s+)?conditions?\s*[:\-]?\s*([^\n]{5,100})/i,
+      /diagnos(?:is|ed\s+with)\s*[:\-]?\s*([^\n]{5,100})/i,
+      /history\s+of\s*[:\-]?\s*([^\n]{5,100})/i,
+    ]),
+    treatingDoctor: find([
+      /(?:treating|attending|primary|referring)\s+(?:physician|doctor|dr\.?)\s*[:\-]?\s*([^\n]{3,60})/i,
+      /Dr\.?\s+([A-Z][a-zA-Z\s]{2,40})/,
+      /physician\s*[:\-]?\s*([^\n]{3,60})/i,
+    ]),
+  };
+}
+
+function extractFieldByLabel(label: string, text: string): string {
+  const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m   = text.match(new RegExp(`${esc}\\s*[:\\-]?\\s*([^\\n]{3,80})`, 'i'));
+  return m?.[1]?.trim() ?? '';
 }

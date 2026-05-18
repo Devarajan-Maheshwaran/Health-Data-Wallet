@@ -7,19 +7,16 @@ import { useRouter } from 'next/navigation';
 import { AIProgress } from './AIProgress';
 import { EntityCard } from './EntityCard';
 import { DOC_TYPES } from '@/lib/contracts';
-import { useAccount, useReadContract } from 'wagmi';
-import { CONTRACT_ADDRESSES, HEALTH_RECORD_STORE_ABI } from '@/lib/contracts';
+import { useAccount } from 'wagmi';
 import { AppShell } from '@/components/layout/AppShell';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import BorderGlow from '@/components/ui/BorderGlow';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, FileText, Loader2, CheckCircle,
   AlertCircle, RotateCcw, ShieldCheck, ChevronDown,
-  Info, Lock, Cpu, AlertTriangle, Filter, Database, LayoutGrid, ListFilter
+  Info, Lock, Cpu, Database, ListFilter
 } from 'lucide-react';
-
+import { subscribeToModelProgress, getSnapshot } from '@/lib/ai/model-store';
 const STAGE_LABELS: Record<string, string> = {
   extracting:  'Extracting text from document…',
   ner:         'Running biomedical Named Entity Recognition…',
@@ -75,7 +72,7 @@ export function VaultPage() {
 
   const {
     analyseFile, confirmUpload, stage, aiProgress,
-    aiResult, lastResult, error: uploadError, isUploading, reset,
+    aiResult, lastResult, error: uploadError, reset,
   } = useVaultUpload();
 
   const [title, setTitle] = useState('');
@@ -87,6 +84,18 @@ export function VaultPage() {
   // Load real records dynamically from IndexedDB
   const [realRecords, setRealRecords] = useState<any[]>([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
+
+  // Subscribe to global model progress
+  const [aiSnap, setAiSnap] = useState(getSnapshot());
+
+  useEffect(() => {
+    setAiSnap(getSnapshot());
+    return subscribeToModelProgress(setAiSnap);
+  }, []);
+
+  const modelsReady      = aiSnap.state === 'ready';
+  const modelError       = aiSnap.state === 'error';
+  const modelDownloadPct = aiSnap.combinedPct;
 
   const fetchRecords = useCallback(async () => {
     try {
@@ -195,7 +204,7 @@ export function VaultPage() {
     onDrop,
     accept: { 'application/pdf': ['.pdf'], 'image/*': ['.png', '.jpg', '.jpeg'] },
     maxFiles: 1,
-    disabled: isAnalysing || isUploadPhase,
+    disabled: isAnalysing || isUploadPhase || !modelsReady,
   });
 
   const onConfirm = useCallback(async () => {
@@ -210,7 +219,6 @@ export function VaultPage() {
   }, [selectedFile, aiResult, title, overrideType, confirmUpload]);
 
   const effectiveDocType = overrideType ?? aiResult?.docType ?? 11;
-  const docTypeLabel = DOC_TYPES[effectiveDocType] ?? 'Other';
 
   // Filters the list dynamically based on sidebar choice
   const filteredRecords = selectedFilter === 'All'
@@ -255,6 +263,30 @@ export function VaultPage() {
               />
             </div>
 
+            {/* ── Compact Model Status Banner ─────────────────────────── */}
+            {!modelsReady && !modelError && (
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 flex items-center gap-3">
+                <span className="w-3 h-3 rounded-full border-2 border-amber-400 border-t-transparent animate-spin shrink-0" />
+                <div className="flex-1">
+                  <p className="text-[11px] font-semibold text-amber-300">
+                    AI models loading… {modelDownloadPct}% — Upload locked until ready
+                  </p>
+                  <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-1 bg-amber-500 rounded-full transition-all duration-500"
+                      style={{ width: `${modelDownloadPct}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {modelError && (
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 text-[11px] text-rose-400">
+                AI models failed. Refresh to retry.
+              </div>
+            )}
+
             {/* Drop Zone */}
             <div
               {...getRootProps()}
@@ -263,7 +295,7 @@ export function VaultPage() {
                 isAnalysing         ? 'border-sky-400/50 bg-sky-500/5 cursor-default' :
                 hasAIResult         ? 'border-emerald-500/40 bg-emerald-500/5 cursor-default' :
                                       'border-white/10 hover:border-sky-500/40'
-              }`}
+              } ${!modelsReady && !isAnalysing ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
             >
               <input {...getInputProps()} />
 
@@ -353,7 +385,8 @@ export function VaultPage() {
 
                 <Button
                   onClick={onConfirm}
-                  disabled={!title.trim()}
+                  disabled={!title.trim() || !modelsReady}
+                  title={!modelsReady ? 'AI models must finish downloading before upload' : undefined}
                   className="w-full flex items-center justify-center gap-2 font-bold py-3 text-xs"
                 >
                   <ShieldCheck className="h-4 w-4" />

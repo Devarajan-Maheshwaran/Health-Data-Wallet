@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 /**
  * useDocumentAI.ts — Phase 4
@@ -16,6 +16,7 @@ import { useState, useCallback, useRef } from 'react';
 import { extractText, chunkText } from '@/lib/ai/extractor';
 import { extractEntitiesFromChunks, type MedicalEntities } from '@/lib/ai/ner';
 import { classifyDocument, heuristicClassify, type DocumentType } from '@/lib/ai/classifier';
+import { reportReady, reportError } from '@/lib/ai/model-store';
 
 export type AIStep =
   | 'idle'
@@ -39,6 +40,34 @@ export interface DocumentAIResult {
   docType:    DocumentType;
   docLabel:   string;
   confidence: number;
+}
+
+// Singleton warmup — call this on page mount to pre-download models
+let _warmupStarted = false;
+let _warmupPromise: Promise<void> | null = null;
+
+export function warmupModels(
+  onNERProgress?: (pct: number, fromCache: boolean) => void,
+  onClassifierProgress?: (pct: number, fromCache: boolean) => void
+): Promise<void> {
+  if (_warmupStarted && _warmupPromise) return _warmupPromise;
+  _warmupStarted = true;
+  _warmupPromise = Promise.all([
+    import('@/lib/ai/ner').then(m =>
+      m.getBioNERPipeline(onNERProgress)
+    ),
+    import('@/lib/ai/classifier').then(m =>
+      m.getClassifier(onClassifierProgress)
+    ),
+  ]).then(() => {
+    reportReady();
+  }).catch((e) => {
+    _warmupStarted = false;
+    _warmupPromise = null;
+    reportError(e?.message ?? 'Model load failed');
+    throw e;
+  });
+  return _warmupPromise;
 }
 
 export function useDocumentAI() {
@@ -74,6 +103,27 @@ export function useDocumentAI() {
 
     const chunks = chunkText(text, 300, 50);
 
+    // Wait for models to be downloaded before firing the Worker
+    // If warmupModels() was already called, this resolves instantly
+    try {
+      const [nerMod, clsMod] = await Promise.all([
+        import('@/lib/ai/ner'),
+        import('@/lib/ai/classifier'),
+      ]);
+      await Promise.all([
+        nerMod.getBioNERPipeline(),
+        clsMod.getClassifier(),
+      ]);
+    } catch (modelErr) {
+      const msg = 'AI models have not finished downloading yet. ' +
+        'Please wait for the model download to complete before uploading. ' +
+        'Uploading without AI processing would store empty metadata on the ' +
+        'blockchain, significantly increasing gas costs.';
+      setError(msg);
+      setProgress(p => ({ ...p, step: 'error' }));
+      throw new Error(msg);
+    }
+
     // ── Step 2: Try Web Worker path ──────────────────────────────────────────
     const canUseWorker = typeof Worker !== 'undefined';
 
@@ -87,8 +137,27 @@ export function useDocumentAI() {
         );
         workerRef.current = worker;
 
-        worker.onmessage = (e: MessageEvent) => {
+        worker.onmessage = async (e: MessageEvent) => {
           const { type, payload } = e.data;
+
+          if (type === 'WARMUP_PROGRESS') {
+            const { model, pct, fromCache } = payload;
+            window.dispatchEvent(new CustomEvent('ai-worker-warmup', {
+              detail: { model, pct, fromCache }
+            }));
+          }
+
+          if (type === 'MODELS_READY') {
+            window.dispatchEvent(new CustomEvent('ai-worker-ready', {
+              detail: { fromCache: payload.fromCache }
+            }));
+          }
+
+          if (type === 'MODELS_FAILED') {
+            window.dispatchEvent(new CustomEvent('ai-worker-failed', {
+              detail: { message: payload.message }
+            }));
+          }
 
           if (type === 'PROGRESS') {
             const { step, done, total } = payload;
@@ -115,19 +184,47 @@ export function useDocumentAI() {
           }
 
           if (type === 'ERROR') {
-            const msg = payload.message ?? 'AI worker error';
-            setError(msg);
-            setProgress(p => ({ ...p, step: 'error' }));
+            // Worker failed mid-inference — fall back to heuristic classify
+            // so the upload can still proceed with partial metadata
+            console.warn('[DocumentAI] Worker error, using heuristic fallback:', payload.message);
+            const { heuristicClassify, CANDIDATE_LABELS } = await import('@/lib/ai/classifier');
+            const heuristicType = heuristicClassify(text, file.name);
+            const fallback: DocumentAIResult = {
+              text,
+              chunks,
+              entities: {
+                diseases: [], drugs: [], symptoms: [],
+                lab_values: [], procedures: [], dates: [], measurements: [],
+              },
+              docType:    heuristicType,
+              docLabel:   CANDIDATE_LABELS[heuristicType] ?? 'general health document',
+              confidence: 0.3,
+            };
+            setResult(fallback);
+            setProgress({ step: 'done', done: 1, total: 1, pct: 100 });
             worker.terminate();
-            reject(new Error(msg));
+            resolve(fallback);
           }
         };
 
-        worker.onerror = (e) => {
-          const msg = e.message ?? 'Worker crashed';
-          setError(msg);
-          setProgress(p => ({ ...p, step: 'error' }));
-          reject(new Error(msg));
+        worker.onerror = async (e) => {
+          console.warn('[DocumentAI] Worker error event, using heuristic fallback:', e.message);
+          const { heuristicClassify, CANDIDATE_LABELS } = await import('@/lib/ai/classifier');
+          const heuristicType = heuristicClassify(text, file.name);
+          const fallback: DocumentAIResult = {
+            text,
+            chunks,
+            entities: {
+              diseases: [], drugs: [], symptoms: [],
+              lab_values: [], procedures: [], dates: [], measurements: [],
+            },
+            docType:    heuristicType,
+            docLabel:   CANDIDATE_LABELS[heuristicType] ?? 'general health document',
+            confidence: 0.3,
+          };
+          setResult(fallback);
+          setProgress({ step: 'done', done: 1, total: 1, pct: 100 });
+          resolve(fallback);
         };
 
         worker.postMessage({ type: 'RUN_AI', payload: { text, filename: file.name } });

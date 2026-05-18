@@ -1,33 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: [
-    '@rainbow-me/rainbowkit',
-  ],
+  transpilePackages: ['@rainbow-me/rainbowkit'],
   experimental: {
     serverComponentsExternalPackages: [
-      '@xenova/transformers', 
-      'onnxruntime-node', 
+      'onnxruntime-node',
       '@bnb-chain/greenfield-js-sdk',
-      'pdfjs-dist'
+      'pdfjs-dist',
     ],
+    // Do NOT include @xenova/transformers here — it must load client-side
   },
   webpack: (config, { isServer, dev }) => {
-    // Disable disk caching to prevent ENOSPC errors on space-constrained systems
-    if (config.cache && !dev) {
-      config.cache = false;
-    }
+    if (config.cache && !dev) config.cache = false;
 
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      fs: false,
-      path: false,
-      crypto: false,
-      stream: false,
-      buffer: require.resolve('buffer/'),
+      fs: false, path: false, crypto: false,
+      stream: false, buffer: require.resolve('buffer/'),
     };
 
-    // Stub missing optional peer deps that cause warnings but aren't needed
     config.resolve.alias = {
       ...config.resolve.alias,
       'pino-pretty': false,
@@ -35,11 +26,7 @@ const nextConfig = {
       'onnxruntime-node': false,
     };
 
-    // Ignore .node native binaries
-    config.module.rules.push({
-      test: /\.node$/,
-      use: 'ignore-loader',
-    });
+    config.module.rules.push({ test: /\.node$/, use: 'ignore-loader' });
 
     if (!isServer) {
       config.experiments = {
@@ -47,9 +34,13 @@ const nextConfig = {
         asyncWebAssembly: true,
         layers: true,
       };
-      
-      // Alias node-only modules to prevent browser bundling
-      config.resolve.alias['@xenova/transformers'] = false;
+
+      // REMOVED: config.resolve.alias['@xenova/transformers'] = false
+      // WHY: That line was stripping transformers from the browser bundle
+      // entirely, forcing a full runtime parse on every page load.
+      // We want transformers available as a lazy dynamic import() instead.
+
+      // Still exclude server-only packages from browser bundle
       config.resolve.alias['pdfjs-dist'] = false;
       config.resolve.alias['@bnb-chain/greenfield-js-sdk'] = false;
     }
@@ -58,10 +49,22 @@ const nextConfig = {
   },
   headers: async () => [
     {
+      // Add long-lived cache for ONNX/WASM model files fetched from CDN
+      // These are content-addressed so safe to cache for 1 year
       source: '/(.*)',
       headers: [
         { key: 'Cross-Origin-Opener-Policy',   value: 'same-origin-allow-popups' },
-        { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
+        { key: 'Cross-Origin-Embedder-Policy',  value: 'unsafe-none' },
+        // Allow browser to cache model weight fetches aggressively
+        { key: 'Vary', value: 'Accept-Encoding' },
+      ],
+    },
+    {
+      // Specifically for any locally-served WASM or model files
+      source: '/models/(.*)',
+      headers: [
+        { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        { key: 'Cross-Origin-Resource-Policy', value: 'cross-origin' },
       ],
     },
   ],

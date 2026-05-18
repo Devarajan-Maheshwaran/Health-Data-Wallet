@@ -4,26 +4,71 @@
  * Model: Xenova/bert-base-NER (fallback until d4data ONNX is available)
  */
 
-import { asTokenClassification, getTransformers } from './pipeline-utils';
+import { asTokenClassification, getTransformers, withTimeout } from './pipeline-utils';
+import { reportNERProgress } from './model-store';
 
-let nerPipeline: any = null;
+let _nerPipeline:  any = null;
+let _nerPromise:   Promise<any> | null = null;
+let _nerFromCache: boolean = false;
 
 const BIOMEDICAL_NER_MODEL = 'Xenova/bert-base-NER';
-// Swap below once d4data/biomedical-ner-all ONNX conversion is available:
-// const BIOMEDICAL_NER_MODEL = 'd4data/biomedical-ner-all';
+const NER_TIMEOUT_MS = 120_000; // 2 minutes max
 
-async function getBioNERPipeline() {
-  if (!nerPipeline) {
+export function nerIsReady()     { return _nerPipeline !== null; }
+export function nerFromCache()   { return _nerFromCache; }
+
+export async function getBioNERPipeline(
+  onProgress?: (pct: number, fromCache: boolean) => void
+): Promise<any> {
+  if (_nerPipeline) {
+    onProgress?.(100, _nerFromCache);
+    return _nerPipeline;
+  }
+  if (_nerPromise) return _nerPromise;
+
+  _nerPromise = (async () => {
     const { pipeline } = await getTransformers();
-    nerPipeline = await pipeline(
+
+    let progressReceived = false;
+
+    const rawPromise = pipeline(
       'token-classification',
       BIOMEDICAL_NER_MODEL,
       {
-        progress_callback: () => {},
+        progress_callback: (p: any) => {
+          if (p?.status === 'downloading' && p?.total > 0) {
+            progressReceived = true;
+            _nerFromCache = false;
+            const pct = Math.round((p.loaded / p.total) * 100);
+            reportNERProgress(pct, false);
+            onProgress?.(pct, false);
+          }
+          if (p?.status === 'ready' || p?.status === 'loaded') {
+            if (!progressReceived) {
+              // No download events = model was already in cache
+              _nerFromCache = true;
+              reportNERProgress(100, true);
+              onProgress?.(100, true);
+            } else {
+              reportNERProgress(100, false);
+              onProgress?.(100, false);
+            }
+          }
+        },
       }
     );
-  }
-  return nerPipeline;
+
+    _nerPipeline = await withTimeout(rawPromise, NER_TIMEOUT_MS, 'NER model download');
+    return _nerPipeline;
+  })().catch((err) => {
+    // Reset so caller can retry
+    _nerPipeline  = null;
+    _nerPromise   = null;
+    _nerFromCache = false;
+    throw err;
+  });
+
+  return _nerPromise;
 }
 
 export interface MedicalEntities {

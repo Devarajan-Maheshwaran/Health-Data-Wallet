@@ -14,13 +14,41 @@
 import { extractEntitiesFromChunks } from './ner';
 import { classifyDocument, heuristicClassify } from './classifier';
 import { chunkText } from './extractor';
+import { getBioNERPipeline } from './ner';
+import { getClassifier } from './classifier';
 
 export interface AIWorkerResult {
-  entities: import('./ner').MedicalEntities;
-  docType:  import('./classifier').DocumentType;
-  docLabel: string;
+  entities:   import('./ner').MedicalEntities;
+  docType:    import('./classifier').DocumentType;
+  docLabel:   string;
   confidence: number;
 }
+
+// Pre-warm both models immediately when Worker spawns.
+// The main thread already started warmup on mount, but Worker has
+// its own module scope — this ensures Worker's singleton is loaded.
+// Progress is posted so VaultPage can show combined real download %.
+const warmup = Promise.all([
+  getBioNERPipeline((pct, fromCache) => {
+    self.postMessage({
+      type: 'WARMUP_PROGRESS',
+      payload: { model: 'ner', pct, fromCache },
+    });
+  }),
+  getClassifier((pct, fromCache) => {
+    self.postMessage({
+      type: 'WARMUP_PROGRESS',
+      payload: { model: 'classifier', pct, fromCache },
+    });
+  }),
+]).then(() => {
+  self.postMessage({ type: 'MODELS_READY', payload: { fromCache: true } });
+}).catch((err) => {
+  self.postMessage({
+    type: 'MODELS_FAILED',
+    payload: { message: err?.message ?? 'Model warmup failed in Worker' },
+  });
+});
 
 type IncomingMessage =
   | { type: 'RUN_AI'; payload: { text: string; filename: string } };
@@ -32,8 +60,10 @@ self.addEventListener('message', async (event: MessageEvent<IncomingMessage>) =>
     const { text, filename } = payload;
 
     try {
-      // Step 1: Chunk the document for NER
-      const chunks = chunkText(text, 300, 50);
+      // Ensure warmup is complete before inference
+      await warmup;
+
+      const chunks      = chunkText(text, 300, 50);
       const totalChunks = chunks.length;
 
       self.postMessage({
@@ -41,15 +71,12 @@ self.addEventListener('message', async (event: MessageEvent<IncomingMessage>) =>
         payload: { step: 'ner', done: 0, total: totalChunks },
       });
 
-      // Step 2: Run NER across all chunks
       const entities = await extractEntitiesFromChunks(
         chunks,
-        (done, total) => {
-          self.postMessage({
-            type: 'PROGRESS',
-            payload: { step: 'ner', done, total },
-          });
-        }
+        (done, total) => self.postMessage({
+          type: 'PROGRESS',
+          payload: { step: 'ner', done, total },
+        })
       );
 
       self.postMessage({
@@ -57,21 +84,18 @@ self.addEventListener('message', async (event: MessageEvent<IncomingMessage>) =>
         payload: { step: 'classify', done: 0, total: 1 },
       });
 
-      // Step 3: Instant heuristic classification (no model wait)
       const heuristicType = heuristicClassify(text, filename);
-
-      // Step 4: Zero-shot classification (uses Xenova/nli-deberta-v3-small)
-      let docType = heuristicType;
-      let docLabel = 'general health document';
+      let docType    = heuristicType;
+      let docLabel   = 'general health document';
       let confidence = 0.5;
 
       try {
         const classResult = await classifyDocument(text);
-        docType = classResult.docType;
-        docLabel = classResult.label;
+        docType    = classResult.docType;
+        docLabel   = classResult.label;
         confidence = classResult.score;
       } catch {
-        // Classifier failed — keep heuristic result
+        // keep heuristic
       }
 
       self.postMessage({
@@ -79,11 +103,11 @@ self.addEventListener('message', async (event: MessageEvent<IncomingMessage>) =>
         payload: { step: 'classify', done: 1, total: 1 },
       });
 
-      // Step 5: Return result
       self.postMessage({
         type: 'RESULT',
         payload: { entities, docType, docLabel, confidence } satisfies AIWorkerResult,
       });
+
     } catch (e: unknown) {
       self.postMessage({
         type: 'ERROR',

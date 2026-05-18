@@ -6,6 +6,8 @@ import Grainient from '@/components/ui/Grainient';
 import { FloatingNav } from '@/components/layout/FloatingNav';
 import { OnboardingSheet } from '@/components/auth/OnboardingSheet';
 import { AuthGate } from '@/components/auth/AuthGate';
+import { AIModelLoader } from '@/components/ui/AIModelLoader';
+import { AIWarmupTrigger } from '@/components/ui/AIWarmupTrigger';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const syne = Syne({ subsets: ['latin'], variable: '--font-syne' });
@@ -21,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.variable} ${syne.variable} font-sans bg-[#0f172a] text-slate-100 antialiased overflow-x-hidden w-full max-w-full`}>
         <Grainient />
         <Providers>
+          <AIWarmupTrigger />          {/* starts model download immediately */}
+          <AIModelLoader />            {/* floating progress bar */}
           <FloatingNav />
           <OnboardingSheet />
           <AuthGate />

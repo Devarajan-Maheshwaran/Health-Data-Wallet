@@ -10,16 +10,49 @@
  * ALL pipeline calls across the codebase should go through these helpers.
  */
 
-// Tell transformers.js we are running in the browser and shouldn't use local fs
 let configured = false;
+
 export async function getTransformers() {
   const t = await import('@xenova/transformers');
   if (!configured) {
-    t.env.allowLocalModels = false;
-    t.env.useBrowserCache = true;
+    t.env.allowLocalModels  = false;
+    t.env.useBrowserCache   = true;
+    // Ensure Worker context also gets these flags before any pipeline call
+    if (typeof self !== 'undefined' && self !== (globalThis as any).window) {
+      // We are inside a Web Worker — re-apply explicitly
+      t.env.allowLocalModels = false;
+      t.env.useBrowserCache  = true;
+    }
+    // Force single-thread ONNX execution.
+    // Without this, the runtime tries SharedArrayBuffer (SAB) for
+    // multi-threading, which requires COEP: require-corp. Our app
+    // uses 'unsafe-none' to support wallet popups, so SAB is blocked
+    // and the runtime HANGS indefinitely waiting for a thread that
+    // never spawns. numThreads: 1 disables that entirely.
+    if (t.env.backends?.onnx?.wasm) {
+      t.env.backends.onnx.wasm.numThreads = 1;
+    }
     configured = true;
   }
   return t;
+}
+
+export function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  label: string
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(
+        `[AI] ${label} timed out after ${ms / 1000}s. ` +
+        `Check your connection and refresh.`
+      )),
+      ms
+    );
+    promise.then(v => { clearTimeout(timer); resolve(v); },
+                 e => { clearTimeout(timer); reject(e); });
+  });
 }
 
 type AnyPipeline = any;
