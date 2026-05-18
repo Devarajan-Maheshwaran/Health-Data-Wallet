@@ -106,3 +106,27 @@ export function subscribeToModelProgress(
   window.addEventListener('medvault:ai-progress', handler);
   return () => window.removeEventListener('medvault:ai-progress', handler);
 }
+
+export async function checkIfModelsAreCached(): Promise<boolean> {
+  if (typeof globalThis === 'undefined' || typeof globalThis.caches === 'undefined') return false;
+  try {
+    const cache = await globalThis.caches.open('transformers-cache');
+    const keys = await cache.keys();
+    let hasNER = false;
+    let hasClassifier = false;
+
+    for (const request of keys) {
+      const url = request.url;
+      if (url.includes('bert-base-NER')) {
+        hasNER = true;
+      }
+      if (url.includes('nli-deberta-v3-small')) {
+        hasClassifier = true;
+      }
+    }
+    return hasNER && hasClassifier;
+  } catch (e) {
+    console.warn('[AI Cache Checker] Error checking cache:', e);
+    return false;
+  }
+}

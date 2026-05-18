@@ -9,19 +9,25 @@
  *
  * ALL pipeline calls across the codebase should go through these helpers.
  */
+import { checkIfModelsAreCached } from './model-store';
 
 let configured = false;
 
 export async function getTransformers() {
   const t = await import('@xenova/transformers');
   if (!configured) {
-    t.env.allowLocalModels  = false;
-    t.env.useBrowserCache   = true;
+    const isCached = await checkIfModelsAreCached();
+
+    t.env.allowLocalModels   = false;
+    t.env.useBrowserCache    = true;
+    t.env.allowRemoteModels  = !isCached;
+
     // Ensure Worker context also gets these flags before any pipeline call
     if (typeof self !== 'undefined' && self !== (globalThis as any).window) {
       // We are inside a Web Worker — re-apply explicitly
-      t.env.allowLocalModels = false;
-      t.env.useBrowserCache  = true;
+      t.env.allowLocalModels  = false;
+      t.env.useBrowserCache   = true;
+      t.env.allowRemoteModels = !isCached;
     }
     // Force single-thread ONNX execution.
     // Without this, the runtime tries SharedArrayBuffer (SAB) for

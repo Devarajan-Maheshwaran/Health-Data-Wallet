@@ -16,7 +16,7 @@ import { useState, useCallback, useRef } from 'react';
 import { extractText, chunkText } from '@/lib/ai/extractor';
 import { extractEntitiesFromChunks, type MedicalEntities } from '@/lib/ai/ner';
 import { classifyDocument, heuristicClassify, type DocumentType } from '@/lib/ai/classifier';
-import { reportReady, reportError } from '@/lib/ai/model-store';
+import { reportReady, reportError, checkIfModelsAreCached } from '@/lib/ai/model-store';
 
 export type AIStep =
   | 'idle'
@@ -52,21 +52,30 @@ export function warmupModels(
 ): Promise<void> {
   if (_warmupStarted && _warmupPromise) return _warmupPromise;
   _warmupStarted = true;
-  _warmupPromise = Promise.all([
-    import('@/lib/ai/ner').then(m =>
-      m.getBioNERPipeline(onNERProgress)
-    ),
-    import('@/lib/ai/classifier').then(m =>
-      m.getClassifier(onClassifierProgress)
-    ),
-  ]).then(() => {
+
+  _warmupPromise = (async () => {
+    const isCached = await checkIfModelsAreCached();
+    if (isCached) {
+      reportReady();
+    }
+
+    await Promise.all([
+      import('@/lib/ai/ner').then(m =>
+        m.getBioNERPipeline(onNERProgress)
+      ),
+      import('@/lib/ai/classifier').then(m =>
+        m.getClassifier(onClassifierProgress)
+      ),
+    ]);
+
     reportReady();
-  }).catch((e) => {
+  })().catch((e) => {
     _warmupStarted = false;
     _warmupPromise = null;
     reportError(e?.message ?? 'Model load failed');
     throw e;
   });
+
   return _warmupPromise;
 }
 
