@@ -196,8 +196,13 @@ export function VaultPage() {
     if (!title) setTitle(file.name.replace(/\.[^.]+$/, ''));
     
     showToast('Starting in-browser AI pipeline...', 'loading');
-    await analyseFile(file);
-    setToast({ message: '', type: null }); // clear loading toast
+    try {
+      await analyseFile(file);
+      setToast({ message: '', type: null }); // clear loading toast
+    } catch (err: any) {
+      console.error('[Vault] AI analysis error:', err);
+      showToast(err?.message ?? 'AI pipeline failed. Please try again.', 'error');
+    }
   }, [title, analyseFile, reset, isConnected, address]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

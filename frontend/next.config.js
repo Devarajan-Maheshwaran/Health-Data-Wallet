@@ -39,10 +39,6 @@ const nextConfig = {
       // WHY: That line was stripping transformers from the browser bundle
       // entirely, forcing a full runtime parse on every page load.
       // We want transformers available as a lazy dynamic import() instead.
-
-      // Still exclude server-only packages from browser bundle
-      config.resolve.alias['pdfjs-dist'] = false;
-      config.resolve.alias['@bnb-chain/greenfield-js-sdk'] = false;
     }
 
     return config;

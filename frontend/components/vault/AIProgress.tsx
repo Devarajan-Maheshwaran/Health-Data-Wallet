@@ -52,10 +52,27 @@ export function AIProgress({ progress }: Props) {
           const currentIdx = stepOrder.indexOf(step);
           const thisIdx    = stepOrder.indexOf(s.id);
 
-          const isDone    = step === 'done' || thisIdx < currentIdx;
-          const isActive  = s.id === step;
-          const isPending = thisIdx > currentIdx && step !== 'done';
-          const isError   = step === 'error' && isActive;
+          let isDone = false;
+          let isActive = false;
+          let isPending = false;
+          let isError = false;
+
+          if (step === 'error') {
+            const failedStepId =
+              pct < 10 ? 'extracting' :
+              pct < 80 ? 'ner' :
+              'classifying';
+            const failedIdx = stepOrder.indexOf(failedStepId);
+
+            isDone    = thisIdx < failedIdx;
+            isActive  = s.id === failedStepId;
+            isPending = thisIdx > failedIdx;
+            isError   = s.id === failedStepId;
+          } else {
+            isDone    = step === 'done' || thisIdx < currentIdx;
+            isActive  = s.id === step;
+            isPending = thisIdx > currentIdx && step !== 'done';
+          }
 
           const Icon = s.icon;
           return (
